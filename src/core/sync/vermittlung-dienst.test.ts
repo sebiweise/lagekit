@@ -53,7 +53,17 @@ describe("Vermittlungsdienst", () => {
 
   it("begrenzt die Zahl der Aufrufe je Adresse", async () => {
     const s = speicherImArbeitsspeicher();
-    for (let i = 0; i < 120; i++) await vermitteln(s, { aktion: "antwort", anfrageId: crypto.randomUUID() }, "9");
+    for (let i = 0; i < 600; i++) await vermitteln(s, { aktion: "antwort", anfrageId: crypto.randomUUID() }, "9");
     expect((await vermitteln(s, { aktion: "sitzung" }, "9")).status).toBe(429);
+    expect((await vermitteln(s, { aktion: "sitzung" }, "10")).status).toBe(200);
+  });
+
+  it("begrenzt Beitrittsanfragen strenger, damit Kurzcodes nicht durchprobiert werden", async () => {
+    const s = speicherImArbeitsspeicher();
+    for (let i = 0; i < 30; i++) {
+      const r = await vermitteln(s, { aktion: "anfrage", kurzcode: "123456", anfrage: ANFRAGE }, "9");
+      expect(r.status).toBe(404);
+    }
+    expect((await vermitteln(s, { aktion: "anfrage", kurzcode: "123456", anfrage: ANFRAGE }, "9")).status).toBe(429);
   });
 });

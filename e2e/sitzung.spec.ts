@@ -153,6 +153,24 @@ test("Gemeinsam arbeiten mit Kurzcode: Host sieht die Anfrage auf jeder Seite un
   await expect(gast.getByText("Verbunden: Hochwasser")).toBeVisible({ timeout: 15_000 });
   await expect(host.getByTestId("sitzung-status")).toContainText("1 Gerät verbunden");
 
+  // Ein zweiter Tab auf dem Gast übernimmt die Sitzung nicht, sondern weist auf den ersten hin.
+  const zweiterTab = await gastKontext.newPage();
+  await zweiterTab.goto(`${baseURL}/`);
+  await expect(zweiterTab.getByTestId("sitzung-anderer-tab")).toBeVisible();
+  await zweiterTab.close();
+  await expect(gast.getByTestId("sitzung-status")).toContainText("Verbunden mit Müller");
+  await expect(host.getByTestId("sitzung-status")).toContainText("1 Gerät verbunden");
+
+  // Löscht der Gast seine Kopie, verlässt er die Sitzung; beim Host bleibt der Einsatz erhalten.
+  await gast.getByRole("link", { name: "Einsatz", exact: true }).click();
+  const eintrag = gast.getByTestId("einsatz-eintrag").filter({ hasText: "Hochwasser" });
+  await eintrag.getByRole("button", { name: "Löschen" }).click();
+  await eintrag.getByRole("button", { name: "Endgültig löschen" }).click();
+  await expect(gast.getByTestId("einsatz-eintrag")).toHaveCount(0);
+  await expect(host.getByTestId("sitzung-status")).toContainText("0 Geräte verbunden", { timeout: 15_000 });
+  await host.getByRole("link", { name: "Einsatz", exact: true }).click();
+  await expect(host.getByTestId("einsatz-eintrag").filter({ hasText: "Hochwasser" })).toBeVisible();
+
   await hostKontext.close();
   await gastKontext.close();
 });

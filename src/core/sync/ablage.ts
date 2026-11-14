@@ -41,13 +41,22 @@ async function schreiben(db: LagekitDB, schluessel: string, wert: unknown | null
   else await db.einstellungen.put({ schluessel, wert });
 }
 
+let zuletzt: Promise<unknown> = Promise.resolve();
+function merken<T>(p: Promise<T>): Promise<T> {
+  zuletzt = Promise.allSettled([zuletzt, p]);
+  return p;
+}
+
 export const ablage = {
   hostLesen: (db: LagekitDB) => lesen(db, HOST, hostSchema),
-  hostSchreiben: (db: LagekitDB, wert: HostAblage | null) => schreiben(db, HOST, wert),
+  hostSchreiben: (db: LagekitDB, wert: HostAblage | null) => merken(schreiben(db, HOST, wert)),
   gastLesen: (db: LagekitDB) => lesen(db, GAST, gastSchema),
-  gastSchreiben: (db: LagekitDB, wert: GastAblage | null) => schreiben(db, GAST, wert),
+  gastSchreiben: (db: LagekitDB, wert: GastAblage | null) => merken(schreiben(db, GAST, wert)),
+  /** Erfüllt, sobald alle bisher begonnenen Schreibvorgänge für Host und Gast fertig sind. */
+  fertig: () => zuletzt.then(() => undefined),
   ausstehendLesen: (db: LagekitDB) => lesen(db, AUSSTEHEND, ausstehendSchema),
-  /** Hängt Änderungen an, die (noch) nicht beim Host angekommen sind. */
+  ausstehendSchreiben: (db: LagekitDB, wert: Ausstehend | null) => schreiben(db, AUSSTEHEND, wert),
+  /** Hängt Änderungen an, die der Host (noch) nicht quittiert hat. */
   async ausstehendAnhaengen(db: LagekitDB, einsatzId: string, liste: Aenderung[]) {
     await db.transaction("rw", db.einstellungen, async () => {
       const alt = await lesen(db, AUSSTEHEND, ausstehendSchema);
@@ -55,7 +64,7 @@ export const ablage = {
       await schreiben(db, AUSSTEHEND, { einsatzId, liste: [...bisher, ...liste] });
     });
   },
-  /** Entfernt die ersten `anzahl` Einträge (die gesendeten). */
+  /** Entfernt die ersten `anzahl` Einträge (die quittierten). */
   async ausstehendKuerzen(db: LagekitDB, anzahl: number) {
     await db.transaction("rw", db.einstellungen, async () => {
       const alt = await lesen(db, AUSSTEHEND, ausstehendSchema);

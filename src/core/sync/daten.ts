@@ -67,6 +67,9 @@ export async function aenderungenAnwenden(
   for (const a of liste) {
     const schema = tabellen.get(a.tabelle);
     if (!schema) throw new AbgleichFehler(`Unbekannte Tabelle ${a.tabelle}`);
+    if (a.art === "loeschen" && a.tabelle === "einsaetze") {
+      throw new AbgleichFehler("Ein Einsatz kann nicht über die Sitzung gelöscht werden");
+    }
     if (a.art === "put") {
       const zeile = schema.parse(a.zeile) as { id: string; einsatzId?: unknown };
       if (einsatzIdVon(a.tabelle, zeile) !== einsatzId) throw new AbgleichFehler("Zeile gehört zu einem anderen Einsatz");
@@ -83,6 +86,11 @@ export async function aenderungenAnwenden(
     for (const a of geprueft) {
       const tabelle = db.table(a.tabelle);
       if (a.art === "put") {
+        // Eine Zeile eines anderen Einsatzes auf diesem Gerät darf nicht überschrieben werden.
+        const vorhanden = (await tabelle.get(a.zeile.id)) as { id: string; einsatzId?: unknown } | undefined;
+        if (vorhanden && einsatzIdVon(a.tabelle, vorhanden) !== einsatzId) {
+          throw new AbgleichFehler("Zeile gehört zu einem anderen Einsatz");
+        }
         const loesen = abgleich.get(a.tabelle);
         const zeile = loesen ? await loesen(db, a.zeile as unknown as EinsatzbezogeneZeile) : a.zeile;
         await tabelle.put(zeile);

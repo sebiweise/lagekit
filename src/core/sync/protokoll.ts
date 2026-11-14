@@ -3,7 +3,7 @@ import { einsatzSchema } from "@/core/einsatz/schema";
 import { kompaktSchema } from "./verbindungscode";
 
 /** Version des Sitzungsprotokolls; Geräte mit anderer Version werden abgewiesen. */
-export const PROTOKOLL_VERSION = 1;
+export const PROTOKOLL_VERSION = 2;
 
 /** Präfixe der Verbindungscodes. */
 export const PRAEFIX_ANFRAGE = "LKA1";
@@ -61,6 +61,12 @@ export const nachrichtSchema = z.discriminatedUnion("typ", [
   }),
   /** In beide Richtungen: einzelne Änderungen. */
   z.object({ typ: z.literal("aenderungen"), liste: z.array(aenderungSchema) }),
+  /**
+   * Host → Gast: Die nächsten `anzahl` Änderungen des Gasts sind verarbeitet. Erst dann
+   * entfernt der Gast sie aus seinem Ausgang; was unterwegs verloren geht, schickt er beim
+   * nächsten Verbinden erneut.
+   */
+  z.object({ typ: z.literal("quittung"), anzahl: z.number().int().min(0) }),
   /** Host → Gäste: wer gerade verbunden ist. */
   z.object({ typ: z.literal("teilnehmer"), liste: z.array(teilnehmerSchema) }),
   /** In beide Richtungen alle paar Sekunden, damit ein Abriss schnell auffällt. */

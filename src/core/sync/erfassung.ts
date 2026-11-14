@@ -14,11 +14,16 @@ function wurzel(tx: Transaction): Wurzel {
 /**
  * Meldet lokale Änderungen eines Einsatzes, sobald ihre Transaktion abgeschlossen ist.
  * Änderungen aus dem Abgleich selbst werden nicht gemeldet. Gibt eine Abmeldefunktion zurück.
+ *
+ * Wird der Einsatz selbst gelöscht, meldet die Funktion die Löschungen nicht als
+ * Änderungen, sondern ruft `geloescht` auf: Ein Gerät, das seine Kopie aufräumt,
+ * darf nicht den Einsatz auf allen anderen Geräten löschen.
  */
 export function aenderungenBeobachten(
   db: LagekitDB,
   einsatzId: string,
   melden: (liste: Aenderung[]) => void,
+  geloescht?: () => void,
 ): () => void {
   const offen = new Map<Wurzel, Aenderung[]>();
 
@@ -30,7 +35,8 @@ export function aenderungenBeobachten(
       offen.set(w, liste);
       w.on("complete", () => {
         offen.delete(w);
-        if (liste!.length > 0) melden(liste!);
+        if (liste!.some((a) => a.art === "loeschen" && a.tabelle === "einsaetze")) geloescht?.();
+        else if (liste!.length > 0) melden(liste!);
       });
       w.on("abort", () => offen.delete(w));
       w.on("error", () => offen.delete(w));

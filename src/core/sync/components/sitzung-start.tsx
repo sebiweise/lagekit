@@ -51,7 +51,7 @@ export function SitzungStart() {
   function leiten() {
     void ausfuehren(async (ich) => {
       if (!einsatz) return;
-      sitzungen.leiten(getDb(), einsatz, ich, vermittlung);
+      await sitzungen.leiten(getDb(), einsatz, ich, vermittlung);
     });
   }
 
@@ -80,7 +80,7 @@ export function SitzungStart() {
         </p>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 [&>*]:min-w-0">
         <Card>
           <CardHeader>
             <CardTitle>Sitzung leiten</CardTitle>
@@ -99,7 +99,7 @@ export function SitzungStart() {
                 </Button>
               </>
             ) : (
-              <Link href="/einsatz/" className={buttonVariants({ className: "self-start" })}>
+              <Link href="/einsatz/" className={cn(buttonVariants(), "h-auto min-h-11 max-w-full self-start whitespace-normal py-2 text-left")}>
                 Zuerst einen Einsatz anlegen oder auswählen
               </Link>
             )}

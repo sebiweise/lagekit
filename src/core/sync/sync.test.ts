@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { LagekitDB } from "@/core/db/db";
-import { einsatzAbschliessen, einsatzAnlegen } from "@/core/einsatz/repository";
+import { einsatzAbschliessen, einsatzAnlegen, einsatzLoeschen } from "@/core/einsatz/repository";
 import { eintragHinzufuegen } from "@/tools/einsatztagebuch/repository";
 import { personAnlegen, personLoeschen } from "@/tools/strahlenexposition/repository";
 import { aenderungenAnwenden, AbgleichFehler, standAnwenden, standErstellen } from "./daten";
 import { aenderungenBeobachten } from "./erfassung";
 import type { Aenderung } from "./protokoll";
-import { anfrageSchema, PRAEFIX_ANFRAGE } from "./protokoll";
+import { anfrageSchema, PRAEFIX_ANFRAGE, PROTOKOLL_VERSION } from "./protokoll";
 import { codeErstellen, codeLesen, sdpAufbauen, sdpVerdichten, VerbindungscodeFehler } from "./verbindungscode";
 
 const offen: LagekitDB[] = [];
@@ -53,7 +53,7 @@ describe("Verbindungscode", () => {
 
   it("packt eine Anfrage in einen kurzen Code und liest sie wieder", async () => {
     const anfrage = {
-      v: 1 as const,
+      v: PROTOKOLL_VERSION,
       t: { geraetId: crypto.randomUUID(), name: "Meier", funktion: "Führungsassistent", fahrzeug: "ELW 1", geraet: "Windows · Edge" },
       s: sdpVerdichten(SDP),
     };
@@ -131,6 +131,37 @@ describe("Abgleich", () => {
     await expect(aenderungenAnwenden(db, einsatz.id, [{ art: "loeschen", tabelle: "geheim", id: "x" }])).rejects.toThrow(
       /Unbekannte Tabelle/,
     );
+  });
+
+  it("überschreibt keine Zeile eines anderen Einsatzes und löscht nie den Einsatz selbst", async () => {
+    const db = testDb();
+    const einsatz = await einsatzAnlegen(db, { stichwort: "ABC 2" });
+    const anderer = await einsatzAnlegen(db, { stichwort: "Übung" });
+    const fremd = await personAnlegen(db, { einsatzId: anderer.id, name: "Fremd" });
+    await expect(
+      aenderungenAnwenden(db, einsatz.id, [
+        { art: "put", tabelle: "dosisPersonen", zeile: { ...fremd, einsatzId: einsatz.id, name: "Übernommen" } },
+      ]),
+    ).rejects.toThrow(/anderen Einsatz/);
+    expect(await db.table("dosisPersonen").get(fremd.id)).toMatchObject({ einsatzId: anderer.id, name: "Fremd" });
+    await expect(
+      aenderungenAnwenden(db, einsatz.id, [{ art: "loeschen", tabelle: "einsaetze", id: einsatz.id }]),
+    ).rejects.toThrow(AbgleichFehler);
+    expect(await db.einsaetze.get(einsatz.id)).toBeDefined();
+  });
+
+  it("meldet das Löschen des ganzen Einsatzes nicht als Änderungen weiter", async () => {
+    const db = testDb();
+    const einsatz = await einsatzAnlegen(db, { stichwort: "ABC 2" });
+    await personAnlegen(db, { einsatzId: einsatz.id, name: "Meier" });
+    const gemeldet: Aenderung[] = [];
+    let geloescht = 0;
+    const abmelden = aenderungenBeobachten(db, einsatz.id, (l) => gemeldet.push(...l), () => geloescht++);
+    await einsatzLoeschen(db, einsatz.id);
+    await new Promise((r) => setTimeout(r, 10));
+    abmelden();
+    expect(gemeldet).toEqual([]);
+    expect(geloescht).toBe(1);
   });
 
   it("vergibt beim Host eindeutige Tagebuchnummern", async () => {

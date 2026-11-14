@@ -22,7 +22,15 @@ export interface Speicher {
 
 const SITZUNG_SEKUNDEN = 12 * 60 * 60;
 const ANFRAGE_SEKUNDEN = 10 * 60;
-const MAX_AUFRUFE_PRO_MINUTE = 120;
+/**
+ * Alle Geräte im ELW teilen sich meist eine öffentliche IP (Router, Hotspot). Host und
+ * jedes wartende Gerät fragen alle 2 s nach (je 30 Aufrufe pro Minute): Die Grenze muss
+ * ein gutes Dutzend Geräte gleichzeitig tragen, auch wenn nach einem WLAN-Abriss alle
+ * zugleich neu verbinden.
+ */
+const MAX_AUFRUFE_PRO_MINUTE = 600;
+/** Beitrittsanfragen pro IP und Minute; erschwert das Durchprobieren von Kurzcodes. */
+const MAX_ANFRAGEN_PRO_MINUTE = 30;
 const MAX_CODE_LAENGE = 4_000;
 
 const kurzcode = z.string().regex(/^\d{6}$/);
@@ -55,6 +63,7 @@ const k = {
   anfragen: (c: string) => `lk:q:${c}`,
   anfrage: (id: string) => `lk:a:${id}`,
   begrenzung: (ip: string) => `lk:r:${ip}`,
+  anfrageBegrenzung: (ip: string) => `lk:ra:${ip}`,
 };
 
 function neuerKurzcode(): string {
@@ -84,6 +93,9 @@ export async function vermitteln(speicher: Speicher, roh: unknown, ip: string): 
       return fehler(503, "Kein freier Kurzcode. Bitte erneut versuchen.");
     }
     case "anfrage": {
+      if ((await speicher.zaehlen(k.anfrageBegrenzung(ip), 60)) > MAX_ANFRAGEN_PRO_MINUTE) {
+        return fehler(429, "Zu viele Beitrittsanfragen. Bitte kurz warten.");
+      }
       if (!(await speicher.lesen(k.sitzung(e.kurzcode)))) {
         return fehler(404, "Kurzcode unbekannt oder abgelaufen. Bitte beim Host nachsehen.");
       }

@@ -2,7 +2,7 @@ import type { LagekitDB } from "@/core/db/db";
 import { aktivenEinsatzSetzen } from "@/core/einsatz/repository";
 import type { Einsatz } from "@/core/einsatz/schema";
 import { ablage, type GastAblage, type HostAblage } from "./ablage";
-import { aenderungenAnwenden, standAnwenden, standErstellen } from "./daten";
+import { AbgleichFehler, aenderungenAnwenden, standAnwenden, standErstellen } from "./daten";
 import { aenderungenBeobachten } from "./erfassung";
 import { ichLesen } from "./ich";
 import { angebotBeantworten, angebotErstellen, type Verbindung } from "./peer";
@@ -16,6 +16,7 @@ import {
   type Nachricht,
   type Teilnehmer,
 } from "./protokoll";
+import { ZodError } from "zod";
 import { codeErstellen, codeLesen, type KompaktesSdp } from "./verbindungscode";
 import { VermittlungFehler, type Vermittlung } from "./vermittlung";
 
@@ -36,6 +37,18 @@ class Beobachtbar {
 const ABHOL_INTERVALL_MS = 2_000;
 const gleich = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
+/** Ungültige Daten: Erneut senden hilft nicht, die Änderung wird verworfen. */
+const istDatenfehler = (e: unknown) => e instanceof AbgleichFehler || e instanceof ZodError;
+
+/** Führt Aufgaben nacheinander aus, damit Nachrichten in ihrer Reihenfolge verarbeitet werden. */
+class Reihe {
+  private letzte: Promise<void> = Promise.resolve();
+  einreihen(aufgabe: () => Promise<void>, beschreibung: string) {
+    this.letzte = this.letzte.then(aufgabe).catch((e) => console.warn(`Lagekit: ${beschreibung}`, e));
+    return this.letzte;
+  }
+}
+
 // ---------------------------------------------------------------- Host
 
 export type GastStatus = "wartet-auf-freigabe" | "verbindet" | "verbunden" | "getrennt" | "abgelehnt";
@@ -52,6 +65,13 @@ export interface HostGast {
   antwortCode?: string;
   angebot: KompaktesSdp;
   verbindung?: Verbindung;
+  /** Nachrichten dieses Geräts, in Reihenfolge verarbeitet. */
+  eingang: Reihe;
+  /**
+   * Während der Übergabe des Stands: Änderungen, die in dieser Zeit entstehen. Sie
+   * folgen direkt nach dem Stand, damit dem Gerät nichts entgeht.
+   */
+  puffer?: Aenderung[][];
 }
 
 export class HostSitzung extends Beobachtbar {
@@ -64,6 +84,10 @@ export class HostSitzung extends Beobachtbar {
   private abmelden: () => void;
   private abholen?: ReturnType<typeof setInterval>;
   private beendet = false;
+  /** Wird aufgerufen, sobald die Sitzung beendet ist. */
+  onBeendet: (() => void) | null = null;
+  /** Kennung des Hosts in der Teilnehmerliste; die echte Geräte-Kennung bleibt auf dem Gerät. */
+  private readonly sitzungsKennung = crypto.randomUUID();
 
   constructor(
     private readonly db: LagekitDB,
@@ -76,7 +100,13 @@ export class HostSitzung extends Beobachtbar {
     this.kurzcode = gespeichert?.kurzcode ?? null;
     this.schluessel = gespeichert?.schluessel ?? null;
     this.bekannt = new Set(gespeichert?.bekannt ?? []);
-    this.abmelden = aenderungenBeobachten(db, einsatz.id, (liste) => this.verteilen(liste));
+    this.abmelden = aenderungenBeobachten(
+      db,
+      einsatz.id,
+      (liste) => this.verteilen(liste),
+      // Wer den Einsatz auf dem Host löscht, beendet die Sitzung; die Gäste behalten ihre Kopie.
+      () => this.beenden("Der Einsatz wurde auf dem Host gelöscht."),
+    );
     void this.speichern();
   }
 
@@ -153,6 +183,7 @@ export class HostSitzung extends Beobachtbar {
       angekommenAm: new Date(),
       wiederverbunden: this.bekannt.has(anfrage.t.geraetId),
       angebot: anfrage.s,
+      eingang: new Reihe(),
     };
     this.gaeste = [...this.gaeste, gast];
     this.melden();
@@ -164,12 +195,31 @@ export class HostSitzung extends Beobachtbar {
     const gast = this.finden(anfrageId);
     if (!gast || gast.status !== "wartet-auf-freigabe") return;
     gast.status = "verbindet";
+    this.melden();
+    let verbindung: Verbindung | undefined;
+    let antwort: string;
+    try {
+      const beantwortet = await angebotBeantworten(gast.angebot);
+      verbindung = beantwortet.verbindung;
+      antwort = await codeErstellen(PRAEFIX_ANTWORT, { v: PROTOKOLL_VERSION, s: beantwortet.sdp });
+      if (gast.quelle === "kurzcode" && this.dienst && this.kurzcode && this.schluessel) {
+        await this.dienst.antworten(this.kurzcode, this.schluessel, anfrageId, antwort);
+      }
+    } catch (e) {
+      // Zurück auf „wartet“, damit der Host es erneut versuchen kann.
+      verbindung?.schliessen();
+      if (gast.status === "verbindet") gast.status = "wartet-auf-freigabe";
+      this.melden();
+      throw e;
+    }
+    if (gast.status !== "verbindet") {
+      verbindung.schliessen(); // Inzwischen abgelehnt oder ersetzt.
+      return;
+    }
     this.bekannt.add(gast.teilnehmer.geraetId);
     void this.speichern();
-    const { verbindung, sdp } = await angebotBeantworten(gast.angebot);
     gast.verbindung = verbindung;
-    const antwort = await codeErstellen(PRAEFIX_ANTWORT, { v: PROTOKOLL_VERSION, s: sdp });
-    verbindung.onNachricht = (n) => void this.empfangen(gast, n);
+    verbindung.onNachricht = (n) => void gast.eingang.einreihen(() => this.empfangen(gast, n), "Nachricht eines Geräts");
     verbindung.onZustand = (z) => {
       if (z === "getrennt" && gast.status !== "abgelehnt") {
         gast.status = "getrennt";
@@ -177,11 +227,7 @@ export class HostSitzung extends Beobachtbar {
         this.melden();
       }
     };
-    if (gast.quelle === "kurzcode" && this.dienst && this.kurzcode && this.schluessel) {
-      await this.dienst.antworten(this.kurzcode, this.schluessel, anfrageId, antwort);
-    } else {
-      gast.antwortCode = antwort;
-    }
+    if (gast.quelle === "qr") gast.antwortCode = antwort;
     this.melden();
   }
 
@@ -212,11 +258,13 @@ export class HostSitzung extends Beobachtbar {
   }
 
   /** Beendet die Sitzung für alle Geräte. */
-  beenden() {
+  beenden(grund = "Der Host hat die Sitzung beendet.") {
+    if (this.beendet) return;
     this.beendet = true;
+    queueMicrotask(() => this.onBeendet?.());
     this.schliessen();
     for (const g of this.gaeste) {
-      g.verbindung?.senden({ typ: "ende", grund: "Der Host hat die Sitzung beendet." });
+      g.verbindung?.senden({ typ: "ende", grund });
       g.verbindung?.schliessen();
     }
     if (this.dienst && this.kurzcode && this.schluessel) {
@@ -252,7 +300,9 @@ export class HostSitzung extends Beobachtbar {
         gast.verbindung?.schliessen();
         return;
       }
-      // Was das Gerät während der Trennung geändert hat, zuerst übernehmen.
+      // Ab jetzt entstehende Änderungen sammeln, bis der Stand übergeben ist.
+      gast.puffer = [];
+      // Was das Gerät noch nicht bestätigt bekommen hat (z. B. während einer Trennung), zuerst übernehmen.
       if (n.ausstehend?.einsatzId === this.einsatz.id && n.ausstehend.liste.length > 0) {
         try {
           const gespeichert = await aenderungenAnwenden(this.db, this.einsatz.id, n.ausstehend.liste, {
@@ -260,10 +310,24 @@ export class HostSitzung extends Beobachtbar {
           });
           this.verteilen(gespeichert, gast);
         } catch (e) {
+          if (!istDatenfehler(e)) {
+            // Nicht gespeichert: Verbindung neu aufbauen, das Gerät schickt die Änderungen dann erneut.
+            gast.puffer = undefined;
+            gast.verbindung?.schliessen();
+            throw e;
+          }
           console.warn("Lagekit: nachgereichte Änderungen abgelehnt", e);
         }
       }
-      gast.verbindung?.senden(await standErstellen(this.db, this.einsatz.id));
+      try {
+        gast.verbindung?.senden(await standErstellen(this.db, this.einsatz.id));
+      } catch (e) {
+        gast.puffer = undefined;
+        gast.verbindung?.schliessen();
+        throw e;
+      }
+      for (const liste of gast.puffer) gast.verbindung?.senden({ typ: "aenderungen", liste });
+      gast.puffer = undefined;
       gast.status = "verbunden";
       this.teilnehmerVerteilen();
       this.melden();
@@ -274,9 +338,17 @@ export class HostSitzung extends Beobachtbar {
       try {
         gespeichert = await aenderungenAnwenden(this.db, this.einsatz.id, n.liste, { konflikteLoesen: true });
       } catch (e) {
-        console.warn("Lagekit: Änderung eines Geräts abgelehnt", e);
+        if (istDatenfehler(e)) {
+          console.warn("Lagekit: Änderung eines Geräts abgelehnt", e);
+          gast.verbindung?.senden({ typ: "quittung", anzahl: n.liste.length });
+        } else {
+          // Unerwarteter Fehler: neu verbinden, dann schickt das Gerät die Änderungen erneut.
+          console.warn("Lagekit: Änderung eines Geräts nicht gespeichert, Verbindung wird neu aufgebaut", e);
+          gast.verbindung?.schliessen();
+        }
         return;
       }
+      gast.verbindung?.senden({ typ: "quittung", anzahl: n.liste.length });
       this.verteilen(gespeichert, gast);
       // Hat die Konfliktlösung etwas geändert (z. B. eine Nummer), bekommt auch der Absender die Fassung des Hosts.
       const korrigiert = gespeichert.filter((a, i) => !gleich(a, n.liste[i]));
@@ -286,13 +358,20 @@ export class HostSitzung extends Beobachtbar {
 
   private verteilen(liste: Aenderung[], ausser?: HostGast) {
     if (liste.length === 0) return;
-    for (const g of this.verbunden) {
-      if (g !== ausser) g.verbindung?.senden({ typ: "aenderungen", liste });
+    for (const g of this.gaeste) {
+      if (g === ausser) continue;
+      if (g.puffer) g.puffer.push(liste);
+      else if (g.status === "verbunden") g.verbindung?.senden({ typ: "aenderungen", liste });
     }
   }
 
   private teilnehmerVerteilen() {
-    const liste = [this.ich, ...this.verbunden.map((g) => g.teilnehmer)];
+    // Gäste sehen nur Sitzungs-Kennungen, nie die Geräte-Kennungen der anderen:
+    // Mit einer fremden Geräte-Kennung käme ein Gerät sonst ohne Freigabe wieder herein.
+    const liste = [
+      { ...this.ich, geraetId: this.sitzungsKennung },
+      ...this.verbunden.map((g) => ({ ...g.teilnehmer, geraetId: g.anfrageId })),
+    ];
     for (const g of this.verbunden) g.verbindung?.senden({ typ: "teilnehmer", liste });
   }
 }
@@ -318,7 +397,11 @@ export class GastSitzung extends Beobachtbar {
   private einsatzId: string | null;
   private abmelden: (() => void) | null = null;
   private abholen?: ReturnType<typeof setInterval>;
-  private gesendet = 0;
+  /** Einträge des Ausgangs, die mit dem Hallo verschickt wurden. */
+  private imHallo = 0;
+  /** Eingehende Nachrichten und der Ausgang laufen je in fester Reihenfolge. */
+  private eingang = new Reihe();
+  private ausgang = new Reihe();
 
   private constructor(
     private readonly db: LagekitDB,
@@ -345,7 +428,7 @@ export class GastSitzung extends Beobachtbar {
       }
       this.melden();
     };
-    verbindung.onNachricht = (n) => void this.empfangen(n);
+    verbindung.onNachricht = (n) => void this.eingang.einreihen(() => this.empfangen(n), "Nachricht des Hosts");
   }
 
   static async starten(
@@ -360,21 +443,37 @@ export class GastSitzung extends Beobachtbar {
     return new GastSitzung(db, ich, verbindung, code, gespeichert, dienst);
   }
 
+  /**
+   * Jede lokale Änderung kommt zuerst in den dauerhaften Ausgang und wird dann gesendet.
+   * Erst die Quittung des Hosts entfernt sie wieder; reißt die Verbindung vorher ab,
+   * geht sie beim nächsten Verbinden erneut mit.
+   */
   private beobachten(einsatzId: string) {
     this.abmelden?.();
-    this.abmelden = aenderungenBeobachten(this.db, einsatzId, (liste) => {
-      if (this.status === "verbunden" && this.verbindung.zustand === "offen") {
-        this.verbindung.senden({ typ: "aenderungen", liste });
-      } else {
-        void ablage.ausstehendAnhaengen(this.db, einsatzId, liste);
-      }
-    });
+    this.abmelden = aenderungenBeobachten(
+      this.db,
+      einsatzId,
+      (liste) =>
+        void this.ausgang.einreihen(async () => {
+          await ablage.ausstehendAnhaengen(this.db, einsatzId, liste);
+          if (this.status === "verbunden" && this.verbindung.zustand === "offen") {
+            this.verbindung.senden({ typ: "aenderungen", liste });
+          }
+        }, "Änderung nicht vorgemerkt"),
+      () => {
+        // Eigene Kopie gelöscht: Sitzung verlassen, beim Host bleibt alles erhalten.
+        void ablage.ausstehendSchreiben(this.db, null);
+        this.beenden("Der Einsatz wurde auf diesem Gerät gelöscht. Die Sitzung wurde verlassen.");
+      },
+    );
   }
 
-  private async halloSenden() {
-    const ausstehend = await ablage.ausstehendLesen(this.db);
-    this.gesendet = ausstehend?.liste.length ?? 0;
-    this.verbindung.senden({ typ: "hallo", geraetId: this.ich.geraetId, ausstehend });
+  private halloSenden() {
+    return this.ausgang.einreihen(async () => {
+      const ausstehend = await ablage.ausstehendLesen(this.db);
+      this.imHallo = ausstehend?.liste.length ?? 0;
+      this.verbindung.senden({ typ: "hallo", geraetId: this.ich.geraetId, ausstehend });
+    }, "Hallo nicht gesendet");
   }
 
   /** Weg mit QR-Code: Antwortcode des Hosts übernehmen. */
@@ -401,8 +500,16 @@ export class GastSitzung extends Beobachtbar {
           return;
         }
         await this.antwortSetzen(r.antwort);
-      } catch {
-        // Beim nächsten Durchlauf erneut versuchen.
+      } catch (e) {
+        if (e instanceof VermittlungFehler && e.status === 404) {
+          // Anfrage abgelaufen (z. B. Host neu geladen): neu anfragen.
+          clearInterval(this.abholen);
+          this.status = "getrennt";
+          this.meldung = "Anfrage abgelaufen.";
+          this.melden();
+          this.onVerloren?.();
+        }
+        // Sonst beim nächsten Durchlauf erneut versuchen.
       }
     }, ABHOL_INTERVALL_MS);
   }
@@ -439,19 +546,26 @@ export class GastSitzung extends Beobachtbar {
           this.beobachten(this.einsatz.id);
           await ablage.gastSchreiben(this.db, { ...this.gespeichert, einsatzId: this.einsatz.id });
         }
-        // Gesendete Änderungen sind beim Host; was seit dem Hallo dazukam, gleich nachschicken.
-        await ablage.ausstehendKuerzen(this.db, this.gesendet);
-        this.gesendet = 0;
-        const rest = await ablage.ausstehendLesen(this.db);
-        if (rest?.einsatzId === this.einsatz.id && rest.liste.length > 0) {
-          await aenderungenAnwenden(this.db, this.einsatz.id, rest.liste).catch(() => {});
-          this.verbindung.senden({ typ: "aenderungen", liste: rest.liste });
-          await ablage.ausstehendKuerzen(this.db, rest.liste.length);
-        }
-        this.status = "verbunden";
-        this.meldung = null;
+        const einsatzId = this.einsatz.id;
+        await this.ausgang.einreihen(async () => {
+          // Was mit dem Hallo ging, hat der Host übernommen. Was seitdem dazukam, hat der
+          // Stand eben überschrieben: hier wieder anwenden und gleich nachschicken.
+          await ablage.ausstehendKuerzen(this.db, this.imHallo);
+          this.imHallo = 0;
+          const rest = await ablage.ausstehendLesen(this.db);
+          if (rest && rest.einsatzId !== einsatzId) await ablage.ausstehendSchreiben(this.db, null);
+          else if (rest && rest.liste.length > 0) {
+            await aenderungenAnwenden(this.db, einsatzId, rest.liste).catch(() => {});
+            this.verbindung.senden({ typ: "aenderungen", liste: rest.liste });
+          }
+          this.status = "verbunden";
+          this.meldung = null;
+        }, "Ausgang nach dem Stand nicht gesendet");
         break;
       }
+      case "quittung":
+        await this.ausgang.einreihen(() => ablage.ausstehendKuerzen(this.db, n.anzahl), "Quittung nicht verarbeitet");
+        return;
       case "aenderungen":
         if (!this.einsatz) return;
         try {
@@ -493,7 +607,63 @@ function setzen(sitzung: Sitzung | null) {
   aktuell = sitzung;
   abmeldenAktuell = sitzung ? sitzung.abonnieren(melden) : null;
   if (sitzung?.rolle === "gast") sitzung.onVerloren = () => void wiederverbinden(sitzung);
+  if (sitzung?.rolle === "host") sitzung.onBeendet = () => aktuell === sitzung && setzen(null);
+  if (sitzung) kanal()?.postMessage("gestartet");
+  else {
+    // Erst freigeben, wenn das Ende gespeichert ist; sonst stellt ein wartender Tab die Sitzung wieder her.
+    const frei = sperreFreigeben;
+    void ablage.fertig().then(() => {
+      if (!aktuell) frei?.();
+    });
+  }
   melden();
+}
+
+// ---------------------------------------------------------------- Mehrere Tabs
+
+/**
+ * Nur ein Tab pro Gerät führt die Sitzung. Zwei Tabs mit derselben Geräte-Kennung
+ * würden sich beim Host gegenseitig verdrängen, und jeder Tab sieht nur seine
+ * eigenen Änderungen. Die Web-Locks-API sorgt dafür, dass genau ein Tab die Sitzung
+ * hält; die anderen zeigen einen Hinweis und übernehmen, sobald der Tab geschlossen wird.
+ */
+const SPERRE = "lagekit-sitzung";
+let sperreFreigeben: (() => void) | null = null;
+let andererTab = false;
+let tabKanal: BroadcastChannel | null | undefined;
+
+function kanal(): BroadcastChannel | null {
+  if (tabKanal === undefined) {
+    tabKanal = typeof BroadcastChannel === "undefined" ? null : new BroadcastChannel(SPERRE);
+  }
+  return tabKanal;
+}
+
+/** Holt die Sperre. Mit `warten` erst, wenn der andere Tab sie freigibt. */
+function sperreHolen(warten: boolean): Promise<boolean> {
+  if (sperreFreigeben) return Promise.resolve(true);
+  if (typeof navigator === "undefined" || !navigator.locks) return Promise.resolve(true);
+  return new Promise((ergebnis) => {
+    void navigator.locks.request(SPERRE, { ifAvailable: !warten }, (sperre) => {
+      if (!sperre) {
+        ergebnis(false);
+        return;
+      }
+      return new Promise<void>((frei) => {
+        sperreFreigeben = () => {
+          sperreFreigeben = null;
+          frei();
+        };
+        ergebnis(true);
+      });
+    });
+  });
+}
+
+class AndererTabFehler extends Error {
+  constructor() {
+    super("„Gemeinsam arbeiten“ läuft bereits in einem anderen Tab dieser App. Bitte dort weiterarbeiten.");
+  }
 }
 
 const WARTEZEITEN_MS = [1_000, 3_000, 5_000, 10_000, 20_000, 30_000];
@@ -537,8 +707,12 @@ export const sitzungen = {
   aktuell: () => aktuell,
   setzen,
 
+  /** Läuft die Sitzung in einem anderen Tab? Dann wird hier nichts abgeglichen. */
+  andererTab: () => andererTab,
+
   /** Startet als Host. */
-  leiten(db: LagekitDB, einsatz: Einsatz, ich: Teilnehmer, dienst?: Vermittlung) {
+  async leiten(db: LagekitDB, einsatz: Einsatz, ich: Teilnehmer, dienst?: Vermittlung) {
+    if (!(await sperreHolen(false))) throw new AndererTabFehler();
     const host = new HostSitzung(db, einsatz, ich, dienst);
     setzen(host);
     void host.kurzcodeAnfordern();
@@ -547,6 +721,7 @@ export const sitzungen = {
 
   /** Tritt bei; beim Kurzcode-Weg wird die Anfrage gleich gesendet. */
   async beitreten(db: LagekitDB, ich: Teilnehmer, weg: "kurzcode" | "qr", kurzcode: string, dienst?: Vermittlung) {
+    if (!(await sperreHolen(false))) throw new AndererTabFehler();
     dienstFuerWiederverbinden = dienst;
     const bisher = await ablage.gastLesen(db);
     const gast = await GastSitzung.starten(
@@ -568,9 +743,21 @@ export const sitzungen = {
   },
 
   /** Stellt nach dem Laden der Seite eine gespeicherte Sitzung wieder her. */
-  async wiederherstellen(db: LagekitDB, dienst?: Vermittlung) {
-    if (aktuell) return;
+  async wiederherstellen(db: LagekitDB, dienst?: Vermittlung): Promise<void> {
+    if (aktuell || andererTab) return;
     dienstFuerWiederverbinden = dienst;
+    // Startet ein anderer Tab eine Sitzung, prüft dieser Tab erneut (und zeigt den Hinweis).
+    const k = kanal();
+    if (k && !k.onmessage) k.onmessage = () => void sitzungen.wiederherstellen(db, dienst);
+    if (!(await ablage.hostLesen(db)) && !(await ablage.gastLesen(db))) return;
+    if (!(await sperreHolen(false))) {
+      andererTab = true;
+      melden();
+      await sperreHolen(true);
+      andererTab = false;
+      melden();
+    }
+    if (aktuell) return;
     const host = await ablage.hostLesen(db);
     if (host) {
       const einsatz = await db.einsaetze.get(host.einsatzId);
@@ -584,7 +771,10 @@ export const sitzungen = {
       }
     }
     const gast = await ablage.gastLesen(db);
-    if (!gast) return;
+    if (!gast) {
+      sperreFreigeben?.(); // Die Sitzung im anderen Tab wurde beendet.
+      return;
+    }
     const ich = await ichLesen(db);
     try {
       const sitzung = await GastSitzung.starten(db, ich, gast, dienst);
@@ -602,6 +792,7 @@ export const sitzungen = {
       melden();
     } catch {
       // Kein Netz: beim nächsten Laden erneut versuchen.
+      if (!aktuell) sperreFreigeben?.();
     }
   },
 };

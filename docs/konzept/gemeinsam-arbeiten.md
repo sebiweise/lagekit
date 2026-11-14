@@ -1,4 +1,6 @@
-# Gemeinsam an einem Einsatz arbeiten
+# Gemeinsam an einem Einsatz arbeiten (Beta)
+
+> **Beta:** Die Funktion ist in der App als „Beta“ gekennzeichnet, bis sie in einer Übung mit mehreren Geräten erprobt ist.
 
 Mehrere Geräte (Tablets, Handys, ELW-Rechner) arbeiten am selben Einsatz. Ein Gerät leitet die Sitzung (Host), weitere Geräte treten bei. Seite in der App: `/sitzung/` („Gemeinsam“).
 
@@ -38,13 +40,19 @@ Im Vercel-Projekt Upstash Redis aus dem Marketplace verbinden. Die Funktion lies
 - **Neuladen:** Host und Gast speichern ihre Sitzung in den Geräteeinstellungen und stellen sie nach dem Laden wieder her. Der Host behält seinen Kurzcode.
 - **Wiederverbinden:** Reißt die Verbindung ab, verbindet sich ein Gast auf dem Kurzcode-Weg selbst neu (Wartezeit wachsend bis 30 s). Geräte, die der Host in dieser Sitzung schon zugelassen hat, kommen ohne erneute Freigabe wieder rein („wieder aufgenommen“). Erst Trennen oder Ablehnen durch den Host nimmt diese Freigabe zurück.
 - **Abriss erkennen:** Beide Seiten senden alle 2 s ein Lebenszeichen; nach 8 s Stille gilt die Verbindung als abgerissen.
-- **Änderungen während einer Trennung:** Der Gast sammelt sie und schickt sie beim Wiederverbinden mit dem ersten Gruß an den Host, bevor er dessen Stand übernimmt. Die Sammlung übersteht auch ein Neuladen.
+- **Keine Änderung geht unterwegs verloren:** Jede Änderung eines Gasts kommt zuerst in einen dauerhaften Ausgang und wird dann gesendet. Erst die Quittung des Hosts entfernt sie. Was bei einem Abriss unterwegs war oder während der Trennung entstand, schickt der Gast beim Wiederverbinden mit dem ersten Gruß an den Host, bevor er dessen Stand übernimmt. Der Ausgang übersteht auch ein Neuladen.
+- **Übergabe des Stands:** Änderungen, die entstehen, während der Host einem Gerät seinen Stand schickt, hält er zurück und schickt sie direkt danach. Nachrichten werden auf beiden Seiten streng nacheinander verarbeitet.
+- **Einsatz löschen:** Löscht ein Gast den Einsatz auf seinem Gerät, verlässt er die Sitzung; beim Host und den anderen Geräten bleibt alles erhalten. Löscht der Host den Einsatz, endet die Sitzung, und die Gäste behalten ihre Kopie. Ein Gerät kann weder den Einsatz noch Zeilen anderer Einsätze auf einem anderen Gerät löschen oder überschreiben.
+- **Mehrere Tabs:** Nur ein Tab pro Browser führt die Sitzung (Web Locks). Andere Tabs zeigen einen Hinweis und übernehmen automatisch, sobald der erste Tab geschlossen wird.
+- **Freigaben:** Gäste sehen von den anderen Teilnehmern nur Sitzungs-Kennungen, nie deren Geräte-Kennungen. Ein getrenntes Gerät kann sich so nicht als ein anderes, bereits zugelassenes Gerät ausgeben.
+- **Vermittlungsdienst:** Höchstens 600 Aufrufe pro Minute und IP-Adresse (alle Geräte im ELW teilen sich meist eine), Beitrittsanfragen zusätzlich höchstens 30 pro Minute. Ein erratener Kurzcode erlaubt nur eine Anfrage, die der Host sieht und ablehnen kann.
 - **Konflikte:** Tools können im Manifest eine Konfliktlösung je Tabelle angeben (`abgleich`); der Host wendet sie auf alle eingehenden Zeilen an und verteilt das Ergebnis. Das Einsatztagebuch vergibt so bei doppelten Nummern die nächste freie.
 
 ## Grenzen (Stand jetzt)
 
 - Auf dem QR-Weg ist nach einem Abriss erneutes Scannen nötig (es gibt keinen Kanal für den neuen Verbindungsaufbau). Der Host muss das Gerät aber nicht erneut zulassen.
 - iPhones trennen die Verbindung, wenn der Bildschirm gesperrt wird; auf dem Kurzcode-Weg verbinden sie sich danach selbst neu.
-- Zwei Geräte, die dieselbe Zeile (z. B. denselben Aufenthalt) gleichzeitig ändern: Es gilt die Änderung, die zuletzt beim Host ankommt.
-- Die Sitzung gilt je Browser; mehrere offene Tabs desselben Browsers sind nicht vorgesehen.
+- Zwei Geräte, die dieselbe Zeile (z. B. denselben Aufenthalt) gleichzeitig ändern: Es gilt die Änderung, die zuletzt beim Host ankommt. Das gilt auch für eine Änderung, die nach einem Abriss erneut geschickt wird.
+- Änderungen in einem zweiten Tab, der die Sitzung nicht führt, werden nicht abgeglichen (der Tab weist darauf hin).
+- Wer den Kurzcode kennt, kann Anfragen schicken; zugelassen wird aber nur, wen der Host freigibt. Der Vermittlungsdienst sieht die Verbindungsdaten (keine Einsatzdaten) und ist damit Vertrauensanker des Kurzcode-Wegs; wer das nicht möchte, nutzt den QR-Weg.
 - Ob ein Handy-Hotspot Geräte untereinander verbindet, hängt vom Gerät ab und ist im Praxistest zu prüfen.
