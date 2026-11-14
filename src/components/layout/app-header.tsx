@@ -13,6 +13,7 @@ export function AppHeader() {
   const links = [
     { href: "/", text: t.nav.start },
     { href: "/einsatz/", text: t.nav.einsatz },
+    { href: "/sitzung/", text: t.nav.sitzung },
   ];
 
   return (

@@ -34,6 +34,7 @@ export const de = {
   nav: {
     start: "Start",
     einsatz: "Einsatz",
+    sitzung: "Gemeinsam",
     keinEinsatz: "Kein Einsatz aktiv",
   },
   einsatz: {
