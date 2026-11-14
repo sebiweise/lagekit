@@ -34,6 +34,15 @@ describe("suchUrl", () => {
     );
   });
 
+  it("baut BAM- und OSM-Suchen", () => {
+    expect(suchUrl(tool("bam-dgg"), "UN 1005")).toBe(
+      "https://www.dgg.bam.de/dgginfo/search/query?value=UN%201005&partialWord=true&results=all&lang=de",
+    );
+    expect(suchUrl(tool("openstreetmap"), "Rathaus", "Kassel")).toBe(
+      "https://www.openstreetmap.org/search?query=Rathaus%20Kassel",
+    );
+  });
+
   it("liefert null ohne Direktsuche", () => {
     expect(suchUrl(tool("gestis"), "Chlor")).toBeNull();
   });
@@ -78,6 +87,7 @@ describe("vorschlagen", () => {
     const { vorgeschlagen, weitere } = vorschlagen(externeTools, { stichwort: "TH VU Pkw", ort: "A 7" });
     const ids = vorgeschlagen.map((t) => t.id);
     expect(ids.slice(0, 2)).toEqual(["adac-rettungskarten", "euro-rescue"]);
+    expect(ids).toContain("openstreetmap");
     expect(ids).toContain("google-maps");
     expect(ids).not.toContain("gestis");
     expect([...vorgeschlagen, ...weitere].length).toBe(externeTools.length);

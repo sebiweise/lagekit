@@ -42,6 +42,8 @@ export function Recherche() {
   if (einsatz === undefined) return null;
   const ort = ortEingabe ?? einsatz?.ort ?? "";
   const { vorgeschlagen, weitere } = vorschlagen(externeTools, einsatz);
+  // Direktsuchen passend zum Einsatz zuerst.
+  const direktTools = [...vorgeschlagen, ...weitere].filter((t) => t.suche);
 
   function gestartet(tool: ExternesTool, url: string, art: Suche["art"]) {
     if (art === "kopiert") {
@@ -82,8 +84,8 @@ export function Recherche() {
         <CardHeader>
           <CardTitle>Suchen</CardTitle>
           <CardDescription>
-            Begriff eingeben, dann beim passenden Tool auf „Suchen“ tippen. Tools ohne Direktsuche öffnen ihre
-            Startseite, der Begriff liegt dann in der Zwischenablage zum Einfügen.
+            Begriff eingeben und eine Direktsuche antippen. Bei Tools ohne Direktsuche (weiter unten) kopiert
+            Lagekit den Begriff und öffnet die Startseite; dort nur noch einfügen.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-[2fr_1fr]">
@@ -107,6 +109,35 @@ export function Recherche() {
               placeholder="Einsatzort"
               autoComplete="off"
             />
+          </div>
+          <div className="flex flex-col gap-2 sm:col-span-2" data-testid="direktsuche">
+            <span className="text-sm font-medium">Direkt suchen in</span>
+            <div className="flex flex-wrap gap-2">
+              {direktTools.map((tool) => {
+                const url = begriff.trim() ? suchUrl(tool, begriff, ort) : null;
+                return url ? (
+                  <a
+                    key={tool.id}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={buttonVariants({ size: "sm" })}
+                    onClick={() => gestartet(tool, url, "direkt")}
+                  >
+                    <Search aria-hidden />
+                    {tool.name}
+                  </a>
+                ) : (
+                  <span key={tool.id} className={buttonVariants({ size: "sm", variant: "secondary", className: "opacity-50" })} aria-disabled>
+                    <Search aria-hidden />
+                    {tool.name}
+                  </span>
+                );
+              })}
+            </div>
+            {!begriff.trim() && (
+              <span className="text-sm text-muted-foreground">Erst einen Suchbegriff eingeben.</span>
+            )}
           </div>
           {!einsatz && (
             <p className="text-sm text-muted-foreground sm:col-span-2">

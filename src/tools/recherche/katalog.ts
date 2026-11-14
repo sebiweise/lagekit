@@ -49,6 +49,19 @@ const PRUEFTAG = "2026-11-14";
 
 export const externeTools: ExternesTool[] = [
   {
+    id: "bam-dgg",
+    name: "Gefahrgut-Datenbank (DGG-Info)",
+    anbieter: "BAM",
+    beschreibung: "Gefahrgutdaten nach UN-Nummer, Name, Synonym, Formel oder CAS-Nummer.",
+    url: "https://www.dgg.bam.de/",
+    themen: ["gefahrstoff"],
+    suche: {
+      muster: "https://www.dgg.bam.de/dgginfo/search/query?value={q}&partialWord=true&results=all&lang=de",
+      begriff: "UN-Nummer, Stoffname oder CAS-Nummer",
+    },
+    geprueft: { am: PRUEFTAG, wie: "Parameter `value` in der BAM-Hilfe dokumentiert (dgg.bam.de/quickinfo/help/unnumber)." },
+  },
+  {
     id: "gestis",
     name: "GESTIS-Stoffdatenbank",
     anbieter: "IFA / DGUV",
@@ -199,6 +212,23 @@ export const externeTools: ExternesTool[] = [
       begriff: "Adresse oder Objekt",
     },
     geprueft: { am: PRUEFTAG, wie: "Muster aus der Google-Dokumentation „Maps URLs“ (Stand 09.11.2026)." },
+  },
+  {
+    id: "openstreetmap",
+    name: "OpenStreetMap",
+    anbieter: "OpenStreetMap",
+    beschreibung: "Freie Karte: Adresse, Objekt oder Straße am Einsatzort suchen.",
+    url: "https://www.openstreetmap.org/",
+    themen: ["karte"],
+    suche: {
+      muster: "https://www.openstreetmap.org/search?query={q}",
+      begriff: "Adresse oder Objekt",
+      ortAnhaengen: true,
+    },
+    geprueft: {
+      am: PRUEFTAG,
+      wie: "Auf Wunsch aufgenommen. Suchadresse der OSM-Website; automatischer Abruf gesperrt, bitte im Browser bestätigen.",
+    },
   },
 ];
 

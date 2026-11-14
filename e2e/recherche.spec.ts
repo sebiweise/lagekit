@@ -50,10 +50,20 @@ test("Externe Tools: Vorschläge zum Einsatz, Direktsuche und Kopieren landen im
 
   const verlauf = page.getByTestId("verlauf-eintrag");
   await expect(verlauf).toHaveCount(2);
-  await expect(verlauf.first()).toContainText("UN 1005");
-  await expect(verlauf.nth(1)).toContainText("Abschleppdienst in Kassel");
+
+  // Schnellknopf im Suchfeld: Gefahrgut-Datenbank der BAM.
+  await page.getByLabel("Suchbegriff").fill("1005");
+  const [bam] = await Promise.all([
+    page.waitForEvent("popup"),
+    page.getByTestId("direktsuche").getByRole("link", { name: "Gefahrgut-Datenbank (DGG-Info)" }).click(),
+  ]);
+  expect(bam.url()).toBe("https://www.dgg.bam.de/dgginfo/search/query?value=1005&partialWord=true&results=all&lang=de");
+  await bam.close();
+  await expect(verlauf).toHaveCount(3);
+  await expect(verlauf.nth(1)).toContainText("UN 1005");
+  await expect(verlauf.nth(2)).toContainText("Abschleppdienst in Kassel");
 
   // Verlauf übersteht ein Neuladen.
   await page.reload();
-  await expect(page.getByTestId("verlauf-eintrag")).toHaveCount(2);
+  await expect(page.getByTestId("verlauf-eintrag")).toHaveCount(3);
 });
