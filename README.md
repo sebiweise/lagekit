@@ -8,7 +8,7 @@ Projektplan, Meilensteine und Architektur: [docs/PLAN.md](docs/PLAN.md).
 
 ## Stand
 
-Meilensteine **M0 Gerüst**, **M1 Einsatz und Export** und **M2 Strahlenexposition**: Die App startet offline, Einsätze lassen sich verwalten und per JSON-Sicherung auf ein anderes Gerät übertragen, und die Dosisüberwachung ersetzt die Whiteboard-Tabelle.
+Meilensteine **M0** bis **M3**: Die App startet offline, Einsätze lassen sich verwalten und per JSON-Sicherung auf ein anderes Gerät übertragen, die Dosisüberwachung ersetzt die Whiteboard-Tabelle und das Einsatztagebuch schreibt einen Übungsabend digital mit. Als Nächstes folgt M4 (Praxistest und v1.0).
 
 - Statischer Export mit Next.js (`out/`), kein Server, keine extern geladenen Schriften oder Skripte
 - Service Worker (Serwist) mit Precache aller Dateien, Web-App-Manifest, installierbar
@@ -19,9 +19,9 @@ Meilensteine **M0 Gerüst**, **M1 Einsatz und Export** und **M2 Strahlenexpositi
 - JSON-Sicherung je Einsatz oder für alles; der Import ergänzt vorhandene Daten, bei doppelten Einsätzen gewinnt die neuere Fassung
 - CSV-Hilfsfunktion (Semikolon, UTF-8 mit BOM) für die Tool-Exporte
 - Tool **Strahlenexposition** unter `/tools/strahlenexposition/`: Personen und Trupps, laufende und nachgetragene Aufenthalte, Dosis D = Ḣ · t mit sichtbarem Rechenweg, Dosimeterwerte, Ampel gegen einstellbare Richtwerte, Restzeit, Vorplanung, Dosisnachweis zum Drucken (PDF) und CSV. Fachliche Grundlage: [docs/fachlich/strahlenexposition.md](docs/fachlich/strahlenexposition.md)
+- Tool **Einsatztagebuch** unter `/tools/einsatztagebuch/`: Schnellerfassung (Enter speichert, Zeit automatisch oder als HH:MM nachgetragen), Arten per Alt+1 bis Alt+5, von/an und Verfasser bleiben stehen, Einträge sind weder lösch- noch änderbar, Korrektur als neuer Eintrag mit Verweis, Filter nach Art, Volltextsuche (`/`), Druckfassung mit Kopf auf jeder Seite und Seitenzahlen (PDF), CSV
 - Tests: Vitest für Logik und Datenbank, Playwright startet die App bei abgeschaltetem Server
 
-Das Einsatztagebuch (M3) folgt.
 
 ## Daten und Datenschutz
 

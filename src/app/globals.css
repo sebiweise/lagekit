@@ -102,6 +102,11 @@
 @media print {
   @page {
     margin: 15mm;
+    /* Seitenzahlen; Browser ohne Seitenrandfelder lassen sie einfach weg. */
+    @bottom-right {
+      content: "Seite " counter(page) " von " counter(pages);
+      font-size: 9pt;
+    }
   }
   :root {
     --background: oklch(1 0 0);

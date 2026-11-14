@@ -39,4 +39,11 @@ export const migrations: Migration[] = [
       dosisAufenthalte: "id, einsatzId, personId",
     },
   },
+  {
+    version: 4,
+    stores: {
+      // Tool Einsatztagebuch (src/tools/einsatztagebuch). Einträge werden nie geändert.
+      tagebuchEintraege: "id, einsatzId, [einsatzId+nr]",
+    },
+  },
 ];
