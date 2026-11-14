@@ -24,4 +24,11 @@ export const migrations: Migration[] = [
       einsaetze: "id, status, beginn",
     },
   },
+  {
+    version: 2,
+    stores: {
+      // Geräteeinstellungen als Schlüssel-Wert-Paare, z. B. der aktive Einsatz.
+      einstellungen: "schluessel",
+    },
+  },
 ];

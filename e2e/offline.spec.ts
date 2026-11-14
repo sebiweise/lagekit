@@ -1,28 +1,15 @@
 import type { Server } from "node:http";
-import type { AddressInfo } from "node:net";
-import path from "node:path";
 import { expect, test } from "@playwright/test";
-
-const OUT_DIR = path.resolve(__dirname, "../out");
+import { starteServer, stoppeServer } from "./server";
 
 let server: Server;
 let baseURL: string;
 
 test.beforeEach(async () => {
-  // Dynamischer Import, weil Playwright Testdateien als CommonJS lädt.
-  const { serveOut } = await import("../scripts/serve-out.mjs");
-  server = await serveOut({ root: OUT_DIR, port: 0 });
-  baseURL = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  ({ server, baseURL } = await starteServer());
 });
 
-test.afterEach(async () => {
-  if (server.listening) await new Promise((resolve) => server.close(resolve));
-});
-
-function stopServer() {
-  server.closeAllConnections();
-  return new Promise((resolve) => server.close(resolve));
-}
+test.afterEach(() => stoppeServer(server));
 
 test("startet nach dem ersten Laden ohne Netz", async ({ page, context }) => {
   await page.goto(`${baseURL}/`);
@@ -31,7 +18,7 @@ test("startet nach dem ersten Laden ohne Netz", async ({ page, context }) => {
   await expect(page.getByTestId("app-version")).toContainText("Version");
 
   // Netz weg: Server aus und Browser offline.
-  await stopServer();
+  await stoppeServer(server);
   await context.setOffline(true);
 
   await page.reload();
