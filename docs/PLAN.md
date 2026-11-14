@@ -153,9 +153,10 @@ Alle vier Entscheidungen sind getroffen.
 
 Danach beginnt M0:
 
-- [ ] Öffentliches Repo anlegen mit README, Lizenz, Haftungshinweis und diesem Plan unter `docs/`
-- [ ] Next.js-Projekt mit Static Export, Tailwind, shadcn/ui aufsetzen
-- [ ] Service Worker und Manifest einrichten, Offline-Test in Playwright schreiben
-- [ ] Dexie mit Einsatz-Tabelle und Migrationsgerüst anlegen
-- [ ] CI (Lint, Typen, Tests) und Deployment einrichten
+- [x] Repo mit README, Lizenz, Haftungshinweis und diesem Plan unter `docs/`
+- [x] Next.js-Projekt mit Static Export, Tailwind, shadcn/ui aufsetzen
+- [x] Service Worker und Manifest einrichten, Offline-Test in Playwright schreiben
+- [x] Dexie mit Einsatz-Tabelle und Migrationsgerüst anlegen
+- [x] CI (Lint, Typen, Tests) einrichten
+- [ ] Deployment einrichten (Hosting noch offen)
 - [ ] FwDV 500 als fachliche Grundlage für das Strahlenexpositions-Tool in `docs/` zusammenfassen, Richtwerte prüfen
