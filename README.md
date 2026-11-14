@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Lagekit
 
-## Getting Started
+Offline-Toolbox für Einsatzkräfte im Einsatzleitwagen (ELW): Erfassung, Dokumentation und Rechenhilfen im Katastrophenschutz. Lagekit wird einmal im Browser geöffnet und läuft danach vollständig ohne Netz. Alle Daten bleiben auf dem Gerät.
 
-First, run the development server:
+> **Haftungshinweis:** Lagekit ist ein Hilfsmittel zur Dokumentation und Berechnung. Es ersetzt weder Messgeräte wie Dosimeter noch die Verantwortung der Einsatzleitung. Alle Ergebnisse sind vor einer Entscheidung zu prüfen. Die Nutzung erfolgt ohne Gewähr (siehe [Lizenz](LICENSE), Abschnitte 15 und 16).
+
+Projektplan, Meilensteine und Architektur: [docs/PLAN.md](docs/PLAN.md).
+
+## Stand
+
+Meilenstein **M0 Gerüst**: leere App, die nach dem ersten Laden offline startet.
+
+- Statischer Export mit Next.js (`out/`), kein Server, keine extern geladenen Schriften oder Skripte
+- Service Worker (Serwist) mit Precache aller Dateien, Web-App-Manifest, installierbar
+- Anzeige "Offline bereit", installierte Version, Netzstatus, dauerhafter Speicher, Gerätezeit
+- Updates werden erst nach Klick auf "Jetzt aktualisieren" aktiv, nie mitten im Einsatz
+- Lokale Datenbank (IndexedDB über Dexie) mit Einsatz-Tabelle und Migrationsgerüst
+- Tests: Vitest für Logik und Datenbank, Playwright startet die App bei abgeschaltetem Server
+
+Die Tools Strahlenexposition (M2) und Einsatztagebuch (M3) folgen.
+
+## Daten und Datenschutz
+
+Alle Eingaben werden nur in IndexedDB im Browser des Geräts gespeichert. Es gibt kein Konto, kein Backend und kein Tracking. Für Exporte und ihre Weitergabe ist die nutzende Einheit verantwortlich. Browser können lokale Daten löschen (etwa beim Leeren des Verlaufs); Lagekit fordert deshalb dauerhaften Speicher an und sollte als App installiert werden.
+
+## Entwicklung
+
+Voraussetzungen: Node.js 22 und pnpm (Version über `packageManager` in `package.json`, z. B. mit `corepack enable`).
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+pnpm dev          # Entwicklungsserver auf http://localhost:3000 (ohne Service Worker)
+pnpm build        # Static Export nach out/ und Service Worker out/sw.js
+pnpm start        # out/ lokal ausliefern (mit Service Worker)
+pnpm lint
+pnpm typecheck
+pnpm test         # Vitest
+pnpm test:e2e     # Playwright, braucht vorher pnpm build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Aufbau
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+src/
+  app/                 Routen (Startseite, Hinweise)
+  core/
+    db/                Dexie-Instanz und Migrationen
+    einsatz/           Einsatz-Schema (Zod) und Datenzugriff
+    pwa/               Service Worker, Registrierung, Status-Anzeige
+  tools/               Tool-Module; Anmeldung über registry.ts
+  components/ui/       Bedienelemente (shadcn/ui)
+  i18n/                Oberflächentexte
+scripts/               Service-Worker-Build, lokaler Server
+e2e/                   Playwright-Tests
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Neue Tools bekommen einen eigenen Ordner unter `src/tools/<tool>/` mit `manifest.ts`, `schema.ts`, `logic.ts` (reine, getestete Rechenfunktionen), `components/` und `export.ts` und werden in `src/tools/registry.ts` eingetragen. Neue Tabellen kommen als neue Version in `src/core/db/migrations.ts` dazu; bestehende Versionen werden nie geändert.
 
-## Learn More
+## Selbst hosten
 
-To learn more about Next.js, take a look at the following resources:
+`pnpm build` erzeugt in `out/` reine statische Dateien, die jeder Webserver ausliefern kann. Der Service Worker funktioniert nur über HTTPS oder auf `localhost`. Die App muss im Wurzelverzeichnis der Domain liegen (`/`), nicht in einem Unterordner.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Lizenz
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+[GNU Affero General Public License v3.0](LICENSE). Änderungen und Ableger bleiben damit offen.
