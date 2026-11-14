@@ -8,12 +8,17 @@ import { Label } from "@/components/ui/label";
 import { getDb } from "@/core/db/db";
 import { zahlLesen } from "@/lib/zahl";
 import { vonDatetimeLocal } from "@/lib/zeit";
-import { aufenthaltNachtragen } from "../repository";
+import { aufenthaltNachtragen, truppNachtragen } from "../repository";
 import type { OdlEinheit } from "../schema";
 import { OdlEingabe } from "./odl-eingabe";
 
-/** Abgeschlossenen Aufenthalt nachtragen, z. B. von der Whiteboard-Tabelle. */
-export function AufenthaltNachtragen({ personId }: { personId: string }) {
+/**
+ * Abgeschlossenen Aufenthalt nachtragen, z. B. von der Whiteboard-Tabelle.
+ * Bei mehreren Personen (Trupp) gilt der Aufenthalt für alle; Dosimeterwerte trägt
+ * man danach je Person ein.
+ */
+export function AufenthaltNachtragen({ idPrefix, personIds }: { idPrefix: string; personIds: string[] }) {
+  const einzeln = personIds.length === 1;
   const [ort, setOrt] = useState("");
   const [beginn, setBeginn] = useState("");
   const [ende, setEnde] = useState("");
@@ -21,7 +26,7 @@ export function AufenthaltNachtragen({ personId }: { personId: string }) {
   const [einheit, setEinheit] = useState<OdlEinheit>("µSv/h");
   const [dosimeter, setDosimeter] = useState("");
   const [fehler, setFehler] = useState<string | null>(null);
-  const p = `nachtrag-${personId}`;
+  const p = idPrefix;
 
   async function absenden(event: FormEvent) {
     event.preventDefault();
@@ -34,14 +39,12 @@ export function AufenthaltNachtragen({ personId }: { personId: string }) {
       return;
     }
     try {
-      await aufenthaltNachtragen(getDb(), personId, {
-        ort,
-        odl: wert,
-        odlEinheit: einheit,
-        beginn: von,
-        ende: bis,
-        dosimeterMsv: zahlLesen(dosimeter),
-      });
+      const eingabe = { ort, odl: wert, odlEinheit: einheit, beginn: von, ende: bis };
+      if (einzeln) {
+        await aufenthaltNachtragen(getDb(), personIds[0], { ...eingabe, dosimeterMsv: zahlLesen(dosimeter) });
+      } else {
+        await truppNachtragen(getDb(), personIds, eingabe);
+      }
       setOrt("");
       setBeginn("");
       setEnde("");
@@ -67,13 +70,15 @@ export function AufenthaltNachtragen({ personId }: { personId: string }) {
         <Input id={`${p}-ende`} type="datetime-local" required value={ende} onChange={(e) => setEnde(e.target.value)} />
       </div>
       <OdlEingabe id={`${p}-odl`} wert={odl} einheit={einheit} onWert={setOdl} onEinheit={setEinheit} />
-      <div className="flex flex-col gap-2">
-        <Label htmlFor={`${p}-dosimeter`}>Dosimeter abgelesen (mSv, optional)</Label>
-        <Input id={`${p}-dosimeter`} inputMode="decimal" autoComplete="off" value={dosimeter} onChange={(e) => setDosimeter(e.target.value)} />
-      </div>
+      {einzeln && (
+        <div className="flex flex-col gap-2">
+          <Label htmlFor={`${p}-dosimeter`}>Dosimeter abgelesen (mSv, optional)</Label>
+          <Input id={`${p}-dosimeter`} inputMode="decimal" autoComplete="off" value={dosimeter} onChange={(e) => setDosimeter(e.target.value)} />
+        </div>
+      )}
       <div className="sm:col-span-2">
         <Button type="submit" variant="secondary">
-          <Plus /> Aufenthalt nachtragen
+          <Plus /> {einzeln ? "Aufenthalt nachtragen" : "Für den Trupp nachtragen"}
         </Button>
       </div>
       {fehler && (

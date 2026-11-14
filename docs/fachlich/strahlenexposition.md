@@ -12,7 +12,8 @@ D_gesamt = Σ Ḣᵢ · tᵢ           Summe über alle Aufenthalte einer Person
 t_max = (D_Richtwert − D_bisher) / Ḣ    Vorplanung: zulässige Aufenthaltsdauer
 ```
 
-- Gerechnet wird intern in mSv und Stunden. Die ODL wird mit ihrer Einheit (µSv/h oder mSv/h) gespeichert und erst beim Rechnen umgerechnet (1 mSv/h = 1000 µSv/h).
+- Gerechnet wird intern in mSv und Stunden. Die ODL wird mit ihrer Einheit (µSv/h, mSv/h oder Sv/h) gespeichert und erst beim Rechnen umgerechnet (1 Sv/h = 1000 mSv/h, 1 mSv/h = 1000 µSv/h).
+- Ändert sich die ODL oder der Ort während eines Aufenthalts, endet der laufende Aufenthalt und ein neuer beginnt zum selben Zeitpunkt. Das geht je Person oder für einen ganzen Trupp.
 - Laufende Aufenthalte werden bis zur aktuellen Gerätezeit gerechnet.
 - Jede Dosis zeigt ihren Rechenweg, z. B. `D = 0,600 mSv/h × 0,5000 h = 0,300 mSv`.
 - Ein abgelesener Dosimeterwert wird zusätzlich gespeichert und neben dem berechneten Wert angezeigt. Für die Ampel zählt der höhere der beiden Werte.

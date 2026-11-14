@@ -20,7 +20,14 @@ export type Ampel = "gruen" | "gelb" | "rot";
 
 /** Rechnet eine ODL in mSv/h um. */
 export function odlInMsvProStunde(odl: number, einheit: OdlEinheit): number {
-  return einheit === "mSv/h" ? odl : odl / 1000;
+  switch (einheit) {
+    case "µSv/h":
+      return odl / 1000;
+    case "mSv/h":
+      return odl;
+    case "Sv/h":
+      return odl * 1000;
+  }
 }
 
 /** Dauer zwischen zwei Zeitpunkten in Stunden; nie negativ. */

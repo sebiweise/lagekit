@@ -13,6 +13,7 @@ import { useAufenthalte, usePersonen, useRichtwerte } from "../hooks";
 import { gesamtdosis } from "../logic";
 import { aufenthaltBeenden } from "../repository";
 import type { Aufenthalt, Person } from "../schema";
+import { AufenthaltNachtragen } from "./aufenthalt-nachtragen";
 import { AufenthaltStart } from "./aufenthalt-start";
 import { PersonFormular } from "./person-formular";
 import { PersonKarte } from "./person-karte";
@@ -85,10 +86,30 @@ export function Strahlenexposition() {
                   />
                 )}
                 {laufendeIds.length > 0 && (
-                  <Button variant="destructive" onClick={() => void aufenthaltBeenden(getDb(), laufendeIds)}>
-                    <Square /> Trupp beenden ({laufendeIds.length})
-                  </Button>
+                  <>
+                    <Button variant="destructive" onClick={() => void aufenthaltBeenden(getDb(), laufendeIds)}>
+                      <Square /> Trupp beenden ({laufendeIds.length})
+                    </Button>
+                    <details className="rounded-md border p-3">
+                      <summary className="cursor-pointer font-medium">Neuer Messwert oder Ortswechsel für den Trupp</summary>
+                      <div className="mt-3">
+                        <AufenthaltStart
+                          idPrefix={`trupp-${index}-wechsel`}
+                          personIds={laufendeIds}
+                          beschriftung="Neuen Wert für den Trupp übernehmen"
+                          wechseln
+                          ortVorgabe={aufenthaltOrt(jePerson, laufendeIds[0])}
+                        />
+                      </div>
+                    </details>
+                  </>
                 )}
+                <details className="rounded-md border p-3">
+                  <summary className="cursor-pointer font-medium">Aufenthalt für den Trupp nachtragen</summary>
+                  <div className="mt-3">
+                    <AufenthaltNachtragen idPrefix={`trupp-${index}-nachtrag`} personIds={mitglieder.map((p) => p.id)} />
+                  </div>
+                </details>
               </CardContent>
             </Card>
           );
@@ -162,6 +183,10 @@ export function Strahlenexposition() {
       </details>
     </div>
   );
+}
+
+function aufenthaltOrt(jePerson: Map<string, Aufenthalt[]>, personId: string): string {
+  return jePerson.get(personId)?.find((a) => a.ende === null)?.ort ?? "";
 }
 
 function gruppiereTrupps(personen: Person[]) {

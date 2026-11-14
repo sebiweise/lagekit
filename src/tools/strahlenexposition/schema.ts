@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const odlEinheitSchema = z.enum(["µSv/h", "mSv/h"]);
+export const odlEinheitSchema = z.enum(["µSv/h", "mSv/h", "Sv/h"]);
 export type OdlEinheit = z.infer<typeof odlEinheitSchema>;
 
 const zeitpunkt = z.iso.datetime({ offset: true });
