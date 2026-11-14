@@ -58,7 +58,7 @@ Neue Tools bekommen einen eigenen Ordner unter `src/tools/<tool>/` mit `manifest
 
 ## Selbst hosten
 
-`pnpm build` erzeugt in `out/` reine statische Dateien, die jeder Webserver ausliefern kann. Der Service Worker funktioniert nur über HTTPS oder auf `localhost`. Die App muss im Wurzelverzeichnis der Domain liegen (`/`), nicht in einem Unterordner.
+`pnpm build` erzeugt in `out/` reine statische Dateien, die jeder Webserver ausliefern kann. Wichtig: `out/sw.js` entsteht erst nach `next build`. Hoster müssen deshalb den Ordner `out/` als statische Seite ausliefern und dürfen nicht die eigene Next.js-Laufzeit verwenden. Für Vercel legt `vercel.json` das fest (Framework "Other", Ausgabeordner `out`). Der Service Worker funktioniert nur über HTTPS oder auf `localhost`. Die App muss im Wurzelverzeichnis der Domain liegen (`/`), nicht in einem Unterordner.
 
 ## Lizenz
 
