@@ -1,0 +1,30 @@
+name: Verbesserung oder neues Tool
+description: Idee für eine Funktion oder ein Tool aus der Einsatzpraxis.
+title: "[Wunsch] "
+labels: ["wunsch"]
+body:
+  - type: textarea
+    id: lage
+    attributes:
+      label: Welche Situation im Einsatz oder bei der Übung?
+      description: Beschreiben Sie, was heute auf Papier, Whiteboard oder im Kopf passiert.
+    validations:
+      required: true
+  - type: textarea
+    id: vorschlag
+    attributes:
+      label: Was soll Lagekit dabei tun?
+    validations:
+      required: true
+  - type: textarea
+    id: grundlage
+    attributes:
+      label: Fachliche Grundlage
+      description: Vorschrift, Formel, Vordruck oder Ausbildungsunterlage (z. B. FwDV, DV 100, Merkblatt).
+  - type: checkboxes
+    id: offline
+    attributes:
+      label: Prüfung
+      options:
+        - label: Die Funktion kommt ohne Internet und ohne Server aus.
+          required: true
