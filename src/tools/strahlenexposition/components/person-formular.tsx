@@ -28,11 +28,14 @@ export function PersonFormular({
   async function absenden(event: FormEvent) {
     event.preventDefault();
     setFehler(null);
+    // Feld sofort leeren, damit schon die nächste Person getippt werden kann, während gespeichert wird.
+    const eingabe = { einsatzId, name, trupp, richtwertId };
+    setName("");
+    document.getElementById("person-name")?.focus();
     try {
-      await personAnlegen(getDb(), { einsatzId, name, trupp, richtwertId });
-      setName("");
-      document.getElementById("person-name")?.focus();
+      await personAnlegen(getDb(), eingabe);
     } catch (e) {
+      setName((aktuell) => aktuell || eingabe.name);
       setFehler(e instanceof Error ? e.message : String(e));
     }
   }

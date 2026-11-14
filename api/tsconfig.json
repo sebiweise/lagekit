@@ -1,0 +1,12 @@
+{
+  "//": "Vercel übersetzt die Funktionen mit dieser Datei. Ohne \"type\": \"module\" im Projekt ergibt nodenext CommonJS; das läuft mit TypeScript 5 und 6.",
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "rootDir": "..",
+    "types": ["node"],
+    "plugins": []
+  },
+  "include": ["./**/*.ts", "../src/core/sync/vermittlung-dienst.ts"]
+}

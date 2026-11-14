@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { BetaMarke } from "@/components/beta-marke";
 import { useAktiverEinsatz } from "@/core/einsatz/hooks";
 import { t } from "@/i18n";
 import { cn } from "@/lib/utils";
@@ -13,6 +14,7 @@ export function AppHeader() {
   const links = [
     { href: "/", text: t.nav.start },
     { href: "/einsatz/", text: t.nav.einsatz },
+    { href: "/sitzung/", text: t.nav.sitzung, beta: true },
   ];
 
   return (
@@ -33,6 +35,7 @@ export function AppHeader() {
               )}
             >
               {link.text}
+              {link.beta && <BetaMarke className="ml-1.5" />}
             </Link>
           ))}
         </nav>
