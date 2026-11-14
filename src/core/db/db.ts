@@ -4,8 +4,14 @@ import { migrations } from "./migrations";
 
 export const DB_NAME = "lagekit";
 
+export interface Einstellung {
+  schluessel: string;
+  wert: unknown;
+}
+
 export class LagekitDB extends Dexie {
   einsaetze!: EntityTable<Einsatz, "id">;
+  einstellungen!: EntityTable<Einstellung, "schluessel">;
 
   constructor(name: string = DB_NAME) {
     super(name);

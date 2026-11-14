@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { AktiverEinsatzKarte } from "@/core/einsatz/components/aktiver-einsatz-karte";
 import { DeviceClock } from "@/core/pwa/components/device-clock";
 import { PwaStatus } from "@/core/pwa/components/pwa-status";
 import { t } from "@/i18n";
@@ -15,6 +16,8 @@ export default function Home() {
         </div>
         <DeviceClock />
       </header>
+
+      <AktiverEinsatzKarte />
 
       <PwaStatus />
 
