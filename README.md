@@ -8,13 +8,16 @@ Projektplan, Meilensteine und Architektur: [docs/PLAN.md](docs/PLAN.md).
 
 ## Stand
 
-Meilenstein **M0 Gerüst**: leere App, die nach dem ersten Laden offline startet.
+Meilensteine **M0 Gerüst** und **M1 Einsatz und Export**: Die App startet offline, Einsätze lassen sich anlegen, wechseln, abschließen und löschen, und eine JSON-Sicherung überträgt alle Daten auf ein anderes Gerät.
 
 - Statischer Export mit Next.js (`out/`), kein Server, keine extern geladenen Schriften oder Skripte
 - Service Worker (Serwist) mit Precache aller Dateien, Web-App-Manifest, installierbar
 - Anzeige "Offline bereit", installierte Version, Netzstatus, dauerhafter Speicher, Gerätezeit
 - Updates werden erst nach Klick auf "Jetzt aktualisieren" aktiv, nie mitten im Einsatz
 - Lokale Datenbank (IndexedDB über Dexie) mit Einsatz-Tabelle und Migrationsgerüst
+- Einsatz-Verwaltung unter `/einsatz/`: anlegen, aktiven Einsatz wechseln, abschließen (mit Erinnerung an die Sicherung), wieder öffnen, löschen mit Rückfrage
+- JSON-Sicherung je Einsatz oder für alles; der Import ergänzt vorhandene Daten, bei doppelten Einsätzen gewinnt die neuere Fassung
+- CSV-Hilfsfunktion (Semikolon, UTF-8 mit BOM) für die Tool-Exporte
 - Tests: Vitest für Logik und Datenbank, Playwright startet die App bei abgeschaltetem Server
 
 Die Tools Strahlenexposition (M2) und Einsatztagebuch (M3) folgen.
@@ -45,7 +48,8 @@ src/
   app/                 Routen (Startseite, Hinweise)
   core/
     db/                Dexie-Instanz und Migrationen
-    einsatz/           Einsatz-Schema (Zod) und Datenzugriff
+    einsatz/           Einsatz-Schema (Zod), Datenzugriff, Verwaltung
+    export/            JSON-Sicherung, CSV, Datei-Download
     pwa/               Service Worker, Registrierung, Status-Anzeige
   tools/               Tool-Module; Anmeldung über registry.ts
   components/ui/       Bedienelemente (shadcn/ui)
