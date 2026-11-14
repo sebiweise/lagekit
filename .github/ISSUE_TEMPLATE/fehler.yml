@@ -1,0 +1,69 @@
+name: Fehler melden
+description: Etwas funktioniert nicht wie erwartet.
+title: "[Fehler] "
+labels: ["fehler"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke für die Meldung. Bitte **keine personenbezogenen Daten** (Namen, Dosiswerte echter Personen, Tagebuchinhalte aus echten Einsätzen) in das Issue schreiben.
+  - type: dropdown
+    id: bereich
+    attributes:
+      label: Bereich
+      options:
+        - Einsatz-Verwaltung
+        - Sicherung (Export/Import)
+        - Strahlenexposition
+        - Einsatztagebuch
+        - Offline-Betrieb / Installation / Update
+        - Sonstiges
+    validations:
+      required: true
+  - type: textarea
+    id: ablauf
+    attributes:
+      label: Was ist passiert?
+      description: Schritte, mit denen sich der Fehler nachstellen lässt.
+      placeholder: |
+        1. Einsatz anlegen
+        2. ...
+        3. Erwartet: ... / Tatsächlich: ...
+    validations:
+      required: true
+  - type: dropdown
+    id: rechenfehler
+    attributes:
+      label: Betrifft der Fehler ein Rechenergebnis?
+      description: Rechenfehler (z. B. bei der Dosis) behandeln wir vorrangig.
+      options:
+        - Nein
+        - Ja
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Lagekit-Version
+      description: Steht auf der Startseite unter „Gerätestatus“, z. B. „Version 0.1.0 (abc1234)“.
+    validations:
+      required: true
+  - type: input
+    id: geraet
+    attributes:
+      label: Gerät und Browser
+      placeholder: z. B. iPad, Safari 26, als App installiert / Windows-Laptop, Chrome 142
+    validations:
+      required: true
+  - type: dropdown
+    id: netz
+    attributes:
+      label: Netzverbindung beim Fehler
+      options:
+        - Online
+        - Offline
+        - Weiß nicht
+  - type: textarea
+    id: anhang
+    attributes:
+      label: Screenshots oder weitere Hinweise
