@@ -45,11 +45,12 @@ Das Tool bildet die Tabelle vom Whiteboard ab: Ort, Beginn, Ende, Dauer, Ortsdos
 D = \dot{H} \cdot t \qquad D_{\text{gesamt}} = \sum_i \dot{H}_i \cdot t_i
 ```
 
-Voreingestellte Dosisrichtwerte nach FwDV 500, aus dem Gedächtnis und vor Veröffentlichung gegen die aktuelle Fassung zu prüfen:
+Voreingestellte Dosisrichtwerte nach FwDV 500 (Sachwerte und Übung aus der Praxis bestätigt, die übrigen am Text von § 114 StrlSchG geprüft):
 
 | Einsatzanlass | Richtwert |
 | --- | --- |
-| Schutz von Sachwerten | 15 mSv je Einsatz |
+| Übung | 1 mSv je Übung und Kalenderjahr |
+| Schutz von Sachwerten | 20 mSv je Einsatz |
 | Abwehr von Gefahren für Personen, Verhinderung einer wesentlichen Schadensausweitung | 100 mSv je Einsatz und Kalenderjahr |
 | Rettung von Menschenleben | 250 mSv je Einsatz und einmal im Leben |
 
@@ -159,4 +160,4 @@ Danach beginnt M0:
 - [x] Dexie mit Einsatz-Tabelle und Migrationsgerüst anlegen
 - [x] CI (Lint, Typen, Tests) einrichten
 - [ ] Deployment einrichten (Hosting noch offen)
-- [x] FwDV 500 als fachliche Grundlage für das Strahlenexpositions-Tool in `docs/` zusammenfassen, Richtwerte prüfen (siehe `docs/fachlich/strahlenexposition.md`; 100/250/500 mSv nach § 114 StrlSchG geprüft, 15 mSv noch offen)
+- [x] FwDV 500 als fachliche Grundlage für das Strahlenexpositions-Tool in `docs/` zusammenfassen, Richtwerte prüfen (siehe `docs/fachlich/strahlenexposition.md`; 100/250/500 mSv nach § 114 StrlSchG geprüft, Sachwerte 20 mSv und Übung 1 mSv aus der Praxis bestätigt)

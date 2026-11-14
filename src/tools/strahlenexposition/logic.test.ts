@@ -38,9 +38,10 @@ function aufenthalt(teil: Partial<Aufenthalt>): Aufenthalt {
 const jetzt = new Date("2026-11-14T12:00:00.000Z");
 
 describe("Einheiten und Dauer", () => {
-  it("rechnet µSv/h in mSv/h um", () => {
+  it("rechnet µSv/h und Sv/h in mSv/h um", () => {
     expect(odlInMsvProStunde(250, "µSv/h")).toBeCloseTo(0.25, 12);
     expect(odlInMsvProStunde(2.5, "mSv/h")).toBe(2.5);
+    expect(odlInMsvProStunde(0.2, "Sv/h")).toBeCloseTo(200, 12);
   });
 
   it("misst die Dauer in Stunden und nie negativ", () => {

@@ -12,7 +12,8 @@ D_gesamt = Σ Ḣᵢ · tᵢ           Summe über alle Aufenthalte einer Person
 t_max = (D_Richtwert − D_bisher) / Ḣ    Vorplanung: zulässige Aufenthaltsdauer
 ```
 
-- Gerechnet wird intern in mSv und Stunden. Die ODL wird mit ihrer Einheit (µSv/h oder mSv/h) gespeichert und erst beim Rechnen umgerechnet (1 mSv/h = 1000 µSv/h).
+- Gerechnet wird intern in mSv und Stunden. Die ODL wird mit ihrer Einheit (µSv/h, mSv/h oder Sv/h) gespeichert und erst beim Rechnen umgerechnet (1 Sv/h = 1000 mSv/h, 1 mSv/h = 1000 µSv/h).
+- Ändert sich die ODL oder der Ort während eines Aufenthalts, endet der laufende Aufenthalt und ein neuer beginnt zum selben Zeitpunkt. Das geht je Person oder für einen ganzen Trupp.
 - Laufende Aufenthalte werden bis zur aktuellen Gerätezeit gerechnet.
 - Jede Dosis zeigt ihren Rechenweg, z. B. `D = 0,600 mSv/h × 0,5000 h = 0,300 mSv`.
 - Ein abgelesener Dosimeterwert wird zusätzlich gespeichert und neben dem berechneten Wert angezeigt. Für die Ampel zählt der höhere der beiden Werte.
@@ -27,7 +28,8 @@ Die Richtwerte lassen sich im Tool unter „Richtwerte einstellen“ je Gerät �
 
 | Einsatzanlass | Richtwert | Quelle | Status |
 | --- | --- | --- | --- |
-| Schutz von Sachwerten | 15 mSv | Projektplan (FwDV 500, aus dem Gedächtnis) | **offen**, gegen FwDV 500 Stand 2022 prüfen |
+| Übung | 1 mSv je Übung und Kalenderjahr | FwDV 500 | Angabe aus der Praxis (Feuerwehr), 14.11.2026 |
+| Schutz von Sachwerten | 20 mSv | FwDV 500 | Angabe aus der Praxis (Feuerwehr), 14.11.2026 |
 | Schutz von Leben oder Gesundheit | 100 mSv | § 114 Abs. 2 StrlSchG | geprüft am Gesetzestext |
 | Lebensrettung, Vermeidung schwerer Gesundheitsschäden, Abwehr einer Katastrophe | 250 mSv | § 114 Abs. 3 StrlSchG | geprüft am Gesetzestext |
 | Ausnahme, von der Einsatzleitung festgelegt | 500 mSv | § 114 Abs. 3 StrlSchG | geprüft am Gesetzestext |
@@ -44,7 +46,8 @@ Die Hinweise zu Schwangeren, Minderjährigen und Freiwilligen stehen im Tool bei
 
 ## Offene Punkte
 
-- [ ] Volltext der FwDV 500 (Stand Januar 2022) zu den Dosisrichtwerten prüfen. Frei zugänglich waren nur Auszüge, die Richtwert-Tabelle nicht. Insbesondere offen: ob es den Wert für Sachwerte (15 mSv) noch gibt und ob die FwDV 500 Richtwerte je Einsatz und je Kalenderjahr unterscheidet.
+- [x] Richtwerte für Sachwerte (20 mSv) und Übungen (1 mSv) aus der Praxis bestätigt. Der ursprünglich geplante Wert von 15 mSv war falsch.
+- [ ] Jahressumme je Person über mehrere Einsätze und Übungen: Das Tool rechnet bisher je Einsatz. Für den Übungswert (1 mSv je Kalenderjahr) müsste es die Dosen eines Jahres zusammenführen.
 - [ ] Warnschwelle der Ampel (80 %) mit einem ABC-Ausbilder abstimmen.
 - [ ] Prüfen, ob die Vorplanung einen Sicherheitszuschlag anbieten soll.
 
