@@ -1,0 +1,31 @@
+name: Fachliche Prüfung
+description: Rückmeldung zu Formeln, Richtwerten, Begriffen oder Vordrucken (z. B. durch ABC-Ausbilder).
+title: "[Fachlich] "
+labels: ["fachlich"]
+body:
+  - type: input
+    id: stelle
+    attributes:
+      label: Betroffene Stelle
+      placeholder: z. B. Richtwert „Schutz von Sachwerten“, Ampel-Schwelle 80 %, docs/fachlich/strahlenexposition.md
+    validations:
+      required: true
+  - type: textarea
+    id: befund
+    attributes:
+      label: Befund
+      description: Was ist fachlich falsch, veraltet oder missverständlich?
+    validations:
+      required: true
+  - type: textarea
+    id: quelle
+    attributes:
+      label: Quelle
+      description: Vorschrift mit Fassung/Stand und Abschnitt.
+    validations:
+      required: true
+  - type: input
+    id: rolle
+    attributes:
+      label: Ihre Funktion (optional)
+      placeholder: z. B. ABC-Ausbilder, Strahlenschutzbeauftragter

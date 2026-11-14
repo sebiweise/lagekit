@@ -97,3 +97,26 @@
     @apply bg-background text-foreground font-sans;
   }
 }
+
+/* Druckansicht (PDF über den Druckdialog): helle Farben, keine Bedienelemente. */
+@media print {
+  @page {
+    margin: 15mm;
+    /* Seitenzahlen; Browser ohne Seitenrandfelder lassen sie einfach weg. */
+    @bottom-right {
+      content: "Seite " counter(page) " von " counter(pages);
+      font-size: 9pt;
+    }
+  }
+  :root {
+    --background: oklch(1 0 0);
+    --foreground: oklch(0 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0 0 0);
+    --muted-foreground: oklch(0.4 0 0);
+    --border: oklch(0.7 0 0);
+  }
+  body {
+    print-color-adjust: exact;
+  }
+}
