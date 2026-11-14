@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { AppHeader } from "@/components/layout/app-header";
+import { SitzungHinweis } from "@/core/sync/components/sitzung-hinweis";
 import { t } from "@/i18n";
 import "./globals.css";
 
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="de" className="h-full antialiased">
       <body className="flex min-h-full flex-col">
         <AppHeader />
+        <SitzungHinweis />
         {children}
       </body>
     </html>
