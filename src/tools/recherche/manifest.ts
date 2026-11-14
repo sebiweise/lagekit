@@ -7,7 +7,7 @@ export const rechercheManifest: ToolManifest = {
   id: "recherche",
   name: "Externe Tools",
   beschreibung:
-    "Stoffrecherche, Rettungskarten, Vegetationsbrand, Warnungen und Kontakte. Vorschläge passend zum Einsatz, Suchen landen im Verlauf. Braucht Internet.",
+    "Linksammlung für Stoffrecherche, Rettungskarten, Vegetationsbrand, Warnungen und Kontakte, passend zum Einsatz sortiert. Braucht Internet.",
   icon: Globe,
   schemaVersion: 1,
   tabellen: {

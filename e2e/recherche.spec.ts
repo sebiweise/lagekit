@@ -11,7 +11,7 @@ test.beforeEach(async () => {
 
 test.afterEach(() => stoppeServer(server));
 
-test("Externe Tools: Vorschläge zum Einsatz, Direktsuche und Kopieren landen im Verlauf", async ({ page, context }) => {
+test("Suche: Direktsuche, UN-Nummer, Kopieren, Verlauf; Linksammlung mit Vorschlägen", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   // Externe Ziele nicht wirklich aufrufen.
   await context.route(/^https:\/\/(?!127\.0\.0\.1)/, (route) => route.fulfill({ status: 200, body: "extern" }));
@@ -22,48 +22,44 @@ test("Externe Tools: Vorschläge zum Einsatz, Direktsuche und Kopieren landen im
   await page.getByRole("button", { name: "Einsatz anlegen" }).click();
   await expect(page.getByTestId("kopf-einsatz")).toHaveText("TH VU Pkw");
 
-  await page.goto(`${baseURL}/tools/recherche/`);
-  const vorschlaege = page.getByTestId("vorschlaege");
-  await expect(vorschlaege.getByTestId("externes-tool").first()).toHaveAttribute("data-tool", "adac-rettungskarten");
-  // Alle übrigen Tools bleiben erreichbar.
-  await expect(page.locator('[data-tool="gestis"]')).toBeVisible();
+  await page.getByRole("link", { name: "Suche", exact: true }).click();
+  await expect(page.getByLabel("Suchbegriff")).toBeFocused();
   await expect(page.getByLabel("Ort")).toHaveValue("Kassel");
 
+  // Text: Telefonbuch mit Ort aus dem Einsatz.
   await page.getByLabel("Suchbegriff").fill("Abschleppdienst");
-  const oertliche = page.locator('[data-tool="dasoertliche"]');
-  const [direkt] = await Promise.all([
+  const direkt = page.getByTestId("direktsuche");
+  const [oertliche] = await Promise.all([
     page.waitForEvent("popup"),
-    oertliche.getByRole("link", { name: "Suchen" }).click(),
+    direkt.locator('[data-tool="dasoertliche"]').click(),
   ]);
-  expect(direkt.url()).toBe("https://mobil.dasoertliche.de/Themen?was=Abschleppdienst&wo=Kassel");
-  await direkt.close();
+  expect(oertliche.url()).toBe("https://mobil.dasoertliche.de/Themen?was=Abschleppdienst&wo=Kassel");
+  await oertliche.close();
 
+  // UN-Nummer: nur Stoffdatenbanken, ohne Ort.
   await page.getByLabel("Suchbegriff").fill("UN 1005");
-  const gestis = page.locator('[data-tool="gestis"]');
-  const [kopie] = await Promise.all([
-    page.waitForEvent("popup"),
-    gestis.getByRole("link", { name: "Begriff kopieren und öffnen" }).click(),
-  ]);
-  await kopie.close();
-  await expect(gestis.getByRole("status")).toContainText("„UN 1005“ kopiert");
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("UN 1005");
-
-  const verlauf = page.getByTestId("verlauf-eintrag");
-  await expect(verlauf).toHaveCount(2);
-
-  // Schnellknopf im Suchfeld: Gefahrgut-Datenbank der BAM.
-  await page.getByLabel("Suchbegriff").fill("1005");
-  const [bam] = await Promise.all([
-    page.waitForEvent("popup"),
-    page.getByTestId("direktsuche").getByRole("link", { name: "Gefahrgut-Datenbank (DGG-Info)" }).click(),
-  ]);
+  await expect(page.getByRole("heading", { name: "UN-Nummer 1005" })).toBeVisible();
+  await expect(direkt.locator("a")).toHaveCount(1);
+  const [bam] = await Promise.all([page.waitForEvent("popup"), direkt.locator('[data-tool="bam-dgg"]').click()]);
   expect(bam.url()).toBe("https://www.dgg.bam.de/dgginfo/search/query?value=1005&partialWord=true&results=all&lang=de");
   await bam.close();
-  await expect(verlauf).toHaveCount(3);
-  await expect(verlauf.nth(1)).toContainText("UN 1005");
-  await expect(verlauf.nth(2)).toContainText("Abschleppdienst in Kassel");
 
-  // Verlauf übersteht ein Neuladen.
+  // Ohne Direktsuche: Begriff kopieren und Startseite öffnen.
+  const gestis = page.getByTestId("kopierziele").locator('[data-tool="gestis"]');
+  const [kopie] = await Promise.all([page.waitForEvent("popup"), gestis.click()]);
+  expect(kopie.url()).toBe("https://gestis.dguv.de/");
+  await kopie.close();
+  await expect(gestis).toContainText("„1005“ kopiert");
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("1005");
+
+  const verlauf = page.getByTestId("verlauf-eintrag");
+  await expect(verlauf).toHaveCount(3);
+  await expect(verlauf.nth(2)).toContainText("Abschleppdienst in Kassel");
   await page.reload();
   await expect(page.getByTestId("verlauf-eintrag")).toHaveCount(3);
+
+  // Linksammlung: passende Tools oben, alle anderen erreichbar.
+  await page.goto(`${baseURL}/tools/recherche/`);
+  await expect(page.getByTestId("vorschlaege").locator("a").first()).toHaveAttribute("data-tool", "adac-rettungskarten");
+  await expect(page.locator('[data-tool="gestis"]')).toBeVisible();
 });

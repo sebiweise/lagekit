@@ -1,12 +1,17 @@
 # Externe Tools
 
-Lagekit verlinkt nützliche Online-Dienste für Stoffrecherche, Rettungskarten, Vegetationsbrand, Hochwasser, Warnungen, Kontakte und Karten. Die Seite liegt unter `/tools/recherche/`, der Katalog in `src/tools/recherche/katalog.ts`.
+Lagekit verlinkt nützliche Online-Dienste für Stoffrecherche, Rettungskarten, Vegetationsbrand, Hochwasser, Warnungen, Kontakte und Karten. Es gibt zwei Seiten:
+
+- **Suche** (`/suche/`, in der Kopfzeile): ein Suchfeld, darunter die passenden Ziele als große Zeilen und der Verlauf im Einsatz. UN-Nummern („1005“, „UN 1005“) und CAS-Nummern werden erkannt und gehen nur an Stoffdatenbanken.
+- **Externe Tools** (`/tools/recherche/`, Kachel auf der Startseite): alle Dienste als kompakte Linksammlung nach Thema, passend zum Einsatz oben.
+
+Der Katalog liegt in `src/tools/recherche/katalog.ts`.
 
 ## So funktioniert es
 
 - **Alle Tools sind immer da.** Passend zu Stichwort und Ort des aktiven Einsatzes stehen einige oben unter „Passend zu …“, alle übrigen darunter nach Thema.
 - **Vorschläge** kommen aus Schlagworten in `logic.ts` (z. B. „ABC“, „Gefahrgut“, „UN1005“ → Gefahrstoffe; „VU“, „Pkw“, „BAB“ → Rettungskarten; „Wald“, „Flächenbrand“ → Vegetationsbrand). Kontakte und Karten passen immer, lösen aber allein keinen Vorschlagsblock aus.
-- **Direktsuche:** Unter dem Suchfeld stehen Schnellknöpfe für alle Tools mit Direktsuche. Wo das Ziel eine Suche über die Adresse erlaubt, öffnet „Suchen“ direkt die Treffer. Der Ort wird aus dem Einsatz vorbelegt.
+- **Direktsuche:** Wo das Ziel eine Suche über die Adresse erlaubt, öffnet „Suchen“ direkt die Treffer. Der Ort wird aus dem Einsatz vorbelegt.
 - **Begriff kopieren und öffnen:** Wo es keine prüfbare Direktsuche gibt, legt Lagekit den Begriff in die Zwischenablage und öffnet das Tool. Dort nur noch einfügen.
 - **Suchverlauf:** Jede aus Lagekit gestartete Suche wird beim aktiven Einsatz gespeichert (Tabelle `rechercheSuchen`), mit Zeit, Tool, Begriff, Ort und Adresse. „Erneut öffnen“ ruft sie wieder auf. Der Verlauf läuft mit Export/Import, Löschen und „Gemeinsam arbeiten“ mit.
 - **Offline:** Die Seite selbst und der Verlauf funktionieren ohne Netz. Die Ziele brauchen Internet; ohne Netz zeigt die Seite einen Hinweis.

@@ -35,6 +35,7 @@ export const de = {
     start: "Start",
     einsatz: "Einsatz",
     sitzung: "Gemeinsam",
+    suche: "Suche",
     keinEinsatz: "Kein Einsatz aktiv",
   },
   einsatz: {

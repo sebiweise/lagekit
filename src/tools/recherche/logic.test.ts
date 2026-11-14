@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { externeTools, THEMEN, toolNachId } from "./katalog";
-import { suchUrl, themenFuerEinsatz, verlaufSortieren, vorschlagen } from "./logic";
+import { begriffErkennen, suchUrl, suchziele, themenFuerEinsatz, verlaufSortieren, vorschlagen } from "./logic";
 
 const tool = (id: string) => toolNachId(id)!;
 
@@ -97,4 +97,32 @@ describe("vorschlagen", () => {
 it("sortiert den Verlauf neueste zuerst", () => {
   const liste = [{ zeitpunkt: "2026-11-14T10:00:00.000Z" }, { zeitpunkt: "2026-11-14T12:00:00.000Z" }];
   expect(verlaufSortieren(liste)[0].zeitpunkt).toBe("2026-11-14T12:00:00.000Z");
+});
+
+describe("begriffErkennen", () => {
+  it.each([
+    ["1005", "un", "1005"],
+    ["UN 1005", "un", "1005"],
+    ["un1203", "un", "1203"],
+    ["7664-41-7", "cas", "7664-41-7"],
+    ["Chlor", "text", "Chlor"],
+    ["12345", "text", "12345"],
+  ])("„%s“ → %s", (begriff, art, wert) => {
+    expect(begriffErkennen(begriff)).toEqual({ art, wert });
+  });
+});
+
+describe("suchziele", () => {
+  it("schickt UN-Nummern nur an Stoffdatenbanken", () => {
+    const z = suchziele(externeTools, "UN 1005", null);
+    expect(z.direkt.map((t) => t.id)).toEqual(["bam-dgg"]);
+    expect(z.kopieren.map((t) => t.id)).toContain("gestis");
+    expect(z.kopieren.map((t) => t.id)).not.toContain("adac-rettungskarten");
+  });
+
+  it("bietet bei Text alle Direktsuchen, passend zum Einsatz zuerst", () => {
+    const z = suchziele(externeTools, "Rathaus", { stichwort: "TH VU", ort: "Kassel" });
+    expect(z.direkt.map((t) => t.id)).toEqual(expect.arrayContaining(["dasoertliche", "google-maps", "openstreetmap", "bam-dgg"]));
+    expect(z.kopieren[0].id).toBe("adac-rettungskarten");
+  });
 });

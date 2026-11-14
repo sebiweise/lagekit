@@ -79,3 +79,43 @@ export function vorschlagen(
 export function verlaufSortieren<T extends { zeitpunkt: string }>(liste: T[]): T[] {
   return [...liste].sort((a, b) => b.zeitpunkt.localeCompare(a.zeitpunkt));
 }
+
+export type BegriffArt = "un" | "cas" | "text";
+
+/**
+ * Erkennt UN-Nummern („1005“, „UN 1005“) und CAS-Nummern („7664-41-7“).
+ * `wert` ist der Begriff so, wie er an die Ziele geht (UN-Nummer ohne „UN“).
+ */
+export function begriffErkennen(begriff: string): { art: BegriffArt; wert: string } {
+  const b = begriff.trim();
+  const un = /^(?:un\s*)?(\d{4})$/i.exec(b);
+  if (un) return { art: "un", wert: un[1] };
+  if (/^\d{2,7}-\d{2}-\d$/.test(b)) return { art: "cas", wert: b };
+  return { art: "text", wert: b };
+}
+
+/**
+ * Suchziele für einen Begriff: `direkt` (Suche über die Adresse) und `kopieren`
+ * (Begriff kopieren, Startseite öffnen). UN- und CAS-Nummern gehen nur an
+ * Stoffdatenbanken; sonst stehen zum Einsatz passende Tools vorn.
+ */
+export function suchziele(
+  tools: ExternesTool[],
+  begriff: string,
+  einsatz: { stichwort: string; ort: string } | null,
+): { art: BegriffArt; wert: string; direkt: ExternesTool[]; kopieren: ExternesTool[] } {
+  const { art, wert } = begriffErkennen(begriff);
+  let reihenfolge: ExternesTool[];
+  if (art !== "text") {
+    reihenfolge = tools.filter((t) => t.themen.includes("gefahrstoff"));
+  } else {
+    const { vorgeschlagen, weitere } = vorschlagen(tools, einsatz);
+    reihenfolge = [...vorgeschlagen, ...weitere];
+  }
+  return {
+    art,
+    wert,
+    direkt: reihenfolge.filter((t) => t.suche),
+    kopieren: reihenfolge.filter((t) => !t.suche && t.kopierHinweis),
+  };
+}
