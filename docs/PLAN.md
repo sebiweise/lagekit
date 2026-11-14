@@ -159,4 +159,4 @@ Danach beginnt M0:
 - [x] Dexie mit Einsatz-Tabelle und Migrationsgerüst anlegen
 - [x] CI (Lint, Typen, Tests) einrichten
 - [ ] Deployment einrichten (Hosting noch offen)
-- [ ] FwDV 500 als fachliche Grundlage für das Strahlenexpositions-Tool in `docs/` zusammenfassen, Richtwerte prüfen
+- [x] FwDV 500 als fachliche Grundlage für das Strahlenexpositions-Tool in `docs/` zusammenfassen, Richtwerte prüfen (siehe `docs/fachlich/strahlenexposition.md`; 100/250/500 mSv nach § 114 StrlSchG geprüft, 15 mSv noch offen)

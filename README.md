@@ -8,7 +8,7 @@ Projektplan, Meilensteine und Architektur: [docs/PLAN.md](docs/PLAN.md).
 
 ## Stand
 
-Meilensteine **M0 Gerüst** und **M1 Einsatz und Export**: Die App startet offline, Einsätze lassen sich anlegen, wechseln, abschließen und löschen, und eine JSON-Sicherung überträgt alle Daten auf ein anderes Gerät.
+Meilensteine **M0 Gerüst**, **M1 Einsatz und Export** und **M2 Strahlenexposition**: Die App startet offline, Einsätze lassen sich verwalten und per JSON-Sicherung auf ein anderes Gerät übertragen, und die Dosisüberwachung ersetzt die Whiteboard-Tabelle.
 
 - Statischer Export mit Next.js (`out/`), kein Server, keine extern geladenen Schriften oder Skripte
 - Service Worker (Serwist) mit Precache aller Dateien, Web-App-Manifest, installierbar
@@ -18,9 +18,10 @@ Meilensteine **M0 Gerüst** und **M1 Einsatz und Export**: Die App startet offli
 - Einsatz-Verwaltung unter `/einsatz/`: anlegen, aktiven Einsatz wechseln, abschließen (mit Erinnerung an die Sicherung), wieder öffnen, löschen mit Rückfrage
 - JSON-Sicherung je Einsatz oder für alles; der Import ergänzt vorhandene Daten, bei doppelten Einsätzen gewinnt die neuere Fassung
 - CSV-Hilfsfunktion (Semikolon, UTF-8 mit BOM) für die Tool-Exporte
+- Tool **Strahlenexposition** unter `/tools/strahlenexposition/`: Personen und Trupps, laufende und nachgetragene Aufenthalte, Dosis D = Ḣ · t mit sichtbarem Rechenweg, Dosimeterwerte, Ampel gegen einstellbare Richtwerte, Restzeit, Vorplanung, Dosisnachweis zum Drucken (PDF) und CSV. Fachliche Grundlage: [docs/fachlich/strahlenexposition.md](docs/fachlich/strahlenexposition.md)
 - Tests: Vitest für Logik und Datenbank, Playwright startet die App bei abgeschaltetem Server
 
-Die Tools Strahlenexposition (M2) und Einsatztagebuch (M3) folgen.
+Das Einsatztagebuch (M3) folgt.
 
 ## Daten und Datenschutz
 

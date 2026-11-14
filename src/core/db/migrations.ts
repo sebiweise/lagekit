@@ -31,4 +31,12 @@ export const migrations: Migration[] = [
       einstellungen: "schluessel",
     },
   },
+  {
+    version: 3,
+    stores: {
+      // Tool Strahlenexposition (src/tools/strahlenexposition).
+      dosisPersonen: "id, einsatzId",
+      dosisAufenthalte: "id, einsatzId, personId",
+    },
+  },
 ];
