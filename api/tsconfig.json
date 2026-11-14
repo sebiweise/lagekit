@@ -1,0 +1,10 @@
+{
+  "//": "Vercel übersetzt die Funktionen mit dieser Datei. CommonJS, weil das Projekt kein \"type\": \"module\" setzt.",
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "plugins": []
+  },
+  "include": ["./**/*.ts", "../src/core/sync/vermittlung-dienst.ts"]
+}
