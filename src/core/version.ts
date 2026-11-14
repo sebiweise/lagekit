@@ -1,0 +1,3 @@
+/** Installierte Version, beim Build aus package.json und Git eingetragen. */
+export const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "0.0.0";
+export const APP_COMMIT = process.env.NEXT_PUBLIC_APP_COMMIT ?? "unbekannt";
