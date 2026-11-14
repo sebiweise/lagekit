@@ -35,7 +35,7 @@ test("Externe Tools: Vorschläge zum Einsatz, Direktsuche und Kopieren landen im
     page.waitForEvent("popup"),
     oertliche.getByRole("link", { name: "Suchen" }).click(),
   ]);
-  expect(direkt.url()).toBe("https://www.dasoertliche.de/?kw=Abschleppdienst&ci=Kassel&form_name=search_nat");
+  expect(direkt.url()).toBe("https://mobil.dasoertliche.de/Themen?was=Abschleppdienst&wo=Kassel");
   await direkt.close();
 
   await page.getByLabel("Suchbegriff").fill("UN 1005");

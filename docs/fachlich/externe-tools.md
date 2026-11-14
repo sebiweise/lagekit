@@ -17,7 +17,7 @@ Aufgenommen wurde nur, was tatsächlich abgerufen wurde. Viele Seiten rendern pe
 
 | Tool | Adresse | Direktsuche | Prüfung |
 | --- | --- | --- | --- |
-| Das Örtliche | dasoertliche.de | `?kw={q}&ci={ort}&form_name=search_nat` | Suche „Apotheke“/„Kassel“ lieferte 54 Treffer |
+| Das Örtliche | mobil.dasoertliche.de | `/Themen?was={q}&wo={ort}` | Von Sebastian auf dem iPhone bestätigt (die Desktop-Adresse `?kw=&ci=` verliert mobil die Suche) |
 | Google Maps | google.com/maps | `/maps/search/?api=1&query={q}` | Dokumentiert in Google „Maps URLs“ |
 | BAM Gefahrgut (DGG-Info) | dgg.bam.de | `/dgginfo/search/query?value={q}&partialWord=true&results=all&lang=de` | Parameter `value` (UN-Nr., Name, Synonym, Formel, CAS) in der BAM-Hilfe dokumentiert |
 | OpenStreetMap | openstreetmap.org | `/search?query={q}` | Auf Wunsch aufgenommen; automatischer Abruf gesperrt, im Browser bestätigen |

@@ -194,10 +194,13 @@ export const externeTools: ExternesTool[] = [
     url: "https://www.dasoertliche.de/",
     themen: ["kontakt"],
     suche: {
-      muster: "https://www.dasoertliche.de/?kw={q}&ci={ort}&form_name=search_nat",
+      muster: "https://mobil.dasoertliche.de/Themen?was={q}&wo={ort}",
       begriff: "Name oder Branche",
     },
-    geprueft: { am: PRUEFTAG, wie: "Suche „Apotheke“ in „Kassel“ abgerufen: 54 Treffer." },
+    geprueft: {
+      am: PRUEFTAG,
+      wie: "Mobile Suchadresse von Sebastian auf dem iPhone bestätigt; die Desktop-Adresse (?kw=&ci=) verliert auf dem Handy die Suche.",
+    },
   },
   {
     id: "google-maps",

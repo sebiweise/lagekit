@@ -21,7 +21,7 @@ describe("Katalog", () => {
 describe("suchUrl", () => {
   it("setzt Begriff und Ort kodiert ins Muster", () => {
     expect(suchUrl(tool("dasoertliche"), "Autohaus Müller", "Bad Hersfeld")).toBe(
-      "https://www.dasoertliche.de/?kw=Autohaus%20M%C3%BCller&ci=Bad%20Hersfeld&form_name=search_nat",
+      "https://mobil.dasoertliche.de/Themen?was=Autohaus%20M%C3%BCller&wo=Bad%20Hersfeld",
     );
   });
 

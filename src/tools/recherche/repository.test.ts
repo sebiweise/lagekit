@@ -54,7 +54,7 @@ describe("Suchverlauf", () => {
       toolName: "Das Örtliche",
       begriff: "Abschleppdienst",
       ort: "Kassel",
-      url: "https://www.dasoertliche.de/?kw=Abschleppdienst&ci=Kassel&form_name=search_nat",
+      url: "https://mobil.dasoertliche.de/Themen?was=Abschleppdienst&wo=Kassel",
       art: "direkt",
     });
     const ziel = testDb();
