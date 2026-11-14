@@ -4,16 +4,22 @@ import type { Richtwert } from "./schema";
  * Voreingestellte Dosisrichtwerte (effektive Dosis je Einsatz).
  *
  * Quelle der Werte 100, 250 und 500 mSv: § 114 Strahlenschutzgesetz (StrlSchG).
- * Der Wert 15 mSv stammt aus dem Projektplan (FwDV 500, aus dem Gedächtnis) und
- * ist vor Version 1.0 gegen die FwDV 500 (Stand 2022) zu prüfen.
+ * Die Werte 1 mSv (Übung) und 20 mSv (Sachwerte) hat ein Feuerwehr-Fachanwender
+ * nach FwDV 500 angegeben.
  * Fachliche Grundlage: docs/fachlich/strahlenexposition.md.
  */
 export const STANDARD_RICHTWERTE: Richtwert[] = [
   {
+    id: "uebung",
+    bezeichnung: "Übung",
+    grenzeMsv: 1,
+    hinweis: "FwDV 500. Gilt je Übung und zugleich als Summe je Kalenderjahr.",
+  },
+  {
     id: "sachwerte",
     bezeichnung: "Schutz von Sachwerten",
-    grenzeMsv: 15,
-    hinweis: "Wert aus dem Projektplan, gegen FwDV 500 prüfen.",
+    grenzeMsv: 20,
+    hinweis: "FwDV 500.",
   },
   {
     id: "personen",
