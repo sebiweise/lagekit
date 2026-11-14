@@ -46,4 +46,11 @@ export const migrations: Migration[] = [
       tagebuchEintraege: "id, einsatzId, [einsatzId+nr]",
     },
   },
+  {
+    version: 5,
+    stores: {
+      // Tool Externe Tools (src/tools/recherche): Suchverlauf je Einsatz.
+      rechercheSuchen: "id, einsatzId",
+    },
+  },
 ];
