@@ -109,6 +109,7 @@ function GastKarte({ sitzung, gast }: { sitzung: HostSitzung; gast: HostGast }) 
           <div className="flex flex-col items-end gap-1">
             <Badge variant={status.variant}>{status.text}</Badge>
             <span className="text-xs text-muted-foreground">
+              {gast.wiederverbunden && "wieder aufgenommen, "}
               {gast.quelle === "kurzcode" ? "per Kurzcode" : "per QR-Code"}, {formatZeit(gast.angekommenAm.toISOString())}{" "}
               Uhr
             </span>

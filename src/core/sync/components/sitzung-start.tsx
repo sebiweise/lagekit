@@ -15,14 +15,14 @@ import { useAktiverEinsatz } from "@/core/einsatz/hooks";
 import { cn } from "@/lib/utils";
 import { ichLesen, ichSpeichern } from "../ich";
 import type { Teilnehmer } from "../protokoll";
-import { GastSitzung, HostSitzung, sitzungen } from "../sitzung";
+import { sitzungen } from "../sitzung";
 import { vermittlung } from "../vermittlung";
 import { IchFormular } from "./ich-formular";
 
 type Weg = "kurzcode" | "qr";
 
 /** Noch keine Sitzung: selbst leiten oder einer Sitzung beitreten. */
-export function SitzungStart({ onWeg }: { onWeg: (weg: Weg) => void }) {
+export function SitzungStart() {
   const einsatz = useAktiverEinsatz();
   const [ich, setIch] = useState<Teilnehmer | null>(null);
   const [weg, setWeg] = useState<Weg>("kurzcode");
@@ -51,26 +51,14 @@ export function SitzungStart({ onWeg }: { onWeg: (weg: Weg) => void }) {
   function leiten() {
     void ausfuehren(async (ich) => {
       if (!einsatz) return;
-      const host = new HostSitzung(getDb(), einsatz, ich, vermittlung);
-      sitzungen.setzen(host);
-      void host.kurzcodeAnfordern();
+      sitzungen.leiten(getDb(), einsatz, ich, vermittlung);
     });
   }
 
   function beitreten(e: FormEvent) {
     e.preventDefault();
     void ausfuehren(async (ich) => {
-      const gast = await GastSitzung.starten(getDb(), ich, vermittlung);
-      if (weg === "kurzcode") {
-        try {
-          await gast.perKurzcode(kurzcode);
-        } catch (err) {
-          gast.verlassen();
-          throw err;
-        }
-      }
-      onWeg(weg);
-      sitzungen.setzen(gast);
+      await sitzungen.beitreten(getDb(), ich, weg, kurzcode, vermittlung);
     });
   }
 

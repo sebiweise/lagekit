@@ -10,6 +10,9 @@ import { sdpAufbauen, sdpVerdichten, type KompaktesSdp } from "./verbindungscode
  */
 
 const TEIL_GROESSE = 16_000;
+const PING_MS = 2_000;
+/** Ohne Lebenszeichen so lange gilt die Verbindung als abgerissen (WebRTC selbst merkt es oft erst nach 30 s). */
+const STILLE_MS = 8_000;
 const WARTEZEIT_KANDIDATEN_MS = 2_500;
 
 export type VerbindungsZustand = "aufbau" | "offen" | "getrennt";
@@ -26,12 +29,24 @@ export class Verbindung {
   onNachricht: (n: Nachricht) => void = () => {};
   onZustand: (z: VerbindungsZustand) => void = () => {};
   private teile = new Map<string, string[]>();
+  private zuletzt = Date.now();
+  private takt?: ReturnType<typeof setInterval>;
 
   constructor(
     private readonly pc: RTCPeerConnection,
     private readonly kanal: RTCDataChannel,
   ) {
-    kanal.onopen = () => this.setzen("offen");
+    kanal.onopen = () => {
+      this.zuletzt = Date.now();
+      this.setzen("offen");
+      this.takt = setInterval(() => {
+        if (Date.now() - this.zuletzt > STILLE_MS) {
+          this.schliessen();
+          return;
+        }
+        this.senden({ typ: "ping" });
+      }, PING_MS);
+    };
     kanal.onclose = () => this.setzen("getrennt");
     kanal.onmessage = (e) => this.empfangen(String(e.data));
     pc.onconnectionstatechange = () => {
@@ -41,11 +56,13 @@ export class Verbindung {
 
   private setzen(zustand: VerbindungsZustand) {
     if (this.zustand === zustand || this.zustand === "getrennt") return;
+    if (zustand === "getrennt") clearInterval(this.takt);
     this.zustand = zustand;
     this.onZustand(zustand);
   }
 
   private empfangen(text: string) {
+    this.zuletzt = Date.now();
     let roh: unknown;
     try {
       roh = JSON.parse(text);
@@ -63,8 +80,8 @@ export class Verbindung {
       return;
     }
     const ergebnis = nachrichtSchema.safeParse(roh);
-    if (ergebnis.success) this.onNachricht(ergebnis.data);
-    else console.warn("Lagekit: ungültige Nachricht verworfen", ergebnis.error);
+    if (!ergebnis.success) console.warn("Lagekit: ungültige Nachricht verworfen", ergebnis.error);
+    else if (ergebnis.data.typ !== "ping") this.onNachricht(ergebnis.data);
   }
 
   senden(nachricht: Nachricht) {

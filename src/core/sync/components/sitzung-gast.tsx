@@ -8,14 +8,17 @@ import { LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getDb } from "@/core/db/db";
 import { sitzungen, type GastSitzung } from "../sitzung";
 import { CodeEingabe } from "./code-eingabe";
 import { QrAnzeige } from "./qr-anzeige";
 import { TeilnehmerAngaben } from "./teilnehmer-zeile";
 
 /** Ansicht eines beitretenden Geräts. */
-export function SitzungGast({ sitzung, perQr }: { sitzung: GastSitzung; perQr: boolean }) {
-  const ende = sitzung.status === "getrennt" || sitzung.status === "abgelehnt";
+export function SitzungGast({ sitzung }: { sitzung: GastSitzung }) {
+  const perQr = sitzung.gespeichert.weg === "qr";
+  const ende = sitzung.status === "abgelehnt";
+  const getrennt = sitzung.status === "getrennt";
 
   return (
     <Card>
@@ -25,7 +28,9 @@ export function SitzungGast({ sitzung, perQr }: { sitzung: GastSitzung; perQr: b
             ? `Verbunden: ${sitzung.einsatz?.stichwort ?? ""}`
             : ende
               ? "Nicht verbunden"
-              : "Beitritt läuft"}
+              : getrennt
+                ? "Verbindung unterbrochen"
+                : "Beitritt läuft"}
         </CardTitle>
         <CardDescription data-testid="gast-status">
           {sitzung.meldung ??
@@ -78,6 +83,14 @@ export function SitzungGast({ sitzung, perQr }: { sitzung: GastSitzung; perQr: b
           </>
         )}
 
+        {getrennt && perQr && (
+          <Button
+            className="self-start"
+            onClick={() => void sitzungen.beitreten(getDb(), sitzung.ich, "qr", "")}
+          >
+            Erneut beitreten
+          </Button>
+        )}
         {ende ? (
           <Button className="self-start" onClick={() => sitzungen.setzen(null)}>
             Neu beitreten

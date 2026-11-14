@@ -33,10 +33,18 @@ Neue Tools nehmen automatisch teil: Abgeglichen werden alle Tabellen aus dem Too
 
 Im Vercel-Projekt Upstash Redis aus dem Marketplace verbinden. Die Funktion liest `KV_REST_API_URL` und `KV_REST_API_TOKEN` (oder `UPSTASH_REDIS_REST_URL` und `UPSTASH_REDIS_REST_TOKEN`). Ohne diese Variablen meldet der Host „Kein Kurzcode“, der QR-Weg funktioniert weiter.
 
+## Robustheit
+
+- **Neuladen:** Host und Gast speichern ihre Sitzung in den Geräteeinstellungen und stellen sie nach dem Laden wieder her. Der Host behält seinen Kurzcode.
+- **Wiederverbinden:** Reißt die Verbindung ab, verbindet sich ein Gast auf dem Kurzcode-Weg selbst neu (Wartezeit wachsend bis 30 s). Geräte, die der Host in dieser Sitzung schon zugelassen hat, kommen ohne erneute Freigabe wieder rein („wieder aufgenommen“). Erst Trennen oder Ablehnen durch den Host nimmt diese Freigabe zurück.
+- **Abriss erkennen:** Beide Seiten senden alle 2 s ein Lebenszeichen; nach 8 s Stille gilt die Verbindung als abgerissen.
+- **Änderungen während einer Trennung:** Der Gast sammelt sie und schickt sie beim Wiederverbinden mit dem ersten Gruß an den Host, bevor er dessen Stand übernimmt. Die Sammlung übersteht auch ein Neuladen.
+- **Konflikte:** Tools können im Manifest eine Konfliktlösung je Tabelle angeben (`abgleich`); der Host wendet sie auf alle eingehenden Zeilen an und verteilt das Ergebnis. Das Einsatztagebuch vergibt so bei doppelten Nummern die nächste freie.
+
 ## Grenzen (Stand jetzt)
 
-- Ein volles Neuladen der Seite beendet die Sitzung auf diesem Gerät; Navigation innerhalb der App nicht. Danach erneut beitreten.
-- iPhones trennen die Verbindung, wenn der Bildschirm gesperrt wird.
-- Zwei Geräte, die im selben Moment einen Tagebucheintrag anlegen, können dieselbe laufende Nummer vergeben. Die Einträge bleiben beide erhalten.
-- Änderungen, die ein Gerät nach dem Trennen macht, gehen nicht automatisch an den Host. Abhilfe: JSON-Sicherung.
+- Auf dem QR-Weg ist nach einem Abriss erneutes Scannen nötig (es gibt keinen Kanal für den neuen Verbindungsaufbau). Der Host muss das Gerät aber nicht erneut zulassen.
+- iPhones trennen die Verbindung, wenn der Bildschirm gesperrt wird; auf dem Kurzcode-Weg verbinden sie sich danach selbst neu.
+- Zwei Geräte, die dieselbe Zeile (z. B. denselben Aufenthalt) gleichzeitig ändern: Es gilt die Änderung, die zuletzt beim Host ankommt.
+- Die Sitzung gilt je Browser; mehrere offene Tabs desselben Browsers sind nicht vorgesehen.
 - Ob ein Handy-Hotspot Geräte untereinander verbindet, hängt vom Gerät ab und ist im Praxistest zu prüfen.

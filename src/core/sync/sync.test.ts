@@ -133,6 +133,31 @@ describe("Abgleich", () => {
     );
   });
 
+  it("vergibt beim Host eindeutige Tagebuchnummern", async () => {
+    const host = testDb();
+    const gast = testDb();
+    const einsatz = await einsatzAnlegen(host, { stichwort: "ABC 2" });
+    await standAnwenden(gast, await standErstellen(host, einsatz.id));
+    await eintragHinzufuegen(host, { einsatzId: einsatz.id, inhalt: "vom Host", art: "Notiz" });
+
+    // Gast war getrennt und hat ebenfalls Nummer 1 vergeben.
+    const meldungen: Aenderung[] = [];
+    const ab = aenderungenBeobachten(gast, einsatz.id, (l) => meldungen.push(...l));
+    await eintragHinzufuegen(gast, { einsatzId: einsatz.id, inhalt: "vom Gast", art: "Notiz" });
+    await new Promise((r) => setTimeout(r, 10));
+    ab();
+    expect(meldungen[0].art === "put" && meldungen[0].zeile.nr).toBe(1);
+
+    const gespeichert = await aenderungenAnwenden(host, einsatz.id, meldungen, { konflikteLoesen: true });
+    expect(gespeichert[0].art === "put" && gespeichert[0].zeile.nr).toBe(2);
+    const nummern = (await host.table("tagebuchEintraege").toArray()).map((e) => e.nr).sort();
+    expect(nummern).toEqual([1, 2]);
+
+    // Dieselbe Zeile erneut (z. B. doppelt nachgereicht) behält ihre Nummer.
+    const nochmal = await aenderungenAnwenden(host, einsatz.id, meldungen, { konflikteLoesen: true });
+    expect(nochmal[0].art === "put" && nochmal[0].zeile.nr).toBe(2);
+  });
+
   it("macht den Gast-Stand zur genauen Kopie des Hosts", async () => {
     const host = testDb();
     const gast = testDb();

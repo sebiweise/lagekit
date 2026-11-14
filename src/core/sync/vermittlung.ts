@@ -8,7 +8,10 @@
 const ENDPUNKT = "/api/vermittlung";
 
 export class VermittlungFehler extends Error {
-  constructor(message: string) {
+  constructor(
+    message: string,
+    readonly status = 0,
+  ) {
     super(message);
     this.name = "VermittlungFehler";
   }
@@ -27,7 +30,9 @@ async function aufrufen<T>(daten: Record<string, unknown>): Promise<T> {
     throw new VermittlungFehler("Keine Internetverbindung. Nutzen Sie den Weg mit QR-Code.");
   }
   const inhalt = (await antwort.json().catch(() => ({}))) as T & { fehler?: string };
-  if (!antwort.ok) throw new VermittlungFehler(inhalt.fehler ?? "Der Vermittlungsdienst ist nicht erreichbar.");
+  if (!antwort.ok) {
+    throw new VermittlungFehler(inhalt.fehler ?? "Der Vermittlungsdienst ist nicht erreichbar.", antwort.status);
+  }
   return inhalt;
 }
 

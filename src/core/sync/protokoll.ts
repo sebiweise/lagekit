@@ -44,8 +44,15 @@ export const aenderungSchema = z.discriminatedUnion("art", [
 export type Aenderung = z.infer<typeof aenderungSchema>;
 
 export const nachrichtSchema = z.discriminatedUnion("typ", [
-  /** Gast → Host direkt nach dem Verbinden. */
-  z.object({ typ: z.literal("hallo"), geraetId: z.uuid() }),
+  /**
+   * Gast → Host direkt nach dem Verbinden, mit den Änderungen, die das Gerät
+   * während einer Trennung gemacht hat.
+   */
+  z.object({
+    typ: z.literal("hallo"),
+    geraetId: z.uuid(),
+    ausstehend: z.object({ einsatzId: z.uuid(), liste: z.array(aenderungSchema) }).nullable().default(null),
+  }),
   /** Host → Gast: vollständiger Stand des Einsatzes. */
   z.object({
     typ: z.literal("stand"),
@@ -56,6 +63,8 @@ export const nachrichtSchema = z.discriminatedUnion("typ", [
   z.object({ typ: z.literal("aenderungen"), liste: z.array(aenderungSchema) }),
   /** Host → Gäste: wer gerade verbunden ist. */
   z.object({ typ: z.literal("teilnehmer"), liste: z.array(teilnehmerSchema) }),
+  /** In beide Richtungen alle paar Sekunden, damit ein Abriss schnell auffällt. */
+  z.object({ typ: z.literal("ping") }),
   /** Host → Gast: Verbindung wird beendet. */
   z.object({ typ: z.literal("ende"), grund: z.string() }),
 ]);

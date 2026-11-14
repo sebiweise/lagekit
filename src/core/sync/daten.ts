@@ -2,7 +2,8 @@ import type { Transaction } from "dexie";
 import type { LagekitDB } from "@/core/db/db";
 import { exportErstellen } from "@/core/export/json";
 import { einsatzSchema, type Einsatz } from "@/core/einsatz/schema";
-import { toolTabellen } from "@/tools/registry";
+import { toolRegistry, toolTabellen } from "@/tools/registry";
+import type { EinsatzbezogeneZeile } from "@/tools/types";
 import type { ZodType } from "zod";
 import type { Aenderung, Nachricht } from "./protokoll";
 
@@ -38,12 +39,29 @@ export class AbgleichFehler extends Error {
   }
 }
 
+/** Konfliktlösungen der Tools je Tabelle (siehe `ToolManifest.abgleich`). */
+function abgleichFunktionen() {
+  const funktionen = new Map<string, (db: LagekitDB, zeile: EinsatzbezogeneZeile) => Promise<EinsatzbezogeneZeile>>();
+  for (const tool of toolRegistry) {
+    for (const [tabelle, f] of Object.entries(tool.abgleich ?? {})) funktionen.set(tabelle, f);
+  }
+  return funktionen;
+}
+
 /**
  * Wendet Änderungen der Gegenseite an. Nur bekannte Tabellen und nur Zeilen des
  * Sitzungs-Einsatzes; jede Zeile wird gegen ihr Schema geprüft. Alles oder nichts.
+ *
+ * Mit `konflikteLoesen` (nur der Host) laufen die Zeilen vorher durch die
+ * Konfliktlösung der Tools. Rückgabe: die tatsächlich gespeicherten Änderungen.
  */
-export async function aenderungenAnwenden(db: LagekitDB, einsatzId: string, liste: Aenderung[]): Promise<void> {
-  if (liste.length === 0) return;
+export async function aenderungenAnwenden(
+  db: LagekitDB,
+  einsatzId: string,
+  liste: Aenderung[],
+  optionen: { konflikteLoesen?: boolean } = {},
+): Promise<Aenderung[]> {
+  if (liste.length === 0) return [];
   const tabellen = syncTabellen();
   const geprueft: Aenderung[] = [];
   for (const a of liste) {
@@ -58,19 +76,26 @@ export async function aenderungenAnwenden(db: LagekitDB, einsatzId: string, list
     }
   }
   const namen = [...new Set(geprueft.map((a) => a.tabelle))];
+  const abgleich = optionen.konflikteLoesen ? abgleichFunktionen() : new Map();
+  const gespeichert: Aenderung[] = [];
   await db.transaction("rw", namen.map((n) => db.table(n)), async (tx) => {
     fernTransaktionen.add(tx);
     for (const a of geprueft) {
       const tabelle = db.table(a.tabelle);
       if (a.art === "put") {
-        await tabelle.put(a.zeile);
+        const loesen = abgleich.get(a.tabelle);
+        const zeile = loesen ? await loesen(db, a.zeile as unknown as EinsatzbezogeneZeile) : a.zeile;
+        await tabelle.put(zeile);
+        gespeichert.push({ ...a, zeile });
       } else {
+        gespeichert.push(a);
         // Löschen nur innerhalb des Sitzungs-Einsatzes.
         const vorhanden = (await tabelle.get(a.id)) as { id: string; einsatzId?: unknown } | undefined;
         if (vorhanden && einsatzIdVon(a.tabelle, vorhanden) === einsatzId) await tabelle.delete(a.id);
       }
     }
   });
+  return gespeichert;
 }
 
 /** Vollständiger Stand eines Einsatzes für einen neuen Gast. */

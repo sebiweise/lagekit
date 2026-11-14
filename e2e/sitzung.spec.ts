@@ -156,3 +156,73 @@ test("Gemeinsam arbeiten mit Kurzcode: Host sieht die Anfrage auf jeder Seite un
   await hostKontext.close();
   await gastKontext.close();
 });
+
+test("Sitzung übersteht Neuladen: Gast verbindet sich selbst neu, Änderungen aus der Trennung kommen nach", async ({
+  browser,
+}) => {
+  const speicher = speicherImArbeitsspeicher();
+  async function dienst(kontext: Awaited<ReturnType<typeof browser.newContext>>, ip: string) {
+    await kontext.route("**/api/vermittlung", async (route) => {
+      const { status, inhalt } = await vermitteln(speicher, route.request().postDataJSON(), ip);
+      await route.fulfill({ status, json: inhalt });
+    });
+  }
+
+  const hostKontext = await browser.newContext();
+  await dienst(hostKontext, "1");
+  const host = await hostKontext.newPage();
+  await host.goto(`${baseURL}/einsatz/`);
+  await host.locator("#einsatz-stichwort").fill("Sturm");
+  await host.getByRole("button", { name: "Einsatz anlegen" }).click();
+  await host.getByRole("link", { name: "Gemeinsam" }).click();
+  await host.getByLabel("Name *").fill("Müller");
+  await host.getByRole("button", { name: "Sitzung starten" }).click();
+  const kurzcode = (await host.getByTestId("kurzcode").innerText()).replace(/\s/g, "");
+
+  const gastKontext = await browser.newContext();
+  await dienst(gastKontext, "2");
+  const gast = await gastKontext.newPage();
+  await gast.goto(`${baseURL}/sitzung/`);
+  await gast.getByLabel("Name *").fill("Schmidt");
+  await gast.getByLabel("Kurzcode vom Host").fill(kurzcode);
+  await gast.getByRole("button", { name: "Beitreten" }).click();
+  await host.locator('[data-gast="Schmidt"]').getByRole("button", { name: "Zulassen" }).click();
+  await expect(gast.getByText("Verbunden: Sturm")).toBeVisible({ timeout: 15_000 });
+
+  // Gast lädt die Seite neu: verbindet sich ohne erneute Freigabe wieder.
+  await gast.reload();
+  await expect(gast.getByText("Verbunden: Sturm")).toBeVisible({ timeout: 15_000 });
+  await expect(host.locator('[data-gast="Schmidt"]')).toContainText("wieder aufgenommen");
+
+  // Beide öffnen das Tagebuch.
+  async function tagebuch(seite: typeof host) {
+    await seite.getByRole("link", { name: "Start", exact: true }).click();
+    await seite.getByRole("link", { name: /Einsatztagebuch/ }).click();
+    await expect(seite.getByLabel("Inhalt")).toBeVisible();
+  }
+  await tagebuch(gast);
+
+  // Host fällt aus (Neuladen). Gast schreibt in der Zwischenzeit weiter.
+  await host.close();
+  await expect(gast.getByTestId("sitzung-status")).toContainText("Verbindung zum Host verloren", { timeout: 20_000 });
+  await gast.getByLabel("Inhalt").fill("Eintrag während der Trennung");
+  await gast.getByLabel("Inhalt").press("Enter");
+
+  // Host ist wieder da und schreibt selbst einen Eintrag mit derselben Nummer.
+  const host2 = await hostKontext.newPage();
+  await host2.goto(`${baseURL}/`);
+  await expect(host2.getByTestId("sitzung-status")).toContainText("Kurzcode");
+  await tagebuch(host2);
+  await host2.getByLabel("Inhalt").fill("Eintrag des Hosts");
+  await host2.getByLabel("Inhalt").press("Enter");
+
+  // Gast verbindet sich selbst neu; sein Eintrag kommt nach und bekommt eine eigene Nummer.
+  await expect(gast.getByTestId("sitzung-status")).toContainText("Verbunden mit Müller", { timeout: 30_000 });
+  const eintraegeHost = host2.getByTestId("tagebuch-eintrag");
+  await expect(eintraegeHost).toHaveCount(2);
+  await expect(eintraegeHost.filter({ hasText: "Eintrag während der Trennung" })).toContainText("2");
+  await expect(gast.getByTestId("tagebuch-eintrag")).toHaveCount(2);
+
+  await hostKontext.close();
+  await gastKontext.close();
+});
