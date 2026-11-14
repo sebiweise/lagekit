@@ -141,6 +141,43 @@ export async function aufenthaltNachtragen(
   return aufenthalt;
 }
 
+/** Trägt denselben abgeschlossenen Aufenthalt für mehrere Personen nach, z. B. einen ganzen Trupp. */
+export async function truppNachtragen(
+  db: LagekitDB,
+  personIds: string[],
+  eingabe: AufenthaltEingabe & { beginn: string; ende: string },
+  jetzt: Date = new Date(),
+): Promise<Aufenthalt[]> {
+  return db.transaction("rw", personen(db), aufenthalte(db), async () => {
+    const neu: Aufenthalt[] = [];
+    for (const personId of personIds) {
+      neu.push(await aufenthaltNachtragen(db, personId, { ...eingabe, dosimeterMsv: null }, jetzt));
+    }
+    return neu;
+  });
+}
+
+/**
+ * Neuer Messwert oder Ortswechsel: beendet die laufenden Aufenthalte der genannten Personen
+ * und startet sofort neue mit dem neuen Ort und der neuen ODL. Personen ohne laufenden
+ * Aufenthalt bleiben unberührt.
+ */
+export async function odlWechseln(
+  db: LagekitDB,
+  personIds: string[],
+  eingabe: AufenthaltEingabe,
+  jetzt: Date = new Date(),
+): Promise<Aufenthalt[]> {
+  return db.transaction("rw", personen(db), aufenthalte(db), async () => {
+    const betroffen: string[] = [];
+    for (const personId of personIds) {
+      if (await laufender(db, personId)) betroffen.push(personId);
+    }
+    await aufenthaltBeenden(db, betroffen, jetzt);
+    return aufenthaltStarten(db, betroffen, eingabe, jetzt);
+  });
+}
+
 /** Trägt den am Dosimeter abgelesenen Wert für einen Aufenthalt ein (oder entfernt ihn). */
 export async function dosimeterSetzen(db: LagekitDB, id: string, wertMsv: number | null): Promise<void> {
   const aufenthalt = await aufenthalte(db).get(id);

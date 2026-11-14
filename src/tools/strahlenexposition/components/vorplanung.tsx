@@ -7,6 +7,7 @@ import { Select } from "@/components/ui/select";
 import { zahlLesen } from "@/lib/zahl";
 import { formatDauer } from "@/lib/zeit";
 import { maxAufenthaltStunden, odlInMsvProStunde, rechenwegVorplanung, restdosis } from "../logic";
+import { STANDARD_RICHTWERT_ID } from "../richtwerte";
 import type { OdlEinheit, Richtwert } from "../schema";
 import { OdlEingabe } from "./odl-eingabe";
 
@@ -21,7 +22,9 @@ export function Vorplanung({
 }) {
   const [odl, setOdl] = useState("");
   const [einheit, setEinheit] = useState<OdlEinheit>("µSv/h");
-  const [richtwertId, setRichtwertId] = useState(richtwerte[1]?.id ?? richtwerte[0].id);
+  const [richtwertId, setRichtwertId] = useState(
+    richtwerte.find((r) => r.id === STANDARD_RICHTWERT_ID)?.id ?? richtwerte[0].id,
+  );
   const [bisher, setBisher] = useState("0");
   const [personId, setPersonId] = useState("");
 

@@ -82,7 +82,7 @@ export function PersonKarte({
         <details className="rounded-md border p-3">
           <summary className="cursor-pointer font-medium">Aufenthalt nachtragen</summary>
           <div className="mt-3">
-            <AufenthaltNachtragen personId={person.id} />
+            <AufenthaltNachtragen idPrefix={`nachtrag-${person.id}`} personIds={[person.id]} />
           </div>
         </details>
 
@@ -168,6 +168,18 @@ function LaufenderAufenthalt({
           <Square /> Aufenthalt beenden
         </Button>
       </div>
+      <details className="rounded-md border bg-background p-3">
+        <summary className="cursor-pointer font-medium">Neuer Messwert oder Ortswechsel</summary>
+        <div className="mt-3">
+          <AufenthaltStart
+            idPrefix={`wechsel-${personId}`}
+            personIds={[personId]}
+            beschriftung="Neuen Wert übernehmen"
+            wechseln
+            ortVorgabe={aufenthalt.ort}
+          />
+        </div>
+      </details>
       <p className="text-lg" data-testid="restzeit">
         {restStunden === 0
           ? "Richtwert erreicht: Bereich sofort verlassen."

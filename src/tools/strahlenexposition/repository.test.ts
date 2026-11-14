@@ -9,10 +9,12 @@ import {
   aufenthaltStarten,
   aufenthalte,
   dosimeterSetzen,
+  odlWechseln,
   personAnlegen,
   personen,
   richtwerteLesen,
   richtwerteSpeichern,
+  truppNachtragen,
 } from "./repository";
 import { STANDARD_RICHTWERTE } from "./richtwerte";
 
@@ -62,6 +64,41 @@ describe("Aufenthalte", () => {
     });
     await dosimeterSetzen(db, nachgetragen.id, 0.48);
     expect((await aufenthalte(db).get(nachgetragen.id))?.dosimeterMsv).toBe(0.48);
+  });
+
+  it("trägt einen Aufenthalt für den ganzen Trupp nach", async () => {
+    const db = testDb();
+    const { a, b } = await trupp(db);
+    const neu = await truppNachtragen(db, [a.id, b.id], {
+      ort: "Messpunkt 1",
+      odl: 0.01,
+      odlEinheit: "Sv/h",
+      beginn: t("08:00").toISOString(),
+      ende: t("08:30").toISOString(),
+    });
+    expect(neu).toHaveLength(2);
+    for (const person of [a, b]) {
+      const liste = await aufenthalte(db).where("personId").equals(person.id).toArray();
+      expect(gesamtdosis(liste, t("12:00"))).toBeCloseTo(5, 12);
+      expect(liste[0].dosimeterMsv).toBeNull();
+    }
+  });
+
+  it("wechselt die ODL eines laufenden Trupps ohne Lücke", async () => {
+    const db = testDb();
+    const { a, b } = await trupp(db);
+    await aufenthaltStarten(db, [a.id], { ort: "Halle 3", odl: 1, odlEinheit: "mSv/h" }, t("10:00"));
+    // b läuft nicht und bleibt unberührt.
+    const neu = await odlWechseln(db, [a.id, b.id], { ort: "Halle 4", odl: 2, odlEinheit: "mSv/h" }, t("10:30"));
+    expect(neu.map((x) => x.personId)).toEqual([a.id]);
+    await aufenthaltBeenden(db, [a.id], t("11:00"));
+    const liste = await aufenthalte(db).where("personId").equals(a.id).sortBy("beginn");
+    expect(liste.map((x) => [x.ort, x.beginn, x.ende])).toEqual([
+      ["Halle 3", t("10:00").toISOString(), t("10:30").toISOString()],
+      ["Halle 4", t("10:30").toISOString(), t("11:00").toISOString()],
+    ]);
+    expect(gesamtdosis(liste, t("12:00"))).toBeCloseTo(1.5, 12);
+    expect(await aufenthalte(db).where("personId").equals(b.id).count()).toBe(0);
   });
 
   it("lehnt Ende vor Beginn und negative ODL ab", async () => {

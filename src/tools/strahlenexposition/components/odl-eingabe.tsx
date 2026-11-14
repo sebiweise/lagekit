@@ -40,6 +40,7 @@ export function OdlEingabe({
         >
           <option value="µSv/h">µSv/h</option>
           <option value="mSv/h">mSv/h</option>
+          <option value="Sv/h">Sv/h</option>
         </Select>
       </div>
     </div>
