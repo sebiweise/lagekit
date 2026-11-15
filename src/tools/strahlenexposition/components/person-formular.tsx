@@ -1,15 +1,19 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { z } from "zod";
 import { UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { getDb } from "@/core/db/db";
+import { fehlerText } from "@/lib/formular";
 import { personAnlegen } from "../repository";
 import { STANDARD_RICHTWERT_ID } from "../richtwerte";
-import type { Richtwert } from "../schema";
+import { personFormularSchema, type PersonFormularWerte, type Richtwert } from "../schema";
 
 export function PersonFormular({
   einsatzId,
@@ -20,59 +24,85 @@ export function PersonFormular({
   richtwerte: Richtwert[];
   trupps: string[];
 }) {
-  const [name, setName] = useState("");
-  const [trupp, setTrupp] = useState("");
-  const [richtwertId, setRichtwertId] = useState(STANDARD_RICHTWERT_ID);
   const [fehler, setFehler] = useState<string | null>(null);
+  const form = useForm({
+    resolver: zodResolver(personFormularSchema),
+    defaultValues: { name: "", trupp: "", richtwertId: STANDARD_RICHTWERT_ID } satisfies PersonFormularWerte,
+  });
 
-  async function absenden(event: FormEvent) {
-    event.preventDefault();
+  async function absenden(werte: z.output<typeof personFormularSchema>) {
     setFehler(null);
     // Feld sofort leeren, damit schon die nächste Person getippt werden kann, während gespeichert wird.
-    const eingabe = { einsatzId, name, trupp, richtwertId };
-    setName("");
-    document.getElementById("person-name")?.focus();
+    form.resetField("name");
+    form.setFocus("name");
     try {
-      await personAnlegen(getDb(), eingabe);
+      await personAnlegen(getDb(), { einsatzId, ...werte });
     } catch (e) {
-      setName((aktuell) => aktuell || eingabe.name);
-      setFehler(e instanceof Error ? e.message : String(e));
+      if (!form.getValues("name")) form.setValue("name", werte.name);
+      setFehler(fehlerText(e));
     }
   }
 
   return (
-    <form onSubmit={absenden} className="grid grid-cols-1 gap-4 @xl:grid-cols-[2fr_1.5fr_2fr_auto] @xl:items-end" aria-label="Person anlegen">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="person-name">Name *</Label>
-        <Input id="person-name" required autoComplete="off" value={name} onChange={(e) => setName(e.target.value)} />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="person-trupp">Trupp</Label>
-        <Input
-          id="person-trupp"
-          autoComplete="off"
-          list="trupp-vorschlaege"
-          placeholder="z. B. AT 1"
-          value={trupp}
-          onChange={(e) => setTrupp(e.target.value)}
-        />
-        <datalist id="trupp-vorschlaege">
-          {trupps.map((t) => (
-            <option key={t} value={t} />
-          ))}
-        </datalist>
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="person-richtwert">Richtwert</Label>
-        <Select id="person-richtwert" value={richtwertId} onChange={(e) => setRichtwertId(e.target.value)}>
-          {richtwerte.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.bezeichnung} ({r.grenzeMsv} mSv)
-            </option>
-          ))}
-        </Select>
-      </div>
-      <Button type="submit">
+    <form
+      noValidate
+      onSubmit={form.handleSubmit(absenden)}
+      className="grid grid-cols-1 gap-4 @xl:grid-cols-[2fr_1.5fr_2fr_auto] @xl:items-start"
+      aria-label="Person anlegen"
+    >
+      <Controller
+        name="name"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor="person-name">Name *</FieldLabel>
+            <Input {...field} id="person-name" aria-required aria-invalid={fieldState.invalid} autoComplete="off" />
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        )}
+      />
+      <Controller
+        name="trupp"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor="person-trupp">Trupp</FieldLabel>
+            <Input
+              {...field}
+              id="person-trupp"
+              aria-invalid={fieldState.invalid}
+              autoComplete="off"
+              list="trupp-vorschlaege"
+              placeholder="z. B. AT 1"
+            />
+            <datalist id="trupp-vorschlaege">
+              {trupps.map((t) => (
+                <option key={t} value={t} />
+              ))}
+            </datalist>
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        )}
+      />
+      <Controller
+        name="richtwertId"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor="person-richtwert">Richtwert</FieldLabel>
+            <Select {...field} id="person-richtwert" aria-invalid={fieldState.invalid}>
+              {richtwerte.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.bezeichnung} ({r.grenzeMsv} mSv)
+                </option>
+              ))}
+            </Select>
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        )}
+      />
+      {/* Abstand wie eine Feldbeschriftung, damit der Knopf auf Höhe der Felder steht. */}
+      <Button type="submit" className="@xl:mt-[1.375rem]">
         <UserPlus /> Person anlegen
       </Button>
       {fehler && (

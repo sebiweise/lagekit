@@ -3,11 +3,18 @@
 // Sitzungen sind veränderliche Objekte; der React Compiler darf hier nichts zwischenspeichern.
 "use no memo";
 
-import { useCallback, useState, type FormEvent } from "react";
+import { useCallback, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Camera, FileUp } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Textarea } from "@/components/ui/textarea";
+import { pflichtText } from "@/lib/formular";
 import { QrScanner } from "./qr-scanner";
+
+const codeFormularSchema = z.object({ code: pflichtText("Bitte zuerst einen Code einfügen, scannen oder als Datei öffnen.") });
 
 /** Nimmt einen Code entgegen: per Kamera, als eingefügter Text oder aus einer Datei. */
 export function CodeEingabe({
@@ -21,7 +28,7 @@ export function CodeEingabe({
   knopf: string;
   onCode: (code: string) => Promise<void>;
 }) {
-  const [text, setText] = useState("");
+  const form = useForm({ resolver: zodResolver(codeFormularSchema), defaultValues: { code: "" } });
   const [scannen, setScannen] = useState(false);
   const [fehler, setFehler] = useState<string | null>(null);
   const [laeuft, setLaeuft] = useState(false);
@@ -32,7 +39,7 @@ export function CodeEingabe({
       setLaeuft(true);
       try {
         await onCode(code.trim());
-        setText("");
+        form.reset();
         setScannen(false);
       } catch (e) {
         setFehler(e instanceof Error ? e.message : String(e));
@@ -40,17 +47,13 @@ export function CodeEingabe({
         setLaeuft(false);
       }
     },
-    [onCode],
+    [onCode, form],
   );
   const gescannt = useCallback((code: string) => void uebernehmen(code), [uebernehmen]);
 
-  function absenden(e: FormEvent) {
-    e.preventDefault();
-    if (text.trim()) void uebernehmen(text);
-  }
 
   return (
-    <form onSubmit={absenden} className="flex flex-col gap-3" aria-label={beschriftung}>
+    <form noValidate onSubmit={form.handleSubmit(({ code }) => uebernehmen(code))} className="flex flex-col gap-3" aria-label={beschriftung}>
       <div className="flex flex-wrap gap-2">
         <Button type="button" variant={scannen ? "secondary" : "outline"} onClick={() => setScannen((s) => !s)}>
           <Camera /> {scannen ? "Kamera schließen" : "QR-Code scannen"}
@@ -70,17 +73,24 @@ export function CodeEingabe({
         </label>
       </div>
       {scannen && <QrScanner onCode={gescannt} />}
-      <div className="flex flex-col gap-2">
-        <Label htmlFor={id}>{beschriftung}</Label>
-        <textarea
-          id={id}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Code hier einfügen"
-          className="h-20 w-full rounded-md border bg-transparent p-2 font-mono text-xs"
-        />
-      </div>
-      <Button type="submit" disabled={laeuft || !text.trim()}>
+      <Controller
+        name="code"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor={id}>{beschriftung}</FieldLabel>
+            <Textarea
+              {...field}
+              id={id}
+              aria-invalid={fieldState.invalid}
+              placeholder="Code hier einfügen"
+              className="h-20 min-h-0 p-2 font-mono text-xs"
+            />
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        )}
+      />
+      <Button type="submit" disabled={laeuft}>
         {knopf}
       </Button>
       {fehler && (

@@ -4,10 +4,8 @@ import { useState } from "react";
 import { Square, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { getDb } from "@/core/db/db";
-import { zahlLesen } from "@/lib/zahl";
 import { formatDauer, formatZeit } from "@/lib/zeit";
 import {
   ampel,
@@ -24,12 +22,12 @@ import {
 import {
   aufenthaltBeenden,
   aufenthaltLoeschen,
-  dosimeterSetzen,
   personAendern,
   personLoeschen,
 } from "../repository";
 import type { Aufenthalt, Person, Richtwert } from "../schema";
 import { AmpelBadge } from "./ampel-badge";
+import { DosimeterFeld } from "./dosimeter-feld";
 import { AufenthaltNachtragen } from "./aufenthalt-nachtragen";
 import { AufenthaltStart } from "./aufenthalt-start";
 
@@ -52,7 +50,6 @@ export function PersonKarte({
   const laufend = aufenthalte.find((a) => a.ende === null);
   const zustand = ampel(gesamt, richtwert.grenzeMsv, gemessen);
   const rest = restdosis(Math.max(gesamt, gemessen ?? 0), richtwert.grenzeMsv);
-
   return (
     <Card id={`person-${person.id}`} data-testid="person-karte" data-person={person.name} className="scroll-mt-32">
       <CardHeader>
@@ -76,16 +73,13 @@ export function PersonKarte({
         ) : (
           <AufenthaltStart idPrefix={`start-${person.id}`} personIds={[person.id]} beschriftung="Aufenthalt starten" />
         )}
-
         {aufenthalte.length > 0 && <AufenthaltTabelle aufenthalte={aufenthalte} jetzt={jetzt} />}
-
         <details className="rounded-md border p-3">
           <summary className="cursor-pointer font-medium">Aufenthalt nachtragen</summary>
           <div className="mt-3">
             <AufenthaltNachtragen idPrefix={`nachtrag-${person.id}`} personIds={[person.id]} />
           </div>
         </details>
-
         <details className="rounded-md border p-3">
           <summary className="cursor-pointer font-medium">Richtwert ändern oder Person löschen</summary>
           <div className="mt-3 flex flex-col gap-3">
@@ -153,7 +147,6 @@ function LaufenderAufenthalt({
   const b = aufenthaltDosis(aufenthalt, jetzt);
   const restStunden = maxAufenthaltStunden(rest, b.odlMsvH);
   const erreicht = richtwertErreichtUm(jetzt, rest, b.odlMsvH);
-
   return (
     <div className="flex flex-col gap-3 rounded-md border-2 border-warn bg-warn/10 p-4" data-testid="laufender-aufenthalt">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -236,12 +229,8 @@ function AufenthaltTabelle({ aufenthalte, jetzt }: { aufenthalte: Aufenthalt[]; 
 }
 
 function AufenthaltZeile({ aufenthalt, jetzt }: { aufenthalt: Aufenthalt; jetzt: Date }) {
-  const [dosimeter, setDosimeter] = useState(
-    aufenthalt.dosimeterMsv === null ? "" : String(aufenthalt.dosimeterMsv).replace(".", ","),
-  );
   const [loeschenFragen, setLoeschenFragen] = useState(false);
   const b = aufenthaltDosis(aufenthalt, jetzt);
-
   return (
     <tr className="border-b align-top" data-testid="aufenthalt-zeile">
       <td className="py-2 pr-3">{aufenthalt.ort}</td>
@@ -254,14 +243,7 @@ function AufenthaltZeile({ aufenthalt, jetzt }: { aufenthalt: Aufenthalt; jetzt:
         <span className="block font-mono text-xs text-muted-foreground">{rechenweg(b)}</span>
       </td>
       <td className="py-2 pr-3">
-        <Input
-          aria-label={`Dosimeterwert für ${aufenthalt.ort}`}
-          inputMode="decimal"
-          className="h-10 w-28"
-          value={dosimeter}
-          onChange={(e) => setDosimeter(e.target.value)}
-          onBlur={() => void dosimeterSetzen(getDb(), aufenthalt.id, zahlLesen(dosimeter))}
-        />
+        <DosimeterFeld aufenthalt={aufenthalt} aria-label={`Dosimeterwert für ${aufenthalt.ort}`} className="h-10 w-28" />
       </td>
       <td className="py-2">
         {loeschenFragen ? (
@@ -284,12 +266,8 @@ function AufenthaltZeile({ aufenthalt, jetzt }: { aufenthalt: Aufenthalt; jetzt:
 }
 
 function AufenthaltBlock({ aufenthalt, jetzt }: { aufenthalt: Aufenthalt; jetzt: Date }) {
-  const [dosimeter, setDosimeter] = useState(
-    aufenthalt.dosimeterMsv === null ? "" : String(aufenthalt.dosimeterMsv).replace(".", ","),
-  );
   const [loeschenFragen, setLoeschenFragen] = useState(false);
   const b = aufenthaltDosis(aufenthalt, jetzt);
-
   return (
     <li className="flex flex-col gap-2 p-3" data-testid="aufenthalt-block">
       <div className="flex items-baseline justify-between gap-3">
@@ -304,13 +282,7 @@ function AufenthaltBlock({ aufenthalt, jetzt }: { aufenthalt: Aufenthalt; jetzt:
       <div className="flex items-center gap-2">
         <label className="flex flex-1 items-center gap-2 text-sm">
           Dosimeter (mSv)
-          <Input
-            inputMode="decimal"
-            className="h-11 w-24"
-            value={dosimeter}
-            onChange={(e) => setDosimeter(e.target.value)}
-            onBlur={() => void dosimeterSetzen(getDb(), aufenthalt.id, zahlLesen(dosimeter))}
-          />
+          <DosimeterFeld aufenthalt={aufenthalt} className="h-11 w-24" />
         </label>
         {loeschenFragen ? (
           <span className="flex gap-1">
