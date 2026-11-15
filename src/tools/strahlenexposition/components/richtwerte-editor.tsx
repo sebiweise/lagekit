@@ -7,6 +7,7 @@ import type { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getDb } from "@/core/db/db";
 import { richtwerteSpeichern } from "../repository";
 import { richtwerteFormularSchema, type Richtwert, type RichtwerteFormularWerte } from "../schema";
@@ -42,19 +43,19 @@ export function RichtwerteEditor({ richtwerte }: { richtwerte: Richtwert[] }) {
       className="flex flex-col gap-3"
       aria-label="Richtwerte"
     >
-      <table className="w-full text-left text-sm">
-        <thead className="text-muted-foreground">
-          <tr className="border-b">
-            <th className="py-2 pr-3 font-medium">Einsatzanlass</th>
-            <th className="py-2 pr-3 font-medium">Richtwert (mSv)</th>
-            <th className="py-2 font-medium">Hinweis</th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table>
+        <TableHeader className="text-muted-foreground">
+          <TableRow className="border-b">
+            <TableHead className="py-2 pr-3 font-medium">Einsatzanlass</TableHead>
+            <TableHead className="py-2 pr-3 font-medium">Richtwert (mSv)</TableHead>
+            <TableHead className="py-2 font-medium">Hinweis</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {richtwerte.map((r, i) => (
-            <tr key={r.id} className="border-b align-top">
-              <td className="py-2 pr-3">{r.bezeichnung}</td>
-              <td className="py-2 pr-3">
+            <TableRow key={r.id} className="border-b align-top">
+              <TableCell className="py-2 pr-3">{r.bezeichnung}</TableCell>
+              <TableCell className="py-2 pr-3">
                 <Controller
                   name={`werte.${i}.grenzeMsv`}
                   control={form.control}
@@ -71,12 +72,12 @@ export function RichtwerteEditor({ richtwerte }: { richtwerte: Richtwert[] }) {
                     </div>
                   )}
                 />
-              </td>
-              <td className="py-2 text-muted-foreground">{r.hinweis}</td>
-            </tr>
+              </TableCell>
+              <TableCell className="py-2 text-muted-foreground">{r.hinweis}</TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
       <div className="flex flex-wrap gap-2">
         <Button type="submit" variant="secondary">
           Richtwerte speichern

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { Copy, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 /** Zeigt einen Code als QR-Code, dazu Kopieren und Speichern als Datei für Geräte ohne Kamera. */
 export function QrAnzeige({ code, dateiname, testId }: { code: string; dateiname: string; testId?: string }) {
@@ -39,12 +40,12 @@ export function QrAnzeige({ code, dateiname, testId }: { code: string; dateiname
         // Von der QR-Bibliothek erzeugtes SVG, enthält nur Pfade.
         dangerouslySetInnerHTML={svg ? { __html: svg } : undefined}
       />
-      <textarea
+      <Textarea
         readOnly
         value={code}
         data-testid={testId}
         aria-label="Code als Text"
-        className="h-20 w-full resize-none rounded-md border bg-muted p-2 font-mono text-xs break-all"
+        className="h-20 min-h-0 resize-none bg-muted p-2 font-mono text-xs break-all"
         onFocus={(e) => e.currentTarget.select()}
       />
       <div className="flex flex-wrap justify-center gap-2">

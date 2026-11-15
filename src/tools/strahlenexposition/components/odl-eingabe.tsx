@@ -3,7 +3,7 @@
 import { Controller, useFormContext } from "react-hook-form";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { odlEinheitSchema, type OdlEinheit } from "../schema";
 
 /**
@@ -33,13 +33,13 @@ export function OdlEingabe({ id }: { id: string }) {
               name="odlEinheit"
               control={control}
               render={({ field: einheit }) => (
-                <Select {...einheit} aria-label="Einheit der ODL" className="w-28">
+                <NativeSelect {...einheit} aria-label="Einheit der ODL" className="w-28">
                   {odlEinheitSchema.options.map((e) => (
-                    <option key={e} value={e}>
+                    <NativeSelectOption key={e} value={e}>
                       {e}
-                    </option>
+                    </NativeSelectOption>
                   ))}
-                </Select>
+                </NativeSelect>
               )}
             />
           </div>

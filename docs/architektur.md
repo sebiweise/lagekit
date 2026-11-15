@@ -22,7 +22,7 @@ Lagekit ist eine statisch exportierte Next.js-PWA: Ein Service Worker hält alle
 | Speicher | IndexedDB über Dexie | Große Datenmengen, Transaktionen, Schema-Migrationen |
 | Validierung | Zod-Schemas je Tool | Gleiche Schemas für Formular, Speicher und Import |
 | Formulare | react-hook-form mit `zodResolver` und den shadcn/ui-Feldbausteinen (`Field`, `FieldLabel`, `FieldError`) | Fehler direkt am Feld, auf Deutsch, ohne Browser-Hinweisblasen |
-| UI | Tailwind CSS und shadcn/ui, für Einblendungen der Toast aus Base UI (`@base-ui/react`) | Zugänglich, Dunkelmodus; im eigenen Bundle und damit im Precache |
+| UI | Tailwind CSS und shadcn/ui in der Base-UI-Variante (`@base-ui/react`, Stil `base-vega` in `components.json`); Dialog, Sheet, Popover, Toggle Group, Collapsible, Toast u. a. bauen auf Base UI auf, Radix wird nicht verwendet | Zugänglich (Fokus, Tastatur, Screenreader), Dunkelmodus; nur eine Primitiv-Bibliothek, im eigenen Bundle und damit im Precache |
 | Export | JSON und CSV direkt im Browser, PDF über Druckansicht mit Print-CSS | Keine schwere PDF-Bibliothek nötig, funktioniert offline |
 | Tests | Vitest für Rechenlogik und Datenbank, Playwright mit abgeschaltetem Server | Rechenergebnisse und Offline-Fähigkeit sind die kritischen Punkte |
 | Auslieferung | Statisches Hosting (z. B. Vercel), Docker-Image und ZIP je Release | Kein laufender Anwendungsserver nötig, siehe [README](../README.md#selbst-hosten) |

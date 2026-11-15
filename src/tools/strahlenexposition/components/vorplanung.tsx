@@ -4,7 +4,7 @@ import { Controller, FormProvider, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { zahlLesen } from "@/lib/zahl";
 import { formatDauer } from "@/lib/zeit";
 import { maxAufenthaltStunden, odlInMsvProStunde, rechenwegVorplanung, restdosis } from "../logic";
@@ -63,14 +63,14 @@ export function Vorplanung({
           render={({ field }) => (
             <Field>
               <FieldLabel htmlFor="vorplanung-person">Bisherige Dosis</FieldLabel>
-              <Select {...field} id="vorplanung-person">
-                <option value="">Von Hand eingeben</option>
+              <NativeSelect {...field} id="vorplanung-person">
+                <NativeSelectOption value="">Von Hand eingeben</NativeSelectOption>
                 {personen.map((p) => (
-                  <option key={p.id} value={p.id}>
+                  <NativeSelectOption key={p.id} value={p.id}>
                     {p.name}
-                  </option>
+                  </NativeSelectOption>
                 ))}
-              </Select>
+              </NativeSelect>
             </Field>
           )}
         />
@@ -93,13 +93,13 @@ export function Vorplanung({
               render={({ field }) => (
                 <Field>
                   <FieldLabel htmlFor="vorplanung-richtwert">Richtwert</FieldLabel>
-                  <Select {...field} id="vorplanung-richtwert">
+                  <NativeSelect {...field} id="vorplanung-richtwert">
                     {richtwerte.map((r) => (
-                      <option key={r.id} value={r.id}>
+                      <NativeSelectOption key={r.id} value={r.id}>
                         {r.bezeichnung} ({r.grenzeMsv} mSv)
-                      </option>
+                      </NativeSelectOption>
                     ))}
-                  </Select>
+                  </NativeSelect>
                 </Field>
               )}
             />

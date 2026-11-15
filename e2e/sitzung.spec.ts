@@ -57,7 +57,7 @@ test("Gemeinsam arbeiten offline: Beitritt per Code, Freigabe durch den Host, Ab
   await gast.getByLabel("Name *").fill("Schmidt");
   await gast.getByLabel("Funktion").fill("Führungsassistent");
   await gast.getByLabel("Fahrzeug").fill("ELW 1");
-  await gast.getByRole("radio", { name: "Offline mit QR-Code" }).click();
+  await gast.getByRole("button", { name: "Offline mit QR-Code" }).click();
   await gast.getByRole("button", { name: "Beitreten" }).click();
   const beitrittscode = await gast.getByTestId("beitrittscode").inputValue();
   expect(beitrittscode).toMatch(/^LKA1\./);
@@ -146,7 +146,7 @@ test("Host kann eine Beitrittsanfrage ablehnen", async ({ browser }) => {
   const gast = await (await browser.newContext()).newPage();
   await gast.goto(`${baseURL}/sitzung/`);
   await gast.getByLabel("Name *").fill("Unbekannt");
-  await gast.getByRole("radio", { name: "Offline mit QR-Code" }).click();
+  await gast.getByRole("button", { name: "Offline mit QR-Code" }).click();
   await gast.getByRole("button", { name: "Beitreten" }).click();
   await host.getByRole("textbox", { name: "Beitrittscode des Geräts" }).fill(await gast.getByTestId("beitrittscode").inputValue());
   await host.getByRole("button", { name: "Anfrage prüfen" }).click();
@@ -306,7 +306,7 @@ test("Kurzcode zur Laufzeit ausgeschaltet (Docker): nur QR-Weg, Hinweise nennen 
   await seite.getByRole("button", { name: "Einsatz anlegen" }).click();
   await seite.goto(`${baseURL}/sitzung/`);
   await expect(seite.getByTestId("kurzcode-aus")).toBeVisible();
-  await expect(seite.getByRole("radio", { name: "Mit Kurzcode" })).toHaveCount(0);
+  await expect(seite.getByRole("button", { name: "Mit Kurzcode" })).toHaveCount(0);
   await expect(seite.getByLabel("Kurzcode vom Host")).toHaveCount(0);
 
   await seite.getByLabel("Name *").fill("Müller");
