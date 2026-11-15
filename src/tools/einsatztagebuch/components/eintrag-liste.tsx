@@ -3,6 +3,7 @@
 import { Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { TextMitVerweisen } from "@/core/dateien/components/text-mit-verweisen";
 import { formatDatumZeit, formatZeit } from "@/lib/zeit";
 import { cn } from "@/lib/utils";
 import type { Eintrag } from "../schema";
@@ -54,7 +55,7 @@ export function EintragListe({
                 )}
               </div>
               <p className={cn("whitespace-pre-wrap break-words text-lg leading-snug", ersetzt && "text-muted-foreground line-through")}>
-                {e.inhalt}
+                <TextMitVerweisen text={e.inhalt} einsatzId={e.einsatzId} />
               </p>
               <p className="text-xs text-muted-foreground">
                 {e.verfasser && <>Verfasser: {e.verfasser} · </>}

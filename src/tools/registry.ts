@@ -1,3 +1,4 @@
+import { dateienManifest } from "./dateien/manifest";
 import { einsatztagebuchManifest } from "./einsatztagebuch/manifest";
 import { karteManifest } from "./karte/manifest";
 import { rechercheManifest } from "./recherche/manifest";
@@ -12,6 +13,7 @@ export const toolRegistry: ToolManifest[] = [
   strahlenexpositionManifest,
   einsatztagebuchManifest,
   karteManifest,
+  dateienManifest,
   rechercheManifest,
 ];
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Pencil, Plus, Settings2, Siren } from "lucide-react";
+import { FileArchive, Pencil, Plus, Settings2, Siren } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { t } from "@/i18n";
@@ -74,6 +74,9 @@ export function AktiverEinsatzKarte() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Link href="/export/" className={buttonVariants({ variant: "outline" })}>
+            <FileArchive /> Export, Druck, Mail
+          </Link>
           <Button variant="outline" onClick={() => setBearbeiten(einsatz.id)}>
             <Pencil /> {t.einsatz.bearbeiten}
           </Button>

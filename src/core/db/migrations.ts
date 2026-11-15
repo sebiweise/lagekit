@@ -61,6 +61,14 @@ export const migrations: Migration[] = [
       rechercheSuchen: "id, einsatzId",
     },
   },
+  {
+    version: 6,
+    beschreibung: "Neue Tabelle für verknüpfte Ordner auf diesem Gerät, z. B. Drohnenaufnahmen. Vorhandene Daten bleiben unverändert.",
+    stores: {
+      // Verknüpfte Ordner je Einsatz (src/core/dateien). Nur auf diesem Gerät, nicht in Sicherung oder Sitzung.
+      ordner: "id, einsatzId",
+    },
+  },
 ];
 
 /** Neueste Schema-Version, die dieser Build mitbringt. */

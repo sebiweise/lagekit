@@ -18,11 +18,21 @@ Regeln für diese Datei:
 - Links zu „Hilfe und Feedback“ (Fehler melden, Verbesserung vorschlagen) und zum Quellcode auf GitHub, in der Seitenleiste, unter „Mehr“ und bei den Hinweisen.
 - Kurzcode für „Gemeinsam arbeiten“ auch bei selbst gehosteten Installationen (Docker, ZIP): Sie nutzen den Vermittlungsdienst des Lagekit-Projekts. Abschaltbar mit `LAGEKIT_KURZCODE_DIENST=false`, im Docker-Image ohne neuen Build.
 - Datenschutzhinweis beim Kurzcode: welcher Dienst genutzt wird und welche Angaben darüber laufen.
+- Seite „Export, Druck, Mail“: alles zum Einsatz als eine ZIP-Datei (Einsatzbericht, Tagebuch, Strahlenexposition und Suchverlauf als CSV, Sicherung zum Wiedereinlesen, dazu Dateien wie Fotos oder Drohnenaufnahmen).
+- Einsatzbericht mit allen Daten zum Drucken oder als PDF.
+- Per E-Mail senden ohne Server: Lagekit öffnet das eigene Mailprogramm mit Betreff und Kurzbericht; auf iPhone, iPad, Android und unter Windows lässt sich die Datei direkt an Mail oder Outlook teilen.
+- Ordner verknüpfen (Chrome und Edge am PC): Lagekit prüft z. B. den Ordner mit Drohnenaufnahmen alle 15 Sekunden, meldet neue Dateien und nimmt sie in den ZIP-Export mit.
+- Tool „Dateien“: verknüpfte Ordner durchsehen, Unterordner, Suche und Vorschau für Bilder, Videos, PDF und Text.
+- Einsatztagebuch: „/“ im Textfeld oder die Büroklammer verknüpft eine Datei; der Verweis lässt sich in der Liste antippen und öffnet die Vorschau.
 
 ### Behoben
 
 - Docker-Image: In der GitHub Container Registry erscheinen nur noch die Plattformen amd64 und arm64, kein Eintrag „unknown/unknown“ mehr.
 - Der Vermittlungsdienst auf Vercel startete nicht mehr, Kurzcodes schlugen fehl.
+
+### Daten
+
+- Lokale Datenbank auf Version 6: neue Tabelle für verknüpfte Ordner. Vorhandene Daten bleiben unverändert.
 
 ## [0.1.0] - 2026-11-15
 
