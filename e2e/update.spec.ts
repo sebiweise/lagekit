@@ -66,6 +66,9 @@ test("zeigt vor dem Update Änderungen und Datenumbau, aktualisiert erst nach Kl
   const hinweis = page.getByTestId("update-hinweis");
   await expect(hinweis).toContainText("Neue Version 99.0.0 bereit.");
   await expect(hinweis).toContainText("Umstellung gespeicherter Daten");
+  // Zusätzlich eine Benachrichtigung, einmal je Version.
+  await expect(page.getByTestId("toast")).toContainText("Neue Version 99.0.0 verfügbar");
+  await expect(page.getByTestId("toast")).toContainText("Gespeicherte Daten werden beim Update umgebaut");
 
   await page.getByTestId("update-hinweis-link").click();
   await expect(page.getByRole("heading", { level: 1, name: "Änderungen" })).toBeVisible();

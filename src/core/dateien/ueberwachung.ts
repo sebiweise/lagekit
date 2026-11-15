@@ -3,6 +3,8 @@
 import { useSyncExternalStore } from "react";
 import type { LagekitDB } from "@/core/db/db";
 import { aktiverEinsatzId } from "@/core/einsatz/repository";
+import { dateienMeldung } from "@/core/benachrichtigungen/texte";
+import { benachrichtigen } from "@/core/benachrichtigungen/verlauf";
 import { ordnerDurchsuchen, zugriffAnfragen, zugriffPruefen, type Zugriff } from "./ordner";
 import { ordnerAbgleichen, ordnerDesEinsatzes, type VerknuepfterOrdner } from "./repository";
 
@@ -71,7 +73,12 @@ async function rundePruefen(db: LagekitDB) {
   try {
     const einsatzId = await aktiverEinsatzId(db);
     if (!einsatzId) return;
-    for (const ordner of await ordnerDesEinsatzes(db, einsatzId)) await ordnerPruefen(db, ordner);
+    const neu: { name: string; anzahl: number }[] = [];
+    for (const ordner of await ordnerDesEinsatzes(db, einsatzId)) {
+      neu.push({ name: ordner.name, anzahl: await ordnerPruefen(db, ordner) });
+    }
+    const meldung = dateienMeldung(neu);
+    if (meldung) benachrichtigen(meldung);
   } finally {
     laeuft = false;
   }

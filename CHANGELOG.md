@@ -11,7 +11,7 @@ Regeln für diese Datei:
 
 ## [Unveröffentlicht]
 
-## [0.3.0] - 2026-11-15
+## [0.4.0] - 2026-11-15
 
 ### Neu
 
@@ -22,6 +22,13 @@ Regeln für diese Datei:
 
 - Zahlen wie ODL oder Dosimeterwerte: Ungültige Eingaben (z. B. Buchstaben oder negative Werte) bleiben stehen und werden am Feld erklärt; ein ungültiger Dosimeterwert wird nicht mehr still verworfen.
 - Ende vor Beginn beim Nachtragen eines Aufenthalts und ein unvollständiger Kurzcode werden sofort am Feld gemeldet.
+
+## [0.3.0] - 2026-11-15
+
+### Neu
+
+- Benachrichtigungen in der App: Neue Tagebucheinträge von anderen Geräten der gemeinsamen Sitzung, neue Dateien in verknüpften Ordnern, Geräte, die sich verbinden oder trennen, und eine neue Version erscheinen kurz unten rechts (am Handy über der unteren Leiste), mit Link zur passenden Seite. Eigene Einträge, auch aus einem anderen Tab, lösen keine Meldung aus.
+- Glocke in der Kopfzeile: zeigt die Zahl ungelesener Benachrichtigungen und den Verlauf. Dort lässt sich das Einblenden je Gerät ausschalten; der Verlauf füllt sich weiter. Funktioniert vollständig offline.
 
 ## [0.2.0] - 2026-11-15
 
