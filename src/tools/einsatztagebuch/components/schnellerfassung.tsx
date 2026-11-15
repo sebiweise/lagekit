@@ -9,14 +9,17 @@ import { Label } from "@/components/ui/label";
 import { ordnerDesEinsatzes } from "@/core/dateien/repository";
 import { dateienFiltern, verweisText, type DateiTreffer } from "@/core/dateien/verweis";
 import { getDb } from "@/core/db/db";
+import { useVonAnVorschlaege } from "../hooks";
 import { uhrzeitAnwenden } from "../logic";
 import { eintragHinzufuegen, verfasserSpeichern } from "../repository";
 import { EINTRAG_ARTEN, type Eintrag, type EintragArt } from "../schema";
 import { ausloeserFinden, DateiAuswahl, type Ausloeser } from "./datei-auswahl";
+import { VorschlagFeld } from "./vorschlag-feld";
 
 /**
  * Eine Eingabezeile: Inhalt tippen, Enter speichert, die Zeit wird automatisch gesetzt.
  * Art, von/an und Verfasser bleiben für den nächsten Eintrag stehen.
+ * Von/An schlagen bereits genutzte Angaben vor, Tab übernimmt den Vorschlag.
  * Tastenkürzel: Alt+1 … Alt+5 wählt die Art, Esc leert die Zeile bzw. bricht eine Korrektur ab.
  */
 export function Schnellerfassung({
@@ -38,6 +41,7 @@ export function Schnellerfassung({
   const [verfasser, setVerfasser] = useState(verfasserGespeichert);
   const [fehler, setFehler] = useState<string | null>(null);
   const inhaltFeld = useRef<HTMLInputElement>(null);
+  const vonAnVorschlaege = useVonAnVorschlaege(einsatzId);
 
   // „/“ im Inhalt: Datei aus einem verknüpften Ordner auswählen.
   const ordner = useLiveQuery(() => ordnerDesEinsatzes(getDb(), einsatzId), [einsatzId]);
@@ -239,7 +243,7 @@ export function Schnellerfassung({
       <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2 sm:grid-cols-[1fr_auto_1fr_8rem_14rem]">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="tb-von">Von</Label>
-          <Input id="tb-von" autoComplete="off" value={von} onChange={(e) => setVon(e.target.value)} />
+          <VorschlagFeld id="tb-von" value={von} onChange={setVon} vorschlaege={vonAnVorschlaege} />
         </div>
         <Button
           type="button"
@@ -256,7 +260,7 @@ export function Schnellerfassung({
         </Button>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="tb-an">An</Label>
-          <Input id="tb-an" autoComplete="off" value={an} onChange={(e) => setAn(e.target.value)} />
+          <VorschlagFeld id="tb-an" value={an} onChange={setAn} vorschlaege={vonAnVorschlaege} />
         </div>
         <div className="flex flex-col gap-1.5 max-sm:col-span-1">
           <Label htmlFor="tb-uhrzeit">Uhrzeit</Label>
@@ -275,7 +279,7 @@ export function Schnellerfassung({
         </div>
       </div>
       <p className="hidden text-xs text-muted-foreground lg:block">
-        Enter speichert · Alt+1 bis Alt+5 wählt die Art · Esc leert · / außerhalb des Textfelds springt zur Suche, im Textfeld verknüpft es eine Datei · Uhrzeit leer = jetzt
+        Enter speichert · Alt+1 bis Alt+5 wählt die Art · Tab ergänzt Von/An · Esc leert · / außerhalb des Textfelds springt zur Suche, im Textfeld verknüpft es eine Datei · Uhrzeit leer = jetzt
       </p>
       {fehler && (
         <p role="alert" className="text-sm text-destructive">

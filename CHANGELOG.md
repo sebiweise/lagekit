@@ -11,6 +11,12 @@ Regeln für diese Datei:
 
 ## [Unveröffentlicht]
 
+## [0.4.0] - 2026-11-15
+
+### Neu
+
+- Einsatztagebuch: Von und An schlagen beim Tippen bereits genutzte Angaben vor, zuerst die aus dem laufenden Einsatz, dann aus früheren Einsätzen. Die wahrscheinlichste Ergänzung steht grau im Feld, Tab übernimmt sie. Mit ↑↓ lässt sich ein anderer Vorschlag aus der Liste wählen, am Handy einfach antippen. Ohne Vorschlag wechselt Tab wie gewohnt ins nächste Feld.
+
 ## [0.3.0] - 2026-11-15
 
 ### Neu

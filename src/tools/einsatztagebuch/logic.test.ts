@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { chronologisch, filtern, korrekturen, naechsteNummer, uhrzeitAnwenden } from "./logic";
+import {
+  chronologisch,
+  ergaenzungFinden,
+  filtern,
+  korrekturen,
+  naechsteNummer,
+  uhrzeitAnwenden,
+  vonAnVorschlaege,
+  vorschlaegeFiltern,
+} from "./logic";
 import type { Eintrag } from "./schema";
 
 let zaehler = 0;
@@ -85,5 +94,63 @@ describe("chronologisch", () => {
     const spaet = eintrag({ nr: 1, zeitpunkt: "2026-11-14T11:00:00.000Z" });
     const nachgetragen = eintrag({ nr: 2, zeitpunkt: "2026-11-14T10:30:00.000Z" });
     expect(chronologisch([spaet, nachgetragen]).map((e) => e.nr)).toEqual([2, 1]);
+  });
+});
+
+describe("vonAnVorschlaege", () => {
+  const e = (einsatzId: string, nr: number, von: string, an: string) => ({
+    einsatzId,
+    nr,
+    erfasstAm: `2026-11-15T10:${String(nr).padStart(2, "0")}:00.000Z`,
+    von,
+    an,
+  });
+
+  it("nimmt von und an, zuletzt genutzte zuerst, ohne Doppelte", () => {
+    const liste = [e("a", 1, "ELW 1", "Leitstelle"), e("a", 2, "HLF 20", "ELW 1"), e("a", 3, "leitstelle", "")];
+    expect(vonAnVorschlaege(liste, "a")).toEqual(["leitstelle", "HLF 20", "ELW 1"]);
+  });
+
+  it("stellt den aktuellen Einsatz vor andere Einsätze", () => {
+    const liste = [e("b", 9, "DLK 23", ""), e("a", 1, "ELW 1", "")];
+    expect(vonAnVorschlaege(liste, "a")).toEqual(["ELW 1", "DLK 23"]);
+  });
+
+  it("überspringt leere Angaben", () => {
+    expect(vonAnVorschlaege([e("a", 1, "  ", "")], "a")).toEqual([]);
+  });
+});
+
+describe("vorschlaegeFiltern", () => {
+  const liste = ["ELW 1", "HLF 20", "Leitstelle", "Abschnitt Nord", "TLF 3000 Wehr Süd"];
+
+  it("ordnet Anfang vor Wortanfang vor enthalten, ohne Groß/Klein", () => {
+    expect(vorschlaegeFiltern(liste, "l")).toEqual(["Leitstelle", "ELW 1", "HLF 20", "TLF 3000 Wehr Süd"]);
+    expect(vorschlaegeFiltern(liste, "nord")).toEqual(["Abschnitt Nord"]);
+    expect(vorschlaegeFiltern(liste, "itst")).toEqual(["Leitstelle"]);
+  });
+
+  it("schlägt den eingegebenen Wert nicht selbst vor", () => {
+    expect(vorschlaegeFiltern(liste, "elw 1")).toEqual([]);
+  });
+
+  it("liefert bei leerer Eingabe alle, begrenzt", () => {
+    expect(vorschlaegeFiltern(liste, "", 2)).toEqual(["ELW 1", "HLF 20"]);
+  });
+});
+
+describe("ergaenzungFinden", () => {
+  const liste = ["Leitstelle", "ELW 1", "ELW 2"];
+
+  it("ergänzt den ersten Vorschlag mit gleichem Anfang", () => {
+    expect(ergaenzungFinden(liste, "elw")).toBe("ELW 1");
+    expect(ergaenzungFinden(liste, "ELW ")).toBe("ELW 1");
+    expect(ergaenzungFinden(liste, "Le")).toBe("Leitstelle");
+  });
+
+  it("ergänzt nichts bei leerer, vollständiger oder fremder Eingabe", () => {
+    expect(ergaenzungFinden(liste, "")).toBeNull();
+    expect(ergaenzungFinden(liste, "ELW 1")).toBeNull();
+    expect(ergaenzungFinden(liste, "itst")).toBeNull();
   });
 });
