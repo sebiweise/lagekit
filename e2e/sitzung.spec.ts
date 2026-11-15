@@ -76,6 +76,8 @@ test("Gemeinsam arbeiten offline: Beitritt per Code, Freigabe durch den Host, Ab
   await expect(gast.getByText("Verbunden: ABC 2")).toBeVisible({ timeout: 15_000 });
   await expect(karte).toContainText("verbunden");
   await expect(gast.getByTestId("kopf-einsatz")).toHaveText("ABC 2");
+  // Benachrichtigung beim Host: Gerät verbunden.
+  await expect(host.getByTestId("toast").filter({ hasText: "Gerät verbunden" })).toContainText("Schmidt");
 
   // Navigation innerhalb der App (ein volles Neuladen würde die Sitzung beenden).
   async function tagebuch(seite: typeof host) {
@@ -92,6 +94,11 @@ test("Gemeinsam arbeiten offline: Beitritt per Code, Freigabe durch den Host, Ab
   await gast.getByLabel("Inhalt").fill("Messtrupp 1 an Messpunkt 3");
   await gast.getByLabel("Inhalt").press("Enter");
   await expect(host.getByTestId("tagebuch-eintrag").filter({ hasText: "Messtrupp 1 an Messpunkt 3" })).toBeVisible();
+  // Benachrichtigung nur beim anderen Gerät, nicht beim Verfasser.
+  await expect(host.getByTestId("toast").filter({ hasText: "Messtrupp 1 an Messpunkt 3" })).toContainText(
+    "Tagebuch Nr. 1",
+  );
+  await expect(gast.getByTestId("toast").filter({ hasText: "Messtrupp 1" })).toHaveCount(0);
   await host.getByLabel("Inhalt").fill("Lagemeldung an Leitstelle");
   await host.getByLabel("Inhalt").press("Enter");
   await expect(gast.getByTestId("tagebuch-eintrag").filter({ hasText: "Lagemeldung an Leitstelle" })).toBeVisible();
@@ -104,6 +111,16 @@ test("Gemeinsam arbeiten offline: Beitritt per Code, Freigabe durch den Host, Ab
   await hostTab2.getByLabel("Inhalt").fill("Aus dem zweiten Tab des Hosts");
   await hostTab2.getByLabel("Inhalt").press("Enter");
   await expect(gast.getByTestId("tagebuch-eintrag").filter({ hasText: "Aus dem zweiten Tab des Hosts" })).toBeVisible();
+  await expect(gast.getByTestId("toast").filter({ hasText: "Aus dem zweiten Tab des Hosts" })).toBeVisible();
+  // Eigene Einträge aus einem anderen Tab desselben Geräts lösen beim Host keine Meldung aus.
+  await expect(host.getByTestId("tagebuch-eintrag").filter({ hasText: "Aus dem zweiten Tab des Hosts" })).toBeVisible();
+  await host.waitForTimeout(800);
+  await expect(host.getByTestId("toast").filter({ hasText: "Aus dem zweiten Tab" })).toHaveCount(0);
+  // Verlauf an der Glocke.
+  await gast.getByTestId("glocke").click();
+  await expect(gast.getByTestId("glocke-verlauf")).toContainText("Aus dem zweiten Tab des Hosts");
+  await gast.keyboard.press("Escape");
+  await expect(gast.getByTestId("glocke-zahl")).toHaveCount(0);
   await hostTab2.close();
 
   // Host trennt das Gerät.

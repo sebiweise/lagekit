@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { AppHeader } from "@/components/layout/app-header";
 import { Seitenleiste } from "@/components/layout/seitenleiste";
 import { UntereLeiste } from "@/components/layout/untere-leiste";
+import { Benachrichtigungen } from "@/core/benachrichtigungen/components/benachrichtigungen";
 import { FARBSCHEMA_SKRIPT } from "@/core/darstellung/farbschema";
 import { DateiVorschau } from "@/core/dateien/components/datei-vorschau";
 import { OrdnerHinweis } from "@/core/dateien/components/ordner-hinweis";
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </div>
         <UntereLeiste />
         <DateiVorschau />
+        <Benachrichtigungen />
       </body>
     </html>
   );
