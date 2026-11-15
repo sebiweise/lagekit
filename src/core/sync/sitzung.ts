@@ -120,6 +120,11 @@ export class HostSitzung extends Beobachtbar {
     });
   }
 
+  /** Ohne Vermittlungsdienst (in der Installation ausgeschaltet) gibt es keinen Kurzcode. */
+  get kurzcodeMoeglich() {
+    return Boolean(this.dienst);
+  }
+
   /**
    * Meldet die Sitzung beim Vermittlungsdienst an, damit Geräte per Kurzcode beitreten
    * können. Ein gespeicherter Kurzcode (nach Neuladen) bleibt erhalten.

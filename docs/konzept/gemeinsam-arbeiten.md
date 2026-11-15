@@ -14,7 +14,7 @@ Mehrere Geräte (Tablets, Handys, ELW-Rechner) arbeiten am selben Einsatz. Ein G
 
 Das beitretende Gerät wählt den Weg selbst, auch wenn Internet da ist.
 
-1. **Kurzcode (braucht kurz Internet).** Der Host zeigt einen 6-stelligen Code. Über den Vermittlungsdienst (`api/vermittlung.ts`, Vercel-Funktion mit Upstash Redis) laufen nur Beitrittsanfrage und Antwort, also die Verbindungsdaten, und das nur für wenige Minuten. Danach läuft die Sitzung auch ohne Internet weiter.
+1. **Kurzcode (braucht kurz Internet).** Der Host zeigt einen 6-stelligen Code. Über den Vermittlungsdienst (`api/vermittlung.ts`, Vercel-Funktion mit Upstash Redis) laufen nur Beitrittsanfrage und Antwort, also die Verbindungsdaten, und das nur für wenige Minuten. Danach läuft die Sitzung auch ohne Internet weiter. Welcher Dienst genutzt wird, legt `LAGEKIT_KURZCODE_DIENST` fest (`src/core/sync/dienst-adresse.ts`, README „Kurzcode für ‚Gemeinsam arbeiten‘“): standardmäßig der gehostete unter `lagekit.vercel.app`, den statische und Docker-Installationen per CORS aufrufen.
 2. **QR-Code (ganz offline).** Das Gerät zeigt seinen Beitrittscode, der Host scannt ihn, lässt zu und zeigt seinen Antwortcode, den das Gerät scannt. Ohne Kamera lassen sich beide Codes kopieren oder als Datei übertragen (z. B. USB-Stick).
 
 ## Technik

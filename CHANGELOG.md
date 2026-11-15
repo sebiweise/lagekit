@@ -11,6 +11,16 @@ Regeln für diese Datei:
 
 ## [Unveröffentlicht]
 
+### Neu
+
+- Links zu „Hilfe und Feedback“ (Fehler melden, Verbesserung vorschlagen) und zum Quellcode auf GitHub, in der Seitenleiste, unter „Mehr“ und bei den Hinweisen.
+- Kurzcode für „Gemeinsam arbeiten“ auch bei selbst gehosteten Installationen (Docker, ZIP): Sie nutzen den Vermittlungsdienst des Lagekit-Projekts. Abschaltbar mit `LAGEKIT_KURZCODE_DIENST=false`, im Docker-Image ohne neuen Build.
+- Datenschutzhinweis beim Kurzcode: welcher Dienst genutzt wird und welche Angaben darüber laufen.
+
+### Behoben
+
+- Der Vermittlungsdienst auf Vercel startete nicht mehr, Kurzcodes schlugen fehl.
+
 ## [0.1.0] - 2026-11-15
 
 Erste Version für den Praxistest.
