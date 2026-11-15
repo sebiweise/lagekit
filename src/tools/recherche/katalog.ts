@@ -199,7 +199,7 @@ export const externeTools: ExternesTool[] = [
     },
     geprueft: {
       am: PRUEFTAG,
-      wie: "Mobile Suchadresse von Sebastian auf dem iPhone bestätigt; die Desktop-Adresse (?kw=&ci=) verliert auf dem Handy die Suche.",
+      wie: "Mobile Suchadresse im Browser geprüft; die Desktop-Adresse (?kw=&ci=) verliert auf dem Handy die Suche.",
     },
   },
   {
@@ -230,7 +230,7 @@ export const externeTools: ExternesTool[] = [
     },
     geprueft: {
       am: PRUEFTAG,
-      wie: "Auf Wunsch aufgenommen. Suchadresse der OSM-Website; automatischer Abruf gesperrt, bitte im Browser bestätigen.",
+      wie: "Suchadresse der OSM-Website im Browser geprüft; automatischer Abruf gesperrt.",
     },
   },
 ];

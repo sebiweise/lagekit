@@ -4,9 +4,9 @@ Danke, dass Sie Lagekit verbessern wollen. Lagekit ist ein Werkzeug für Einsatz
 
 ## Grundregeln
 
-Diese Regeln stammen aus dem [Projektplan](docs/PLAN.md) und gelten für jeden Beitrag:
+Diese Regeln gelten für jeden Beitrag; Hintergrund steht in [Architektur und Grundsätze](docs/architektur.md):
 
-1. **Offline-first:** Alles läuft im Browser. Keine Server Actions, keine API-Routen, keine extern geladenen Schriften oder Skripte.
+1. **Offline-first:** Alles läuft im Browser. Keine Server Actions, keine extern geladenen Schriften oder Skripte, keine neuen Server-Abhängigkeiten.
 2. **Nur lokal speichern:** Kein Konto, kein Backend, kein Tracking.
 3. **Nachvollziehbar rechnen:** Rechenlogik steht in reinen Funktionen (`logic.ts`) mit Tests. Die Oberfläche zeigt Formel und Eingangswerte.
 4. **Einsatztauglich:** Große Bedienflächen, Tastaturbedienung, Dunkelmodus, automatisches Speichern.
