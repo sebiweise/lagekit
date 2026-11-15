@@ -56,13 +56,13 @@ test("Dosisüberwachung: Trupp, laufender Aufenthalt, Nachtrag, Ampel, Nachweis"
 
   // Nachtrag mit hoher Dosis treibt Schulz über 80 % des Richtwerts (100 mSv).
   const schulz = page.locator('[data-person="Schulz"]');
-  await schulz.locator("summary", { hasText: "Aufenthalt nachtragen" }).click();
+  await schulz.getByRole("button", { name: "Aufenthalt nachtragen", expanded: false }).click();
   await schulz.getByLabel("Ort", { exact: true }).last().fill("Messpunkt 2");
   await schulz.getByLabel("Beginn", { exact: true }).fill("2026-11-14T08:00");
   await schulz.getByLabel("Ende", { exact: true }).fill("2026-11-14T09:00");
   await schulz.getByLabel("Ortsdosisleistung (ODL)").last().fill("85");
   await schulz.getByLabel("Einheit der ODL").last().selectOption("mSv/h");
-  await schulz.getByRole("button", { name: "Aufenthalt nachtragen" }).click();
+  await schulz.getByRole("form", { name: "Aufenthalt nachtragen" }).getByRole("button", { name: "Aufenthalt nachtragen" }).click();
   await expect(schulz.getByTestId("gesamtdosis")).toHaveText("85,300 mSv");
   await expect(schulz.getByTestId("ampel")).toHaveAttribute("data-ampel", "gelb");
   await expect(meier.getByTestId("ampel")).toHaveAttribute("data-ampel", "gruen");
@@ -111,7 +111,7 @@ test("Trupp: Messwert in Sv/h wechseln und Aufenthalt für den Trupp nachtragen"
 
   // Nach 30 min neuer Messwert: 0,002 Sv/h = 2 mSv/h.
   await page.clock.runFor(30 * 60 * 1000);
-  await trupp.locator("summary", { hasText: "Neuer Messwert oder Ortswechsel" }).click();
+  await trupp.getByRole("button", { name: "Neuer Messwert oder Ortswechsel", expanded: false }).click();
   const wechsel = trupp.getByRole("form", { name: "Neuen Wert für den Trupp übernehmen" });
   await wechsel.getByLabel("Ort", { exact: true }).fill("Halle 4");
   await wechsel.getByLabel("Ortsdosisleistung (ODL)").fill("0,002");
@@ -127,7 +127,7 @@ test("Trupp: Messwert in Sv/h wechseln und Aufenthalt für den Trupp nachtragen"
   await expect(meier.getByTestId("gesamtdosis")).toHaveText("1,000 mSv");
 
   // Nachtrag für den ganzen Trupp: 1 h bei 3 mSv/h.
-  await trupp.locator("summary", { hasText: "Aufenthalt für den Trupp nachtragen" }).click();
+  await trupp.getByRole("button", { name: "Aufenthalt für den Trupp nachtragen", expanded: false }).click();
   const nachtrag = trupp.getByRole("form", { name: "Aufenthalt nachtragen" });
   await nachtrag.getByLabel("Ort", { exact: true }).fill("Messpunkt 1");
   await nachtrag.getByLabel("Beginn", { exact: true }).fill("2026-11-14T08:00");

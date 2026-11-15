@@ -14,6 +14,7 @@ describe("Katalog", () => {
       expect(t.geprueft.am).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(t.geprueft.wie).not.toBe("");
       if (t.suche) expect(t.suche.muster).toMatch(/^https:\/\/.*\{q\}/);
+      if (t.unMuster) expect(t.unMuster).toMatch(/^https:\/\/.*\{un\}/);
     }
   });
 });
@@ -46,6 +47,18 @@ describe("suchUrl", () => {
   it("liefert null ohne Direktsuche", () => {
     expect(suchUrl(tool("gestis"), "Chlor")).toBeNull();
   });
+
+  it("springt bei UN-Nummern direkt zum CAMEO-Datenblatt, ohne führende Nullen", () => {
+    expect(suchUrl(tool("cameo"), "1005", "", "un")).toBe("https://cameochemicals.noaa.gov/unna/1005");
+    expect(suchUrl(tool("cameo"), "0004", "", "un")).toBe("https://cameochemicals.noaa.gov/unna/4");
+    expect(suchUrl(tool("cameo"), "Ammonia")).toBeNull();
+  });
+
+  it("sucht in PubChem nach Name und CAS-Nummer, nicht nach UN-Nummer", () => {
+    expect(suchUrl(tool("pubchem"), "7664-41-7", "", "cas")).toBe("https://pubchem.ncbi.nlm.nih.gov/compound/7664-41-7");
+    expect(suchUrl(tool("pubchem"), "ammonia")).toBe("https://pubchem.ncbi.nlm.nih.gov/compound/ammonia");
+    expect(suchUrl(tool("pubchem"), "1005", "", "un")).toBeNull();
+  });
 });
 
 describe("themenFuerEinsatz", () => {
@@ -61,6 +74,9 @@ describe("themenFuerEinsatz", () => {
     ["Brand", "Waldweg 3", "vegetation"],
     ["Unwetter", "", "wasser"],
     ["Gefahrgut", "UN1005", "gefahrstoff"],
+    ["Unwetter Gewitter", "", "warnung"],
+    ["Gewässerverunreinigung", "", "wasser"],
+    ["Person im Forst", "", "vegetation"],
   ])("„%s“ in „%s“ → %s", (stichwort, ort, thema) => {
     expect(themenFuerEinsatz({ stichwort, ort })).toContain(thema);
   });
@@ -115,8 +131,8 @@ describe("begriffErkennen", () => {
 describe("suchziele", () => {
   it("schickt UN-Nummern nur an Stoffdatenbanken", () => {
     const z = suchziele(externeTools, "UN 1005", null);
-    expect(z.direkt.map((t) => t.id)).toEqual(["bam-dgg"]);
-    expect(z.kopieren.map((t) => t.id)).toContain("gestis");
+    expect(z.direkt.map((t) => t.id)).toEqual(["bam-dgg", "cameo"]);
+    expect(z.kopieren.map((t) => t.id)).toEqual(expect.arrayContaining(["gestis", "ericards", "pubchem"]));
     expect(z.kopieren.map((t) => t.id)).not.toContain("adac-rettungskarten");
   });
 
@@ -124,5 +140,10 @@ describe("suchziele", () => {
     const z = suchziele(externeTools, "Rathaus", { stichwort: "TH VU", ort: "Kassel" });
     expect(z.direkt.map((t) => t.id)).toEqual(expect.arrayContaining(["dasoertliche", "google-maps", "openstreetmap", "bam-dgg"]));
     expect(z.kopieren[0].id).toBe("adac-rettungskarten");
+  });
+
+  it("schickt CAS-Nummern direkt an BAM und PubChem", () => {
+    const z = suchziele(externeTools, "7664-41-7", null);
+    expect(z.direkt.map((t) => t.id)).toEqual(["bam-dgg", "pubchem"]);
   });
 });

@@ -3,6 +3,7 @@
 import { useRef, useState, useSyncExternalStore } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Check, FilePlus2, FolderPlus, FolderSync, RefreshCw, ShieldCheck, Trash2, X } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleZeile } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getDb } from "@/core/db/db";
@@ -81,25 +82,27 @@ function OrdnerZeile({ ordner }: { ordner: VerknuepfterOrdner }) {
         </Button>
       </div>
       {neueste.length > 0 && (
-        <details className="text-sm">
-          <summary className="cursor-pointer py-1 font-medium">Dateien ansehen (neueste zuerst)</summary>
-          <ul className="mt-1 flex max-h-64 flex-col overflow-y-auto">
-            {neueste.map((d) => (
-              <li key={d.pfad} className="flex flex-wrap justify-between gap-x-3 border-b py-1">
-                <span className="break-all">
-                  {neu.has(d.pfad) && <Badge className="mr-2">neu</Badge>}
-                  {d.pfad}
-                </span>
-                <span className="text-muted-foreground tabular-nums">
-                  {groesseText(d.groesse)} · {formatDatumZeit(new Date(d.geaendert))}
-                </span>
-              </li>
-            ))}
-          </ul>
-          {ordner.dateien.length > neueste.length && (
-            <p className="py-1 text-muted-foreground">… und {ordner.dateien.length - neueste.length} weitere</p>
-          )}
-        </details>
+        <Collapsible className="text-sm">
+          <CollapsibleZeile className="py-1 font-medium">Dateien ansehen (neueste zuerst)</CollapsibleZeile>
+          <CollapsibleContent>
+            <ul className="mt-1 flex max-h-64 flex-col overflow-y-auto">
+              {neueste.map((d) => (
+                <li key={d.pfad} className="flex flex-wrap justify-between gap-x-3 border-b py-1">
+                  <span className="break-all">
+                    {neu.has(d.pfad) && <Badge className="mr-2">neu</Badge>}
+                    {d.pfad}
+                  </span>
+                  <span className="text-muted-foreground tabular-nums">
+                    {groesseText(d.groesse)} · {formatDatumZeit(new Date(d.geaendert))}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            {ordner.dateien.length > neueste.length && (
+              <p className="py-1 text-muted-foreground">… und {ordner.dateien.length - neueste.length} weitere</p>
+            )}
+          </CollapsibleContent>
+        </Collapsible>
       )}
     </li>
   );

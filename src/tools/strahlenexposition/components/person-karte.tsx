@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { Square, Trash2 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleZeile } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select } from "@/components/ui/select";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getDb } from "@/core/db/db";
 import { formatDauer, formatZeit } from "@/lib/zeit";
 import {
@@ -74,49 +76,53 @@ export function PersonKarte({
           <AufenthaltStart idPrefix={`start-${person.id}`} personIds={[person.id]} beschriftung="Aufenthalt starten" />
         )}
         {aufenthalte.length > 0 && <AufenthaltTabelle aufenthalte={aufenthalte} jetzt={jetzt} />}
-        <details className="rounded-md border p-3">
-          <summary className="cursor-pointer font-medium">Aufenthalt nachtragen</summary>
-          <div className="mt-3">
-            <AufenthaltNachtragen idPrefix={`nachtrag-${person.id}`} personIds={[person.id]} />
-          </div>
-        </details>
-        <details className="rounded-md border p-3">
-          <summary className="cursor-pointer font-medium">Richtwert ändern oder Person löschen</summary>
-          <div className="mt-3 flex flex-col gap-3">
-            <label className="flex flex-col gap-1.5 text-sm font-medium">
-              Richtwert
-              <Select
-                className="w-full max-w-full sm:max-w-md"
-                value={person.richtwertId}
-                onChange={(e) => void personAendern(db, person.id, { richtwertId: e.target.value })}
-              >
-                {richtwerte.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.bezeichnung} ({r.grenzeMsv} mSv)
-                  </option>
-                ))}
-              </Select>
-            </label>
-            {richtwert.hinweis && <p className="text-sm text-muted-foreground">{richtwert.hinweis}</p>}
-            {loeschenFragen ? (
-              <div className="flex flex-col gap-2 rounded-md border border-destructive p-3">
-                <span className="text-sm">Person mit allen Aufenthalten löschen?</span>
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="destructive" onClick={() => void personLoeschen(db, person.id)}>
-                    Endgültig löschen
-                  </Button>
-                  <Button variant="outline" onClick={() => setLoeschenFragen(false)}>
-                    Abbrechen
-                  </Button>
+        <Collapsible className="rounded-md border px-3 py-1">
+          <CollapsibleZeile className="font-medium">Aufenthalt nachtragen</CollapsibleZeile>
+          <CollapsibleContent className="pb-2">
+            <div className="mt-3">
+              <AufenthaltNachtragen idPrefix={`nachtrag-${person.id}`} personIds={[person.id]} />
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+        <Collapsible className="rounded-md border px-3 py-1">
+          <CollapsibleZeile className="font-medium">Richtwert ändern oder Person löschen</CollapsibleZeile>
+          <CollapsibleContent className="pb-2">
+            <div className="mt-3 flex flex-col gap-3">
+              <label className="flex flex-col gap-1.5 text-sm font-medium">
+                Richtwert
+                <NativeSelect
+                  className="w-full max-w-full sm:max-w-md"
+                  value={person.richtwertId}
+                  onChange={(e) => void personAendern(db, person.id, { richtwertId: e.target.value })}
+                >
+                  {richtwerte.map((r) => (
+                    <NativeSelectOption key={r.id} value={r.id}>
+                      {r.bezeichnung} ({r.grenzeMsv} mSv)
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelect>
+              </label>
+              {richtwert.hinweis && <p className="text-sm text-muted-foreground">{richtwert.hinweis}</p>}
+              {loeschenFragen ? (
+                <div className="flex flex-col gap-2 rounded-md border border-destructive p-3">
+                  <span className="text-sm">Person mit allen Aufenthalten löschen?</span>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="destructive" onClick={() => void personLoeschen(db, person.id)}>
+                      Endgültig löschen
+                    </Button>
+                    <Button variant="outline" onClick={() => setLoeschenFragen(false)}>
+                      Abbrechen
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <Button variant="outline" className="w-fit" onClick={() => setLoeschenFragen(true)}>
-                <Trash2 /> Person löschen
-              </Button>
-            )}
-          </div>
-        </details>
+              ) : (
+                <Button variant="outline" className="w-fit" onClick={() => setLoeschenFragen(true)}>
+                  <Trash2 /> Person löschen
+                </Button>
+              )}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </CardContent>
     </Card>
   );
@@ -169,18 +175,20 @@ function LaufenderAufenthalt({
           <Square /> Aufenthalt beenden
         </Button>
       </div>
-      <details className="rounded-md border bg-background p-3">
-        <summary className="cursor-pointer font-medium">Neuer Messwert oder Ortswechsel</summary>
-        <div className="mt-3">
-          <AufenthaltStart
-            idPrefix={`wechsel-${personId}`}
-            personIds={[personId]}
-            beschriftung="Neuen Wert übernehmen"
-            wechseln
-            ortVorgabe={aufenthalt.ort}
-          />
-        </div>
-      </details>
+      <Collapsible className="rounded-md border bg-background px-3 py-1">
+        <CollapsibleZeile className="font-medium">Neuer Messwert oder Ortswechsel</CollapsibleZeile>
+        <CollapsibleContent className="pb-2">
+          <div className="mt-3">
+            <AufenthaltStart
+              idPrefix={`wechsel-${personId}`}
+              personIds={[personId]}
+              beschriftung="Neuen Wert übernehmen"
+              wechseln
+              ortVorgabe={aufenthalt.ort}
+            />
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
       <p className="text-lg" data-testid="restzeit">
         {restStunden === 0
           ? "Richtwert erreicht: Bereich sofort verlassen."
@@ -202,27 +210,27 @@ function AufenthaltTabelle({ aufenthalte, jetzt }: { aufenthalte: Aufenthalt[]; 
         ))}
       </ul>
       <div className="hidden overflow-x-auto sm:block">
-      <table className="w-full min-w-[640px] text-left text-sm">
-        <thead className="text-muted-foreground">
-          <tr className="border-b">
-            <th className="py-2 pr-3 font-medium">Ort</th>
-            <th className="py-2 pr-3 font-medium">Beginn</th>
-            <th className="py-2 pr-3 font-medium">Ende</th>
-            <th className="py-2 pr-3 font-medium">Dauer</th>
-            <th className="py-2 pr-3 font-medium">ODL</th>
-            <th className="py-2 pr-3 font-medium">Dosis (berechnet)</th>
-            <th className="py-2 pr-3 font-medium">Dosimeter (mSv)</th>
-            <th className="py-2 font-medium">
+      <Table className="min-w-[640px]">
+        <TableHeader className="text-muted-foreground">
+          <TableRow className="border-b">
+            <TableHead className="py-2 pr-3 font-medium">Ort</TableHead>
+            <TableHead className="py-2 pr-3 font-medium">Beginn</TableHead>
+            <TableHead className="py-2 pr-3 font-medium">Ende</TableHead>
+            <TableHead className="py-2 pr-3 font-medium">Dauer</TableHead>
+            <TableHead className="py-2 pr-3 font-medium">ODL</TableHead>
+            <TableHead className="py-2 pr-3 font-medium">Dosis (berechnet)</TableHead>
+            <TableHead className="py-2 pr-3 font-medium">Dosimeter (mSv)</TableHead>
+            <TableHead className="py-2 font-medium">
               <span className="sr-only">Aktionen</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {aufenthalte.map((a) => (
             <AufenthaltZeile key={a.id} aufenthalt={a} jetzt={jetzt} />
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
       </div>
     </>
   );
@@ -232,20 +240,20 @@ function AufenthaltZeile({ aufenthalt, jetzt }: { aufenthalt: Aufenthalt; jetzt:
   const [loeschenFragen, setLoeschenFragen] = useState(false);
   const b = aufenthaltDosis(aufenthalt, jetzt);
   return (
-    <tr className="border-b align-top" data-testid="aufenthalt-zeile">
-      <td className="py-2 pr-3">{aufenthalt.ort}</td>
-      <td className="py-2 pr-3 tabular-nums">{formatZeit(aufenthalt.beginn)}</td>
-      <td className="py-2 pr-3 tabular-nums">{aufenthalt.ende ? formatZeit(aufenthalt.ende) : "läuft"}</td>
-      <td className="py-2 pr-3 tabular-nums">{formatDauer(b.dauerH * 60)}</td>
-      <td className="py-2 pr-3 tabular-nums">{formatOdl(aufenthalt.odl, aufenthalt.odlEinheit)}</td>
-      <td className="py-2 pr-3">
+    <TableRow className="border-b align-top" data-testid="aufenthalt-zeile">
+      <TableCell className="py-2 pr-3">{aufenthalt.ort}</TableCell>
+      <TableCell className="py-2 pr-3 tabular-nums">{formatZeit(aufenthalt.beginn)}</TableCell>
+      <TableCell className="py-2 pr-3 tabular-nums">{aufenthalt.ende ? formatZeit(aufenthalt.ende) : "läuft"}</TableCell>
+      <TableCell className="py-2 pr-3 tabular-nums">{formatDauer(b.dauerH * 60)}</TableCell>
+      <TableCell className="py-2 pr-3 tabular-nums">{formatOdl(aufenthalt.odl, aufenthalt.odlEinheit)}</TableCell>
+      <TableCell className="py-2 pr-3">
         <span className="font-mono tabular-nums">{formatDosis(b.dosisMsv)}</span>
         <span className="block font-mono text-xs text-muted-foreground">{rechenweg(b)}</span>
-      </td>
-      <td className="py-2 pr-3">
+      </TableCell>
+      <TableCell className="py-2 pr-3">
         <DosimeterFeld aufenthalt={aufenthalt} aria-label={`Dosimeterwert für ${aufenthalt.ort}`} className="h-10 w-28" />
-      </td>
-      <td className="py-2">
+      </TableCell>
+      <TableCell className="py-2">
         {loeschenFragen ? (
           <span className="flex gap-1">
             <Button size="sm" variant="destructive" onClick={() => void aufenthaltLoeschen(getDb(), aufenthalt.id)}>
@@ -260,8 +268,8 @@ function AufenthaltZeile({ aufenthalt, jetzt }: { aufenthalt: Aufenthalt; jetzt:
             <Trash2 />
           </Button>
         )}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }
 

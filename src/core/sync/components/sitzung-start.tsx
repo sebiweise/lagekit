@@ -12,6 +12,7 @@ import { LogIn, Radio } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { getDb } from "@/core/db/db";
 import { useAktiverEinsatz } from "@/core/einsatz/hooks";
@@ -147,28 +148,23 @@ function SitzungStartFormular({
           <CardContent>
             <form noValidate onSubmit={form.handleSubmit(beitreten)} className="flex flex-col gap-4" aria-label="Einer Sitzung beitreten">
               {dienst ? (
-                <div role="radiogroup" aria-label="Weg" className="grid grid-cols-2 gap-1 rounded-md bg-muted p-1">
-                  {(
-                    [
-                      ["kurzcode", "Mit Kurzcode"],
-                      ["qr", "Offline mit QR-Code"],
-                    ] as const
-                  ).map(([wert, text]) => (
-                    <button
-                      key={wert}
-                      type="button"
-                      role="radio"
-                      aria-checked={weg === wert}
-                      onClick={() => form.setValue("weg", wert)}
-                      className={cn(
-                        "h-11 rounded-md px-2 text-sm font-medium",
-                        weg === wert ? "bg-background shadow-sm" : "text-muted-foreground",
-                      )}
-                    >
-                      {text}
-                    </button>
-                  ))}
-                </div>
+                <ToggleGroup
+                  aria-label="Weg"
+                  className="grid w-full grid-cols-2 bg-muted"
+                  size="sm"
+                  value={[weg]}
+                  onValueChange={(wert) => {
+                    const neu = wert[0] as "kurzcode" | "qr" | undefined;
+                    if (neu) form.setValue("weg", neu);
+                  }}
+                >
+                  <ToggleGroupItem value="kurzcode" className="h-11 data-pressed:bg-background data-pressed:shadow-sm">
+                    Mit Kurzcode
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="qr" className="h-11 data-pressed:bg-background data-pressed:shadow-sm">
+                    Offline mit QR-Code
+                  </ToggleGroupItem>
+                </ToggleGroup>
               ) : (
                 <p className="text-sm text-muted-foreground" data-testid="kurzcode-aus">
                   Beitritt per Kurzcode ist in dieser Installation ausgeschaltet.

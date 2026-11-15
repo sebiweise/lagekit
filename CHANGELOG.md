@@ -11,6 +11,29 @@ Regeln für diese Datei:
 
 ## [Unveröffentlicht]
 
+## [0.7.0] - 2026-11-15
+
+### Neu
+
+- Einsatztagebuch: Von und An schlagen beim Tippen bereits genutzte Angaben vor, zuerst die aus dem laufenden Einsatz, dann aus früheren Einsätzen. Die wahrscheinlichste Ergänzung steht grau im Feld, Tab übernimmt sie. Mit ↑↓ lässt sich ein anderer Vorschlag aus der Liste wählen, am Handy einfach antippen. Ohne Vorschlag wechselt Tab wie gewohnt ins nächste Feld.
+- Suche: Eine UN-Nummer öffnet jetzt auch in CAMEO Chemicals direkt das Datenblatt mit ERG-Leitfaden und Schutzabständen. Stoffnamen und CAS-Nummern springen in PubChem direkt zum Stoff.
+- Neue externe Tools: DWD Waldbrand-Gefahrenindex und Grasland-Feuerindex, Rettungspunkte im Wald (KWF), Amtliche Warnungen des DWD, Naturgefahrenportal, ChemInfo mit Gefahrstoffschnellauskunft, Rigoletto (Wassergefährdungsklassen), EURDEP-Messnetz, ELWIS und OpenFireMap (Hydranten und Feuerwachen).
+- Mehr Vorschläge passend zum Einsatz, z. B. bei „Gewitter“, „Starkregen“, „Gewässer“, „Schiff“ oder „Forst“.
+
+### Geändert
+
+- ERI-Cards öffnet direkt die Suchseite statt der alten Startseite.
+- Einheitliche Bedienelemente in der ganzen App: „Mehr“ am Handy, die Glocke, die Dateivorschau, die Tool-Auswahl im Arbeitsbereich, Auswahllisten, Tabellen und aufklappbare Bereiche sehen überall gleich aus und lassen sich mit Tastatur und Screenreader gleich bedienen, hell wie dunkel.
+- Art im Einsatztagebuch, Filter, Aufteilung im Arbeitsbereich, Hell/Dunkel und „Mit Kurzcode / Offline mit QR-Code“ sind Umschaltleisten; mit den Pfeiltasten wechselt man zwischen den Möglichkeiten.
+- „Am Bildschirmrand einblenden“ an der Glocke ist ein Schalter.
+- Aufklappbare Bereiche (z. B. „Aufenthalt nachtragen“, „Richtwerte einstellen“) behalten halb ausgefüllte Eingaben beim Zuklappen, und die Suche im Browser (Strg+F) findet auch Text darin.
+- Dateien: Der Ordnerpfad oben zeigt den aktuellen Ordner hervorgehoben.
+
+### Behoben
+
+- Link zu den Giftinformationszentren zeigt auf die neue Adresse beim BfR.
+- Kopfzeile am Handy (auch als installierte App auf dem iPhone): „Kein Einsatz aktiv“ wurde auf „K…“ gekürzt. Der Knopf zum Anlegen zeigt am Handy nur noch das Plus, die Uhr ist etwas kleiner und Stichwort, Ort und Laufzeit des Einsatzes haben mehr Platz. Am PC bleibt die Kopfzeile wie bisher.
+
 ## [0.6.0] - 2026-11-15
 
 ### Neu

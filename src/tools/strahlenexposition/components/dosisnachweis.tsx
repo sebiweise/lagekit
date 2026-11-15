@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DruckenKnopf } from "@/core/export/components/drucken-knopf";
 import { useAktiverEinsatz } from "@/core/einsatz/hooks";
 import { APP_VERSION } from "@/core/version";
@@ -97,49 +98,49 @@ export function Dosisnachweis() {
               </dl>
             </header>
 
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="py-1 pr-2 font-medium">Ort</th>
-                  <th className="py-1 pr-2 font-medium">Beginn</th>
-                  <th className="py-1 pr-2 font-medium">Ende</th>
-                  <th className="py-1 pr-2 font-medium">Dauer</th>
-                  <th className="py-1 pr-2 font-medium">ODL</th>
-                  <th className="py-1 pr-2 font-medium">Dosis (berechnet)</th>
-                  <th className="py-1 font-medium">Dosimeter</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table>
+              <TableHeader>
+                <TableRow className="border-b">
+                  <TableHead className="py-1 pr-2 font-medium">Ort</TableHead>
+                  <TableHead className="py-1 pr-2 font-medium">Beginn</TableHead>
+                  <TableHead className="py-1 pr-2 font-medium">Ende</TableHead>
+                  <TableHead className="py-1 pr-2 font-medium">Dauer</TableHead>
+                  <TableHead className="py-1 pr-2 font-medium">ODL</TableHead>
+                  <TableHead className="py-1 pr-2 font-medium">Dosis (berechnet)</TableHead>
+                  <TableHead className="py-1 font-medium">Dosimeter</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {liste.map((a) => {
                   const b = aufenthaltDosis(a, erstellt);
                   return (
-                    <tr key={a.id} className="border-b align-top">
-                      <td className="py-1 pr-2">{a.ort}</td>
-                      <td className="py-1 pr-2 tabular-nums">{formatDatumZeit(a.beginn)}</td>
-                      <td className="py-1 pr-2 tabular-nums">{a.ende ? formatZeit(a.ende) : `läuft (Stand ${formatZeit(erstellt)})`}</td>
-                      <td className="py-1 pr-2 tabular-nums">{formatDauer(b.dauerH * 60)}</td>
-                      <td className="py-1 pr-2 tabular-nums">{formatOdl(a.odl, a.odlEinheit)}</td>
-                      <td className="py-1 pr-2">
+                    <TableRow key={a.id} className="border-b align-top">
+                      <TableCell className="py-1 pr-2">{a.ort}</TableCell>
+                      <TableCell className="py-1 pr-2 tabular-nums">{formatDatumZeit(a.beginn)}</TableCell>
+                      <TableCell className="py-1 pr-2 tabular-nums">{a.ende ? formatZeit(a.ende) : `läuft (Stand ${formatZeit(erstellt)})`}</TableCell>
+                      <TableCell className="py-1 pr-2 tabular-nums">{formatDauer(b.dauerH * 60)}</TableCell>
+                      <TableCell className="py-1 pr-2 tabular-nums">{formatOdl(a.odl, a.odlEinheit)}</TableCell>
+                      <TableCell className="py-1 pr-2">
                         <span className="font-mono">{formatDosis(b.dosisMsv)}</span>
                         <span className="block font-mono text-xs text-muted-foreground">{rechenweg(b)}</span>
-                      </td>
-                      <td className="py-1 font-mono">{a.dosimeterMsv === null ? "–" : formatDosis(a.dosimeterMsv)}</td>
-                    </tr>
+                      </TableCell>
+                      <TableCell className="py-1 font-mono">{a.dosimeterMsv === null ? "–" : formatDosis(a.dosimeterMsv)}</TableCell>
+                    </TableRow>
                   );
                 })}
-              </tbody>
-              <tfoot>
-                <tr className="font-semibold">
-                  <td className="py-2 pr-2" colSpan={5}>
+              </TableBody>
+              <TableFooter>
+                <TableRow className="font-semibold">
+                  <TableCell className="py-2 pr-2" colSpan={5}>
                     Gesamt
-                  </td>
-                  <td className="py-2 pr-2 font-mono" data-testid="nachweis-gesamt">
+                  </TableCell>
+                  <TableCell className="py-2 pr-2 font-mono" data-testid="nachweis-gesamt">
                     {formatDosis(gesamt)}
-                  </td>
-                  <td className="py-2 font-mono">{gemessen === null ? "–" : formatDosis(gemessen)}</td>
-                </tr>
-              </tfoot>
-            </table>
+                  </TableCell>
+                  <TableCell className="py-2 font-mono">{gemessen === null ? "–" : formatDosis(gemessen)}</TableCell>
+                </TableRow>
+              </TableFooter>
+            </Table>
 
             <p className="text-sm">
               Bewertung: {AMPEL_TEXT[ampel(gesamt, richtwert.grenzeMsv, gemessen)]}. Berechnung D = Ḣ × t je Aufenthalt bei
