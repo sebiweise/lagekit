@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleZeile } from "@/components/ui/collapsible";
@@ -17,11 +18,18 @@ const ERKANNT: Record<Exclude<BegriffArt, "text">, string> = {
   cas: "CAS-Nummer",
 };
 
+/** Suchbegriff aus der Adresse (`/app/suche/?q=…`, z. B. aus der Befehlspalette). */
+export function UniversalsucheAusAdresse() {
+  const q = useSearchParams().get("q") ?? "";
+  // Neuer Begriff aus der Adresse = frisches Feld (auch wenn die Suche schon offen ist).
+  return <Universalsuche key={q} anfangsBegriff={q} />;
+}
+
 /** Universalsuche: ein Feld, die passenden Ziele als große Zeilen, darunter der Verlauf. */
-export function Universalsuche() {
+export function Universalsuche({ anfangsBegriff = "" }: { anfangsBegriff?: string }) {
   const einsatz = useAktiverEinsatz();
   const verlauf = useSuchverlauf(einsatz?.id);
-  const [begriff, setBegriff] = useState("");
+  const [begriff, setBegriff] = useState(anfangsBegriff);
   // `null`: Ort des Einsatzes übernehmen, bis selbst etwas eingetragen wird.
   const [ortEingabe, setOrtEingabe] = useState<string | null>(null);
   const [kopiert, setKopiert] = useState<string | null>(null);

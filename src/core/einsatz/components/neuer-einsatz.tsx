@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { anfrageOffen, useAnfrage } from "@/core/befehle/anfrage";
 import { t } from "@/i18n";
 import { useAktiverEinsatz } from "../hooks";
 import { EinsatzFormular } from "./einsatz-formular";
@@ -19,7 +20,16 @@ export function NeuerEinsatz() {
 }
 
 function NeuerEinsatzInhalt({ anfangsOffen }: { anfangsOffen: boolean }) {
-  const [offen, setOffen] = useState(anfangsOffen);
+  const [offen, setOffen] = useState(() => anfangsOffen || anfrageOffen("einsatz-neu"));
+  // Befehlspalette „Neuen Einsatz anlegen“: Formular öffnen, Cursor ins Stichwort.
+  useAnfrage("einsatz-neu", () => {
+    setOffen(true);
+    requestAnimationFrame(() => {
+      const feld = document.getElementById("einsatz-stichwort");
+      feld?.scrollIntoView({ block: "center" });
+      feld?.focus();
+    });
+  });
 
   if (!offen) {
     return (

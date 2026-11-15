@@ -1,8 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import { Square, Trash2 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleZeile } from "@/components/ui/collapsible";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -44,7 +55,6 @@ export function PersonKarte({
   richtwerte: Richtwert[];
   jetzt: Date;
 }) {
-  const [loeschenFragen, setLoeschenFragen] = useState(false);
   const db = getDb();
   const richtwert = richtwerte.find((r) => r.id === person.richtwertId) ?? richtwerte[0];
   const gesamt = gesamtdosis(aufenthalte, jetzt);
@@ -103,23 +113,26 @@ export function PersonKarte({
                 </NativeSelect>
               </label>
               {richtwert.hinweis && <p className="text-sm text-muted-foreground">{richtwert.hinweis}</p>}
-              {loeschenFragen ? (
-                <div className="flex flex-col gap-2 rounded-md border border-destructive p-3">
-                  <span className="text-sm">Person mit allen Aufenthalten löschen?</span>
-                  <div className="flex flex-wrap gap-2">
-                    <Button variant="destructive" onClick={() => void personLoeschen(db, person.id)}>
-                      Endgültig löschen
-                    </Button>
-                    <Button variant="outline" onClick={() => setLoeschenFragen(false)}>
-                      Abbrechen
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <Button variant="outline" className="w-fit" onClick={() => setLoeschenFragen(true)}>
+              <AlertDialog>
+                <AlertDialogTrigger render={<Button variant="outline" className="w-fit" />}>
                   <Trash2 /> Person löschen
-                </Button>
-              )}
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{person.name} löschen?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Die Person wird mit allen Aufenthalten und Dosiswerten aus diesem Einsatz gelöscht. Das lässt sich nicht
+                      rückgängig machen.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => void personLoeschen(db, person.id)}>
+                      <Trash2 /> Endgültig löschen
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </CollapsibleContent>
         </Collapsible>
@@ -237,7 +250,6 @@ function AufenthaltTabelle({ aufenthalte, jetzt }: { aufenthalte: Aufenthalt[]; 
 }
 
 function AufenthaltZeile({ aufenthalt, jetzt }: { aufenthalt: Aufenthalt; jetzt: Date }) {
-  const [loeschenFragen, setLoeschenFragen] = useState(false);
   const b = aufenthaltDosis(aufenthalt, jetzt);
   return (
     <TableRow className="border-b align-top" data-testid="aufenthalt-zeile">
@@ -254,27 +266,13 @@ function AufenthaltZeile({ aufenthalt, jetzt }: { aufenthalt: Aufenthalt; jetzt:
         <DosimeterFeld aufenthalt={aufenthalt} aria-label={`Dosimeterwert für ${aufenthalt.ort}`} className="h-10 w-28" />
       </TableCell>
       <TableCell className="py-2">
-        {loeschenFragen ? (
-          <span className="flex gap-1">
-            <Button size="sm" variant="destructive" onClick={() => void aufenthaltLoeschen(getDb(), aufenthalt.id)}>
-              Löschen
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setLoeschenFragen(false)}>
-              Nein
-            </Button>
-          </span>
-        ) : (
-          <Button size="icon" variant="ghost" aria-label="Aufenthalt löschen" onClick={() => setLoeschenFragen(true)}>
-            <Trash2 />
-          </Button>
-        )}
+        <AufenthaltLoeschen aufenthalt={aufenthalt} />
       </TableCell>
     </TableRow>
   );
 }
 
 function AufenthaltBlock({ aufenthalt, jetzt }: { aufenthalt: Aufenthalt; jetzt: Date }) {
-  const [loeschenFragen, setLoeschenFragen] = useState(false);
   const b = aufenthaltDosis(aufenthalt, jetzt);
   return (
     <li className="flex flex-col gap-2 p-3" data-testid="aufenthalt-block">
@@ -292,21 +290,38 @@ function AufenthaltBlock({ aufenthalt, jetzt }: { aufenthalt: Aufenthalt; jetzt:
           Dosimeter (mSv)
           <DosimeterFeld aufenthalt={aufenthalt} className="h-11 w-24" />
         </label>
-        {loeschenFragen ? (
-          <span className="flex gap-1">
-            <Button size="sm" variant="destructive" onClick={() => void aufenthaltLoeschen(getDb(), aufenthalt.id)}>
-              Löschen
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setLoeschenFragen(false)}>
-              Nein
-            </Button>
-          </span>
-        ) : (
-          <Button size="icon" variant="ghost" aria-label="Aufenthalt löschen" onClick={() => setLoeschenFragen(true)}>
-            <Trash2 />
-          </Button>
-        )}
+        <AufenthaltLoeschen aufenthalt={aufenthalt} />
       </div>
     </li>
+  );
+}
+
+/** Papierkorb mit Rückfrage; der Tooltip nennt am PC, was der Knopf tut. */
+function AufenthaltLoeschen({ aufenthalt }: { aufenthalt: Aufenthalt }) {
+  return (
+    <AlertDialog>
+      <Tooltip>
+        <TooltipTrigger
+          render={<AlertDialogTrigger render={<Button size="icon" variant="ghost" aria-label="Aufenthalt löschen" />} />}
+        >
+          <Trash2 />
+        </TooltipTrigger>
+        <TooltipContent>Aufenthalt löschen</TooltipContent>
+      </Tooltip>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Aufenthalt „{aufenthalt.ort}“ löschen?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Die Dosis dieses Aufenthalts fällt aus der Summe der Person. Das lässt sich nicht rückgängig machen.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+          <AlertDialogAction onClick={() => void aufenthaltLoeschen(getDb(), aufenthalt.id)}>
+            <Trash2 /> Löschen
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
