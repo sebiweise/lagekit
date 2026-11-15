@@ -242,7 +242,7 @@ export function Karte({ className }: { className?: string }) {
       <div className="relative isolate">
         <div
           ref={behaelter}
-          className="h-[55vh] min-h-72 w-full overflow-hidden rounded-xl border bg-muted"
+          className="h-[var(--karte-hoehe,55vh)] min-h-72 w-full overflow-hidden rounded-xl border bg-muted"
           aria-label="Karte"
           role="application"
         />

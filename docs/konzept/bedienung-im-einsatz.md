@@ -21,6 +21,16 @@ Leitfragen: Was braucht die Mannschaft im ELW oder an der Einsatzstelle unter St
 6. **Große Flächen, keine seitliche Verschiebung.** Mindestens 44 px, meist 48 px; nichts läuft auf 390 px Breite über.
 7. **Farbe nie allein.** Ampeln haben immer Text oder einen Screenreader-Text.
 
+## Arbeitsbereich selbst anordnen
+
+Am PC im ELW (ab 1024 px) lässt sich der Arbeitsbereich frei aufteilen; auf Handy und schmalen Tablets bleibt es bei einem Tool mit Tabs.
+
+- **Aufteilung** rechts in der Tableiste: ein Tool, zwei nebeneinander, zwei übereinander, drei (eins groß links, zwei rechts) oder vier im Raster.
+- **Feld belegen** auf drei Wegen, je nach Vorliebe: Auswahlliste im Kopf jedes Felds (auch per Tastatur), einen Tab auf ein Feld ziehen, oder Feld anklicken und dann einen Tab antippen. Steht ein Tool schon in einem anderen Feld, tauschen die beiden Felder. Den Griff (⠿) im Feldkopf ziehen, um ein Tool in ein anderes Feld zu verschieben.
+- **Größe** über die Trenner zwischen den Feldern ziehen (20 bis 80 %); Pfeiltasten ändern in 5-%-Schritten, Doppelklick oder Pos1 teilt gleichmäßig.
+- **Gespeichert** wird alles pro Gerät im Browser (`lagekit.arbeitsbereich`): Tabs, Aufteilung, Belegung und Größen. Nichts davon geht in den Gemeinsam-Modus; jedes Gerät hat seine eigene Anordnung. Wer zurück auf ein Tool schaltet und später wieder auf vier, findet die alte Belegung wieder.
+- Die Felder füllen den Bildschirm bis unten und scrollen einzeln; die Karte passt sich der Feldhöhe an. Offene Tabs bleiben geladen, halb ausgefüllte Eingaben gehen beim Umordnen nicht verloren.
+
 ## Weitere Ideen (nicht in diesem Umbau)
 
 - Tagebuch-Schnellerfassung von jeder Seite aus (schwebender Knopf).
@@ -28,3 +38,4 @@ Leitfragen: Was braucht die Mannschaft im ELW oder an der Einsatzstelle unter St
 - Erinnerung bei laufenden Aufenthalten (Ton/Vibration, wenn die Restzeit unter 10 min fällt).
 - Hoher-Kontrast-Modus für Sonnenlicht, abgestimmt mit dem Farbschema.
 - Größere Schrift als Einstellung für Tablets im Fahrzeug.
+- Mehrere benannte Arbeitsbereiche (z. B. „Strahlenschutz“, „Lage“) zum schnellen Umschalten.
