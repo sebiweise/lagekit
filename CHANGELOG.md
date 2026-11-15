@@ -11,6 +11,8 @@ Regeln für diese Datei:
 
 ## [Unveröffentlicht]
 
+## [0.2.0] - 2026-11-15
+
 ### Neu
 
 - Einsatzbericht als PDF-Datei, direkt im Browser erzeugt: zum Herunterladen, im ZIP-Export und als Anhang beim Senden per E-Mail. Das Format des Mail-Anhangs ist wählbar, voreingestellt ist PDF.
