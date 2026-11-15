@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Search } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleZeile } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAktiverEinsatz } from "@/core/einsatz/hooks";
@@ -116,25 +117,27 @@ export function Universalsuche() {
           </Liste>
 
           {ziele.kopieren.length > 0 && (
-            <details className="group flex flex-col gap-3" open={ziele.art !== "text"}>
-              <summary className="flex min-h-11 cursor-pointer items-center text-base font-medium text-muted-foreground">
+            <Collapsible className="flex flex-col gap-3" key={ziele.art} defaultOpen={ziele.art !== "text"}>
+              <CollapsibleZeile className="flex min-h-11 items-center text-base font-medium text-muted-foreground">
                 Weitere Datenbanken ({ziele.kopieren.length}): Begriff wird kopiert
-              </summary>
-              <Liste className="mt-2" data-testid="kopierziele">
-                {ziele.kopieren.map((tool) => (
-                  <ZielZeile
-                    key={tool.id}
-                    tool={tool}
-                    href={tool.url}
-                    untertitel={kopiert === tool.id ? `„${ziele.wert}“ kopiert. ${tool.kopierHinweis}` : tool.kopierHinweis}
-                    onClick={() => {
-                      void kopieren(ziele.wert).then((ok) => setKopiert(ok ? tool.id : null));
-                      sucheMerken(einsatz, tool, { begriff: ziele.wert, ort: "", url: tool.url, art: "kopiert" });
-                    }}
-                  />
-                ))}
-              </Liste>
-            </details>
+              </CollapsibleZeile>
+              <CollapsibleContent>
+                <Liste className="mt-2" data-testid="kopierziele">
+                  {ziele.kopieren.map((tool) => (
+                    <ZielZeile
+                      key={tool.id}
+                      tool={tool}
+                      href={tool.url}
+                      untertitel={kopiert === tool.id ? `„${ziele.wert}“ kopiert. ${tool.kopierHinweis}` : tool.kopierHinweis}
+                      onClick={() => {
+                        void kopieren(ziele.wert).then((ok) => setKopiert(ok ? tool.id : null));
+                        sucheMerken(einsatz, tool, { begriff: ziele.wert, ort: "", url: tool.url, art: "kopiert" });
+                      }}
+                    />
+                  ))}
+                </Liste>
+              </CollapsibleContent>
+            </Collapsible>
           )}
         </section>
       )}

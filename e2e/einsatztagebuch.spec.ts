@@ -36,7 +36,7 @@ test("Einsatztagebuch: Schnellerfassung, Tastenkürzel, Korrektur, Filter, Druck
   await page.getByLabel("An", { exact: true }).fill("Messtrupp 1");
   await inhalt.focus();
   await page.keyboard.press("Alt+2");
-  await expect(page.getByRole("radio", { name: "Befehl" })).toBeChecked();
+  await expect(page.getByRole("group", { name: "Art", exact: true }).getByRole("button", { name: "Befehl" })).toHaveAttribute("aria-pressed", "true");
   await inhalt.fill("Messung an Messpunkt 3");
   await inhalt.press("Enter");
 
@@ -63,9 +63,9 @@ test("Einsatztagebuch: Schnellerfassung, Tastenkürzel, Korrektur, Filter, Druck
   await expect(page.getByRole("button", { name: /löschen/i })).toHaveCount(0);
 
   // Filter und Suche.
-  await page.getByRole("button", { name: "Befehl", exact: true }).click();
+  await page.getByRole("group", { name: "Nach Art filtern" }).getByRole("button", { name: "Befehl" }).click();
   await expect(page.getByTestId("tagebuch-eintrag")).toHaveCount(1);
-  await page.getByRole("button", { name: "Befehl", exact: true }).click();
+  await page.getByRole("group", { name: "Nach Art filtern" }).getByRole("button", { name: "Befehl" }).click();
   await page.getByRole("heading", { level: 1 }).click();
   await page.keyboard.press("/");
   await expect(page.getByLabel("Tagebuch durchsuchen")).toBeFocused();

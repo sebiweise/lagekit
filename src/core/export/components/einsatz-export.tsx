@@ -7,11 +7,14 @@ import { z } from "zod";
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Download, FileArchive, FolderOpen, Mail, Printer, Share2 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleZeile } from "@/components/ui/collapsible";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
-import { Select } from "@/components/ui/select";
+import { Progress, ProgressValue } from "@/components/ui/progress";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { groesseText } from "@/core/dateien/ordner";
 import { OrdnerVerwaltung } from "@/core/dateien/components/ordner-verwaltung";
 import { ordnerDesEinsatzes } from "@/core/dateien/repository";
@@ -235,13 +238,8 @@ function ExportInhalt({ daten }: { daten: EinsatzDaten }) {
               <li>Lagekit-Sicherung zum Wiedereinlesen</li>
             </ul>
             {ordnerDateien > 0 && (
-              <label className="flex items-start gap-3">
-                <input
-                  type="checkbox"
-                  className="mt-1 size-5 accent-primary"
-                  checked={mitOrdnern}
-                  onChange={(e) => setMitOrdnern(e.target.checked)}
-                />
+              <label className="flex cursor-pointer items-start gap-3">
+                <Checkbox className="mt-0.5" checked={mitOrdnern} onCheckedChange={setMitOrdnern} />
                 <span>
                   Dateien aus verknüpften Ordnern mitnehmen ({ordnerDateien} Dateien, {groesseText(ordnerGroesse)})
                 </span>
@@ -259,10 +257,9 @@ function ExportInhalt({ daten }: { daten: EinsatzDaten }) {
               {geschaetzt > 0 && <span className="text-sm text-muted-foreground">ca. {groesseText(geschaetzt)}</span>}
             </div>
             {fortschritt !== null && (
-              <div className="flex items-center gap-3" role="status">
-                <progress className="h-2 w-full max-w-64 accent-primary" value={fortschritt} max={1} />
-                <span className="text-sm tabular-nums">{Math.round(fortschritt * 100)} %</span>
-              </div>
+              <Progress value={Math.round(fortschritt * 100)} aria-label="Fortschritt" className="max-w-64">
+                <ProgressValue />
+              </Progress>
             )}
             <MeldungAnzeige meldung={zipMeldung} />
           </CardContent>
@@ -343,14 +340,14 @@ function ExportInhalt({ daten }: { daten: EinsatzDaten }) {
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="mail-anhang">Anhang (Format)</FieldLabel>
-                    <Select {...field} id="mail-anhang" aria-invalid={fieldState.invalid}>
+                    <NativeSelect {...field} id="mail-anhang" aria-invalid={fieldState.invalid}>
                       {EXPORT_ARTEN.filter((a) => exportArtVorhanden(a.art, daten)).map((a) => (
-                        <option key={a.art} value={a.art}>
+                        <NativeSelectOption key={a.art} value={a.art}>
                           {a.titel}
-                        </option>
+                        </NativeSelectOption>
                       ))}
-                      <option value="keiner">Kein Anhang, nur Kurzbericht</option>
-                    </Select>
+                      <NativeSelectOption value="keiner">Kein Anhang, nur Kurzbericht</NativeSelectOption>
+                    </NativeSelect>
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
@@ -378,12 +375,14 @@ function ExportInhalt({ daten }: { daten: EinsatzDaten }) {
                 : "Ein Mail-Link kann keine Datei mitgeben: Die Datei wird gespeichert und muss im Mailprogramm angehängt werden."}
             </p>
             <MeldungAnzeige meldung={mailMeldung} />
-            <details className="text-sm">
-              <summary className="cursor-pointer font-medium">Text der Mail ansehen</summary>
-              <pre className="mt-2 max-h-64 overflow-auto rounded-md bg-muted p-3 font-sans whitespace-pre-wrap">
-                {kurzbericht(daten)}
-              </pre>
-            </details>
+            <Collapsible className="text-sm">
+              <CollapsibleZeile className="font-medium">Text der Mail ansehen</CollapsibleZeile>
+              <CollapsibleContent>
+                <pre className="mt-2 max-h-64 overflow-auto rounded-md bg-muted p-3 font-sans whitespace-pre-wrap">
+                  {kurzbericht(daten)}
+                </pre>
+              </CollapsibleContent>
+            </Collapsible>
           </CardContent>
         </Card>
 

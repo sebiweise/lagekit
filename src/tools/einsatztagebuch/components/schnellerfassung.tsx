@@ -8,6 +8,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { ArrowLeftRight, CornerDownLeft, Paperclip, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { ordnerDesEinsatzes } from "@/core/dateien/repository";
 import { dateienFiltern, verweisText, type DateiTreffer } from "@/core/dateien/verweis";
@@ -181,27 +182,26 @@ export function Schnellerfassung({
             <span id="tb-art-titel" className="text-sm font-medium">
               Art
             </span>
-            <div role="radiogroup" aria-labelledby="tb-art-titel" className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+            <ToggleGroup
+              aria-labelledby="tb-art-titel"
+              variant="outline"
+              className="grid w-full grid-cols-3 sm:grid-cols-5"
+              value={[field.value]}
+              onValueChange={(wert) => {
+                if (!wert[0]) return;
+                field.onChange(wert[0] as (typeof EINTRAG_ARTEN)[number]);
+                inhaltFeld.current?.focus();
+              }}
+            >
               {EINTRAG_ARTEN.map((a, i) => (
-                <Button
-                  key={a}
-                  type="button"
-                  role="radio"
-                  aria-checked={field.value === a}
-                  variant={field.value === a ? "default" : "outline"}
-                  className="px-2"
-                  onClick={() => {
-                    field.onChange(a);
-                    inhaltFeld.current?.focus();
-                  }}
-                >
+                <ToggleGroupItem key={a} value={a} className="px-2">
                   {a}
                   <span aria-hidden className="hidden text-xs opacity-60 @3xl:inline">
                     Alt+{i + 1}
                   </span>
-                </Button>
+                </ToggleGroupItem>
               ))}
-            </div>
+            </ToggleGroup>
           </div>
         )}
       />

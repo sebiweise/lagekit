@@ -11,6 +11,16 @@ Regeln für diese Datei:
 
 ## [Unveröffentlicht]
 
+## [0.5.0] - 2026-11-15
+
+### Geändert
+
+- Einheitliche Bedienelemente in der ganzen App: „Mehr“ am Handy, die Glocke, die Dateivorschau, die Tool-Auswahl im Arbeitsbereich, Auswahllisten, Tabellen und aufklappbare Bereiche sehen überall gleich aus und lassen sich mit Tastatur und Screenreader gleich bedienen, hell wie dunkel.
+- Art im Einsatztagebuch, Filter, Aufteilung im Arbeitsbereich, Hell/Dunkel und „Mit Kurzcode / Offline mit QR-Code“ sind Umschaltleisten; mit den Pfeiltasten wechselt man zwischen den Möglichkeiten.
+- „Am Bildschirmrand einblenden“ an der Glocke ist ein Schalter.
+- Aufklappbare Bereiche (z. B. „Aufenthalt nachtragen“, „Richtwerte einstellen“) behalten halb ausgefüllte Eingaben beim Zuklappen, und die Suche im Browser (Strg+F) findet auch Text darin.
+- Dateien: Der Ordnerpfad oben zeigt den aktuellen Ordner hervorgehoben.
+
 ## [0.4.0] - 2026-11-15
 
 ### Neu
