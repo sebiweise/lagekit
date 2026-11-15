@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useRef } from "react";
 import { usePathname } from "next/navigation";
-import { ChevronRight, Menu, X } from "lucide-react";
+import { ChevronRight, ExternalLink, Menu, X } from "lucide-react";
 import { BetaMarke } from "@/components/beta-marke";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { istAktiv, type NavZiel } from "./navigation";
+import { externeLinks, istAktiv, type NavZiel } from "./navigation";
 
 /**
  * „Mehr“: alle Ziele, die nicht direkt in der Leiste stehen, als große Zeilen.
@@ -49,7 +49,7 @@ export function MehrMenue({ ziele }: { ziele: NavZiel[] }) {
           // Klick auf den abgedunkelten Hintergrund schließt.
           if (e.target === dialog.current) schliessen();
         }}
-        className="fixed inset-x-0 top-auto bottom-0 m-0 w-full max-w-none rounded-t-2xl bg-card pb-[env(safe-area-inset-bottom)] text-card-foreground backdrop:bg-black/50"
+        className="fixed inset-x-0 top-auto bottom-0 m-0 max-h-[90dvh] w-full max-w-none overflow-y-auto rounded-t-2xl bg-card pb-[env(safe-area-inset-bottom)] text-card-foreground backdrop:bg-black/50"
       >
         <div className="flex items-center justify-between border-b px-4 py-2">
           <h2 className="text-lg font-semibold">Mehr</h2>
@@ -78,6 +78,24 @@ export function MehrMenue({ ziele }: { ziele: NavZiel[] }) {
                 </span>
                 <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
               </Link>
+            </li>
+          ))}
+        </ul>
+        {/* Nach außen (GitHub): kompakt nebeneinander, damit das Blatt auf das Handy passt. */}
+        <ul className="grid grid-cols-2 gap-2 border-t p-2">
+          {externeLinks.map((ziel) => (
+            <li key={ziel.href}>
+              <a
+                href={ziel.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={schliessen}
+                className="flex min-h-12 items-center gap-2 rounded-lg px-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+              >
+                <ziel.icon className="size-5 shrink-0" aria-hidden />
+                <span className="min-w-0 flex-1">{ziel.text}</span>
+                <ExternalLink className="size-4 shrink-0" aria-label="öffnet in neuem Tab" />
+              </a>
             </li>
           ))}
         </ul>

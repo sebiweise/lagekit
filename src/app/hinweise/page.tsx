@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ExternalLink } from "lucide-react";
+import { HILFE_URL, REPO_URL } from "@/core/projekt";
 import { t } from "@/i18n";
+import { DienstAnzeige } from "./dienst-anzeige";
 
 export const metadata: Metadata = { title: t.hinweise.titel };
 
@@ -10,6 +13,8 @@ const abschnitte = [
   [t.hinweise.datenverlustTitel, t.hinweise.datenverlust],
   [t.hinweise.lizenzTitel, t.hinweise.lizenz],
 ] as const;
+
+const linkKlasse = "inline-flex min-h-11 items-center gap-2 text-lg underline underline-offset-4";
 
 export default function HinweisePage() {
   return (
@@ -21,6 +26,27 @@ export default function HinweisePage() {
           <p className="text-lg leading-relaxed">{text}</p>
         </section>
       ))}
+      <section id="kurzcode" className="flex scroll-mt-20 flex-col gap-2">
+        <h2 className="text-xl font-semibold">{t.hinweise.kurzcodeTitel}</h2>
+        <p className="text-lg leading-relaxed">{t.hinweise.kurzcode}</p>
+        <DienstAnzeige />
+      </section>
+      <section id="hilfe" className="flex scroll-mt-20 flex-col gap-2">
+        <h2 className="text-xl font-semibold">{t.hinweise.hilfeTitel}</h2>
+        <p className="text-lg leading-relaxed">{t.hinweise.hilfe}</p>
+        <ul className="flex flex-col">
+          <li>
+            <a href={HILFE_URL} target="_blank" rel="noopener noreferrer" className={linkKlasse}>
+              Fehler melden oder Verbesserung vorschlagen <ExternalLink className="size-4" aria-label="öffnet in neuem Tab" />
+            </a>
+          </li>
+          <li>
+            <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className={linkKlasse}>
+              Quellcode auf GitHub <ExternalLink className="size-4" aria-label="öffnet in neuem Tab" />
+            </a>
+          </li>
+        </ul>
+      </section>
       <Link href="/" className="mt-4 underline underline-offset-4">
         {t.hinweise.zurueck}
       </Link>

@@ -30,7 +30,7 @@ Die App startet offline, Einsätze lassen sich verwalten und per JSON-Sicherung 
 
 ## Daten und Datenschutz
 
-Alle Eingaben werden nur in IndexedDB im Browser des Geräts gespeichert. Es gibt kein Konto, kein Backend und kein Tracking. Für Exporte und ihre Weitergabe ist die nutzende Einheit verantwortlich. Browser können lokale Daten löschen (etwa beim Leeren des Verlaufs); Lagekit fordert deshalb dauerhaften Speicher an und sollte als App installiert werden.
+Alle Eingaben werden nur in IndexedDB im Browser des Geräts gespeichert. Es gibt kein Konto, kein Backend und kein Tracking. Für Exporte und ihre Weitergabe ist die nutzende Einheit verantwortlich. Browser können lokale Daten löschen (etwa beim Leeren des Verlaufs); Lagekit fordert deshalb dauerhaften Speicher an und sollte als App installiert werden. Nur beim Beitritt per Kurzcode laufen Name, Funktion, Fahrzeug und Verbindungsdaten kurz über einen Vermittlungsdienst, siehe [Kurzcode](#kurzcode-für-gemeinsam-arbeiten).
 
 ## Entwicklung
 
@@ -80,9 +80,25 @@ Zu jedem [Release](https://github.com/sebiweise/lagekit/releases) gibt es ein fe
 docker run -d --name lagekit -p 8080:8080 --restart unless-stopped ghcr.io/sebiweise/lagekit:latest
 ```
 
-Tags: `latest`, die genaue Version (z. B. `0.1.0`) und `Major.Minor` (z. B. `0.1`). Das Image liefert den statischen Export über nginx ohne Root-Rechte auf Port 8080 aus; die Konfiguration steht in `docker/nginx.conf`. Für den Offline-Modus braucht der Browser HTTPS, also einen Reverse-Proxy mit Zertifikat davor (z. B. Caddy oder Traefik). Nur auf demselben Rechner reicht `http://localhost:8080`. „Gemeinsam arbeiten“ per Kurzcode braucht den Vermittlungsdienst auf Vercel und geht im Container nicht; QR-Code und Datei funktionieren.
+Tags: `latest`, die genaue Version (z. B. `0.1.0`) und `Major.Minor` (z. B. `0.1`). Das Image liefert den statischen Export über nginx ohne Root-Rechte auf Port 8080 aus; die Konfiguration steht in `docker/nginx.conf`. Für den Offline-Modus braucht der Browser HTTPS, also einen Reverse-Proxy mit Zertifikat davor (z. B. Caddy oder Traefik). Nur auf demselben Rechner reicht `http://localhost:8080`. Der Kurzcode für „Gemeinsam arbeiten“ nutzt standardmäßig den gehosteten Vermittlungsdienst (siehe unten); mit `-e LAGEKIT_KURZCODE_DIENST=false` ist er aus, ohne neuen Build.
 
 Selbst bauen: `docker build -t lagekit .`
+
+### Kurzcode für „Gemeinsam arbeiten“
+
+Der Beitritt per Kurzcode braucht einen kleinen Vermittlungsdienst (`api/vermittlung.ts`, Vercel-Funktion mit Upstash Redis). Statische Installationen ohne eigenen Server nutzen dafür den Dienst des Lagekit-Projekts unter `https://lagekit.vercel.app`. Darüber laufen nur Beitrittsanfrage und Antwort (Name, Funktion, Fahrzeug und Verbindungsdaten) für höchstens 10 Minuten, nie Einsatzdaten; die App weist an der Stelle darauf hin. QR-Code und Datei funktionieren immer ohne Dienst.
+
+Einstellen über die Umgebungsvariable `LAGEKIT_KURZCODE_DIENST`:
+
+| Wert | Wirkung |
+| --- | --- |
+| `true` (Standard) | gehosteter Dienst des Lagekit-Projekts |
+| `false` | Kurzcode aus, Beitritt nur per QR-Code oder Datei |
+| `https://lagekit.example.de` | Dienst einer eigenen Lagekit-Installation auf Vercel (mit Upstash) |
+| `selbst` | Dienst derselben Installation unter `/api/vermittlung/` (Standard bei Builds auf Vercel) |
+
+- **Docker:** wird beim Start gelesen (`docker run -e LAGEKIT_KURZCODE_DIENST=false …`); das Image liefert sie als `/konfiguration.json` aus.
+- **ZIP oder eigener Build:** beim Build setzen (`LAGEKIT_KURZCODE_DIENST=false pnpm build`). Wer den Wert ohne neuen Build ändern will, legt neben die `index.html` eine `konfiguration.json` mit `{"kurzcodeDienst": "false"}`.
 
 ### ZIP
 

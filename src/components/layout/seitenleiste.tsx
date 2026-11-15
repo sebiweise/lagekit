@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BetaMarke } from "@/components/beta-marke";
 import { cn } from "@/lib/utils";
-import { istAktiv, navigationsZiele } from "./navigation";
+import { ExternalLink } from "lucide-react";
+import { externeLinks, istAktiv, navigationsZiele } from "./navigation";
 
 /**
  * Navigation am PC im ELW (ab `lg`): feste Spalte links mit allen Zielen,
@@ -42,16 +43,35 @@ export function Seitenleiste() {
           );
         })}
       </ul>
-      {hinweise && (
-        <Link
-          href={hinweise.href}
-          aria-current={istAktiv(pfad, hinweise.href) ? "page" : undefined}
-          className="mt-6 flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-        >
-          <hinweise.icon className="size-4 shrink-0" aria-hidden />
-          {hinweise.text}
-        </Link>
-      )}
+      <ul className="mt-6 flex flex-col">
+        {hinweise && (
+          <li>
+            <Link
+              href={hinweise.href}
+              aria-current={istAktiv(pfad, hinweise.href) ? "page" : undefined}
+              className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
+              <hinweise.icon className="size-4 shrink-0" aria-hidden />
+              {hinweise.text}
+            </Link>
+          </li>
+        )}
+        {externeLinks.map((ziel) => (
+          <li key={ziel.href}>
+            <a
+              href={ziel.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={ziel.beschreibung}
+              className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
+              <ziel.icon className="size-4 shrink-0" aria-hidden />
+              <span className="min-w-0 flex-1">{ziel.text}</span>
+              <ExternalLink className="size-3.5 shrink-0" aria-label="öffnet in neuem Tab" />
+            </a>
+          </li>
+        ))}
+      </ul>
     </nav>
   );
 }
