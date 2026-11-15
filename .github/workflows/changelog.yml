@@ -1,0 +1,52 @@
+name: Changelog
+
+# Prüft, ob ein Pull Request, der die App ändert, auch CHANGELOG.md ergänzt.
+# Die App zeigt diese Liste vor jedem Update; ein fehlender Eintrag fällt sonst
+# erst beim Release auf. Ausnahmen: Label „kein-changelog“, Dependabot, Release-PRs.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+
+jobs:
+  eintrag:
+    name: Changelog-Eintrag
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Prüfen
+        env:
+          BASIS: ${{ github.event.pull_request.base.sha }}
+          KOPF: ${{ github.event.pull_request.head.sha }}
+          AUTOR: ${{ github.event.pull_request.user.login }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          AUSNAHME: ${{ contains(github.event.pull_request.labels.*.name, 'kein-changelog') }}
+        run: |
+          if [ "$AUSNAHME" = "true" ]; then
+            echo "Label „kein-changelog“ gesetzt, keine Prüfung."; exit 0
+          fi
+          if [ "$AUTOR" = "dependabot[bot]" ] || [[ "$BRANCH" == release/* ]]; then
+            echo "Dependabot oder Release-PR, keine Prüfung."; exit 0
+          fi
+
+          geaendert=$(git diff --name-only "$BASIS...$KOPF")
+          # Was Nutzer merken können: App-Code (ohne Tests), statische Dateien, Docker.
+          app=$(echo "$geaendert" | grep -E '^(src/|public/|docker/|Dockerfile$|next\.config\.ts$)' | grep -vE '\.test\.tsx?$' || true)
+          if [ -z "$app" ]; then
+            echo "Keine Änderung an der App, kein Eintrag nötig."; exit 0
+          fi
+          if echo "$geaendert" | grep -qx 'CHANGELOG.md'; then
+            echo "CHANGELOG.md ist ergänzt."; exit 0
+          fi
+
+          echo "::error file=CHANGELOG.md::Die App ändert sich, aber CHANGELOG.md nicht. Bitte unter „Unveröffentlicht“ eintragen, was sich für Einsatzkräfte ändert (Umbau gespeicherter Daten unter „### Daten“). Merkt niemand etwas davon, das Label „kein-changelog“ setzen."
+          echo "Geänderte App-Dateien:"
+          echo "$app"
+          exit 1
