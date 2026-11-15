@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Download, Printer, Square } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { Download, Printer, Square, UserPlus, X } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDb } from "@/core/db/db";
@@ -18,6 +19,7 @@ import { AufenthaltStart } from "./aufenthalt-start";
 import { PersonFormular } from "./person-formular";
 import { PersonKarte } from "./person-karte";
 import { RichtwerteEditor } from "./richtwerte-editor";
+import { Uebersicht } from "./uebersicht";
 import { Vorplanung } from "./vorplanung";
 
 export function Strahlenexposition() {
@@ -50,20 +52,19 @@ export function Strahlenexposition() {
   const trupps = gruppiereTrupps(personen);
 
   return (
-    <div className="flex flex-col gap-8">
-      <p className="rounded-md border border-warn bg-warn/10 p-3 text-sm">
-        Hilfsmittel zur Dokumentation. Ersetzt weder Dosimeter noch die Entscheidung der Einsatzleitung. Die Rechnung
-        setzt eine gleichbleibende Ortsdosisleistung je Aufenthalt voraus.
-      </p>
+    <div className="flex flex-col gap-6">
+      {personen.length > 0 && (
+        <section aria-labelledby="uebersicht-titel" className="flex flex-col gap-3">
+          <h2 id="uebersicht-titel" className="text-xl font-semibold">
+            Übersicht
+          </h2>
+          <Uebersicht personen={personen} jePerson={jePerson} richtwerte={richtwerte} jetzt={jetzt} />
+        </section>
+      )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Person anlegen</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <PersonFormular einsatzId={einsatz.id} richtwerte={richtwerte} trupps={[...trupps.keys()].filter(Boolean)} />
-        </CardContent>
-      </Card>
+      <PersonAnlegen anfangsOffen={personen.length === 0}>
+        <PersonFormular einsatzId={einsatz.id} richtwerte={richtwerte} trupps={[...trupps.keys()].filter(Boolean)} />
+      </PersonAnlegen>
 
       {[...trupps.entries()]
         .filter(([trupp, mitglieder]) => trupp && mitglieder.length > 1)
@@ -87,7 +88,7 @@ export function Strahlenexposition() {
                 )}
                 {laufendeIds.length > 0 && (
                   <>
-                    <Button variant="destructive" onClick={() => void aufenthaltBeenden(getDb(), laufendeIds)}>
+                    <Button variant="destructive" size="lg" className="w-full sm:w-auto" onClick={() => void aufenthaltBeenden(getDb(), laufendeIds)}>
                       <Square /> Trupp beenden ({laufendeIds.length})
                     </Button>
                     <details className="rounded-md border p-3">
@@ -116,7 +117,7 @@ export function Strahlenexposition() {
         })}
 
       <section aria-labelledby="personen-titel" className="flex flex-col gap-4">
-        <h2 id="personen-titel" className="text-2xl font-semibold">
+        <h2 id="personen-titel" className="text-xl font-semibold">
           Personen ({personen.length})
         </h2>
         {personen.length === 0 ? (
@@ -175,6 +176,11 @@ export function Strahlenexposition() {
         </CardContent>
       </Card>
 
+      <p className="rounded-md border border-warn bg-warn/10 p-3 text-sm">
+        Hilfsmittel zur Dokumentation. Ersetzt weder Dosimeter noch die Entscheidung der Einsatzleitung. Die Rechnung
+        setzt eine gleichbleibende Ortsdosisleistung je Aufenthalt voraus.
+      </p>
+
       <details className="rounded-xl border p-5">
         <summary className="cursor-pointer text-lg font-semibold">Richtwerte einstellen</summary>
         <div className="mt-4">
@@ -193,4 +199,29 @@ function gruppiereTrupps(personen: Person[]) {
   const trupps = new Map<string, Person[]>();
   for (const p of personen) trupps.set(p.trupp, [...(trupps.get(p.trupp) ?? []), p]);
   return trupps;
+}
+
+/** Neue Personen anlegen. Sind schon Personen erfasst, bleibt das Formular hinter einem Knopf. */
+function PersonAnlegen({ anfangsOffen, children }: { anfangsOffen: boolean; children: ReactNode }) {
+  const [offen, setOffen] = useState(anfangsOffen);
+  if (!offen) {
+    return (
+      <Button variant="outline" size="lg" className="w-full sm:w-auto" onClick={() => setOffen(true)}>
+        <UserPlus /> Person anlegen
+      </Button>
+    );
+  }
+  return (
+    <Card>
+      <CardHeader className="flex-row items-center justify-between">
+        <CardTitle>Person anlegen</CardTitle>
+        {!anfangsOffen && (
+          <Button variant="ghost" size="icon" aria-label="Formular schließen" onClick={() => setOffen(false)}>
+            <X />
+          </Button>
+        )}
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
+  );
 }

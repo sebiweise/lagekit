@@ -58,7 +58,7 @@ test("Gemeinsam arbeiten offline: Beitritt per Code, Freigabe durch den Host, Ab
   // Navigation innerhalb der App (ein volles Neuladen würde die Sitzung beenden).
   async function tagebuch(seite: typeof host) {
     await seite.getByRole("link", { name: "Start", exact: true }).click();
-    await seite.getByRole("link", { name: /Einsatztagebuch/ }).click();
+    await seite.getByRole("main").getByRole("link", { name: /Einsatztagebuch/ }).click();
     await expect(seite.getByLabel("Inhalt")).toBeVisible();
   }
   await tagebuch(gast);
@@ -215,7 +215,7 @@ test("Sitzung übersteht Neuladen: Gast verbindet sich selbst neu, Änderungen a
   // Beide öffnen das Tagebuch.
   async function tagebuch(seite: typeof host) {
     await seite.getByRole("link", { name: "Start", exact: true }).click();
-    await seite.getByRole("link", { name: /Einsatztagebuch/ }).click();
+    await seite.getByRole("main").getByRole("link", { name: /Einsatztagebuch/ }).click();
     await expect(seite.getByLabel("Inhalt")).toBeVisible();
   }
   await tagebuch(gast);

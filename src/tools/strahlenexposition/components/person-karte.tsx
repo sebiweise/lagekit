@@ -54,7 +54,7 @@ export function PersonKarte({
   const rest = restdosis(Math.max(gesamt, gemessen ?? 0), richtwert.grenzeMsv);
 
   return (
-    <Card data-testid="person-karte" data-person={person.name}>
+    <Card id={`person-${person.id}`} data-testid="person-karte" data-person={person.name} className="scroll-mt-32">
       <CardHeader>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -86,40 +86,43 @@ export function PersonKarte({
           </div>
         </details>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-2 text-sm">
-            Richtwert
-            <Select
-              className="h-10 w-auto"
-              value={person.richtwertId}
-              onChange={(e) => void personAendern(db, person.id, { richtwertId: e.target.value })}
-            >
-              {richtwerte.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.bezeichnung} ({r.grenzeMsv} mSv)
-                </option>
-              ))}
-            </Select>
-          </label>
-          {richtwert.hinweis && <p className="text-sm text-muted-foreground">{richtwert.hinweis}</p>}
-          <div className="ml-auto">
+        <details className="rounded-md border p-3">
+          <summary className="cursor-pointer font-medium">Richtwert ändern oder Person löschen</summary>
+          <div className="mt-3 flex flex-col gap-3">
+            <label className="flex flex-col gap-1.5 text-sm font-medium">
+              Richtwert
+              <Select
+                className="w-full max-w-full sm:max-w-md"
+                value={person.richtwertId}
+                onChange={(e) => void personAendern(db, person.id, { richtwertId: e.target.value })}
+              >
+                {richtwerte.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.bezeichnung} ({r.grenzeMsv} mSv)
+                  </option>
+                ))}
+              </Select>
+            </label>
+            {richtwert.hinweis && <p className="text-sm text-muted-foreground">{richtwert.hinweis}</p>}
             {loeschenFragen ? (
-              <span className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-col gap-2 rounded-md border border-destructive p-3">
                 <span className="text-sm">Person mit allen Aufenthalten löschen?</span>
-                <Button size="sm" variant="destructive" onClick={() => void personLoeschen(db, person.id)}>
-                  Endgültig löschen
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => setLoeschenFragen(false)}>
-                  Abbrechen
-                </Button>
-              </span>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="destructive" onClick={() => void personLoeschen(db, person.id)}>
+                    Endgültig löschen
+                  </Button>
+                  <Button variant="outline" onClick={() => setLoeschenFragen(false)}>
+                    Abbrechen
+                  </Button>
+                </div>
+              </div>
             ) : (
-              <Button size="sm" variant="ghost" onClick={() => setLoeschenFragen(true)}>
+              <Button variant="outline" className="w-fit" onClick={() => setLoeschenFragen(true)}>
                 <Trash2 /> Person löschen
               </Button>
             )}
           </div>
-        </div>
+        </details>
       </CardContent>
     </Card>
   );
@@ -164,7 +167,12 @@ function LaufenderAufenthalt({
           </p>
           <p className="font-mono text-sm text-muted-foreground">{rechenweg(b)}</p>
         </div>
-        <Button variant="destructive" size="lg" onClick={() => void aufenthaltBeenden(getDb(), [personId])}>
+        <Button
+          variant="destructive"
+          size="lg"
+          className="w-full sm:w-auto"
+          onClick={() => void aufenthaltBeenden(getDb(), [personId])}
+        >
           <Square /> Aufenthalt beenden
         </Button>
       </div>
@@ -193,7 +201,14 @@ function LaufenderAufenthalt({
 
 function AufenthaltTabelle({ aufenthalte, jetzt }: { aufenthalte: Aufenthalt[]; jetzt: Date }) {
   return (
-    <div className="overflow-x-auto">
+    <>
+      {/* Handy: je Aufenthalt ein Block statt einer breiten Tabelle. */}
+      <ul className="flex flex-col divide-y rounded-md border sm:hidden">
+        {aufenthalte.map((a) => (
+          <AufenthaltBlock key={a.id} aufenthalt={a} jetzt={jetzt} />
+        ))}
+      </ul>
+      <div className="hidden overflow-x-auto sm:block">
       <table className="w-full min-w-[640px] text-left text-sm">
         <thead className="text-muted-foreground">
           <tr className="border-b">
@@ -215,7 +230,8 @@ function AufenthaltTabelle({ aufenthalte, jetzt }: { aufenthalte: Aufenthalt[]; 
           ))}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   );
 }
 
@@ -264,5 +280,53 @@ function AufenthaltZeile({ aufenthalt, jetzt }: { aufenthalt: Aufenthalt; jetzt:
         )}
       </td>
     </tr>
+  );
+}
+
+function AufenthaltBlock({ aufenthalt, jetzt }: { aufenthalt: Aufenthalt; jetzt: Date }) {
+  const [dosimeter, setDosimeter] = useState(
+    aufenthalt.dosimeterMsv === null ? "" : String(aufenthalt.dosimeterMsv).replace(".", ","),
+  );
+  const [loeschenFragen, setLoeschenFragen] = useState(false);
+  const b = aufenthaltDosis(aufenthalt, jetzt);
+
+  return (
+    <li className="flex flex-col gap-2 p-3" data-testid="aufenthalt-block">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="min-w-0 font-semibold break-words">{aufenthalt.ort}</span>
+        <span className="shrink-0 font-mono text-lg font-semibold tabular-nums">{formatDosis(b.dosisMsv)}</span>
+      </div>
+      <p className="text-sm text-muted-foreground tabular-nums">
+        {formatZeit(aufenthalt.beginn)}–{aufenthalt.ende ? formatZeit(aufenthalt.ende) : "läuft"} ·{" "}
+        {formatDauer(b.dauerH * 60)} · {formatOdl(aufenthalt.odl, aufenthalt.odlEinheit)}
+      </p>
+      <p className="font-mono text-xs break-words text-muted-foreground">{rechenweg(b)}</p>
+      <div className="flex items-center gap-2">
+        <label className="flex flex-1 items-center gap-2 text-sm">
+          Dosimeter (mSv)
+          <Input
+            inputMode="decimal"
+            className="h-11 w-24"
+            value={dosimeter}
+            onChange={(e) => setDosimeter(e.target.value)}
+            onBlur={() => void dosimeterSetzen(getDb(), aufenthalt.id, zahlLesen(dosimeter))}
+          />
+        </label>
+        {loeschenFragen ? (
+          <span className="flex gap-1">
+            <Button size="sm" variant="destructive" onClick={() => void aufenthaltLoeschen(getDb(), aufenthalt.id)}>
+              Löschen
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setLoeschenFragen(false)}>
+              Nein
+            </Button>
+          </span>
+        ) : (
+          <Button size="icon" variant="ghost" aria-label="Aufenthalt löschen" onClick={() => setLoeschenFragen(true)}>
+            <Trash2 />
+          </Button>
+        )}
+      </div>
+    </li>
   );
 }

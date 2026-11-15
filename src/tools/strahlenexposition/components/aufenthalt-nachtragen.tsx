@@ -56,7 +56,7 @@ export function AufenthaltNachtragen({ idPrefix, personIds }: { idPrefix: string
   }
 
   return (
-    <form onSubmit={absenden} className="grid gap-3 sm:grid-cols-2" aria-label="Aufenthalt nachtragen">
+    <form onSubmit={absenden} className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-label="Aufenthalt nachtragen">
       <div className="flex flex-col gap-2 sm:col-span-2">
         <Label htmlFor={`${p}-ort`}>Ort</Label>
         <Input id={`${p}-ort`} required autoComplete="off" value={ort} onChange={(e) => setOrt(e.target.value)} />

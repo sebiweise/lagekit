@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { CornerDownLeft, X } from "lucide-react";
+import { ArrowLeftRight, CornerDownLeft, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
 import { getDb } from "@/core/db/db";
 import { uhrzeitAnwenden } from "../logic";
 import { eintragHinzufuegen, verfasserSpeichern } from "../repository";
@@ -110,18 +109,74 @@ export function Schnellerfassung({
           </Button>
         </div>
       )}
-      <div className="grid gap-3 sm:grid-cols-[13rem_7rem_1fr_1fr]">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="tb-art">Art</Label>
-          <Select id="tb-art" value={art} onChange={(e) => setArt(e.target.value as EintragArt)}>
-            {EINTRAG_ARTEN.map((a, i) => (
-              <option key={a} value={a}>
-                {a} (Alt+{i + 1})
-              </option>
-            ))}
-          </Select>
+      <div className="flex flex-col gap-1.5">
+        <span id="tb-art-titel" className="text-sm font-medium">
+          Art
+        </span>
+        <div role="radiogroup" aria-labelledby="tb-art-titel" className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+          {EINTRAG_ARTEN.map((a, i) => (
+            <Button
+              key={a}
+              type="button"
+              role="radio"
+              aria-checked={art === a}
+              variant={art === a ? "default" : "outline"}
+              className="px-2"
+              onClick={() => {
+                setArt(a);
+                inhaltFeld.current?.focus();
+              }}
+            >
+              {a}
+              <span aria-hidden className="hidden text-xs opacity-60 lg:inline">
+                Alt+{i + 1}
+              </span>
+            </Button>
+          ))}
         </div>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="tb-inhalt">Inhalt</Label>
+        <div className="flex gap-2">
+          <Input
+            id="tb-inhalt"
+            ref={inhaltFeld}
+            autoComplete="off"
+            enterKeyHint="send"
+            required
+            className="h-14 flex-1 text-lg"
+            placeholder="Text eingeben, Enter speichert"
+            value={inhalt}
+            onChange={(e) => setInhalt(e.target.value)}
+          />
+          <Button type="submit" size="lg" className="h-14 px-5" aria-label="Eintrag speichern">
+            <CornerDownLeft /> <span className="hidden sm:inline">Speichern</span>
+          </Button>
+        </div>
+      </div>
+      <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2 sm:grid-cols-[1fr_auto_1fr_8rem_14rem]">
         <div className="flex flex-col gap-1.5">
+          <Label htmlFor="tb-von">Von</Label>
+          <Input id="tb-von" autoComplete="off" value={von} onChange={(e) => setVon(e.target.value)} />
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label="Von und An tauschen"
+          title="Von und An tauschen (Rückmeldung)"
+          onClick={() => {
+            setVon(an);
+            setAn(von);
+          }}
+        >
+          <ArrowLeftRight />
+        </Button>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="tb-an">An</Label>
+          <Input id="tb-an" autoComplete="off" value={an} onChange={(e) => setAn(e.target.value)} />
+        </div>
+        <div className="flex flex-col gap-1.5 max-sm:col-span-1">
           <Label htmlFor="tb-uhrzeit">Uhrzeit</Label>
           <Input
             id="tb-uhrzeit"
@@ -132,48 +187,14 @@ export function Schnellerfassung({
             onChange={(e) => setUhrzeit(e.target.value)}
           />
         </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="tb-von">Von</Label>
-          <Input id="tb-von" autoComplete="off" value={von} onChange={(e) => setVon(e.target.value)} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="tb-an">An</Label>
-          <Input id="tb-an" autoComplete="off" value={an} onChange={(e) => setAn(e.target.value)} />
-        </div>
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="tb-inhalt">Inhalt</Label>
-        <div className="flex gap-2">
-          <Input
-            id="tb-inhalt"
-            ref={inhaltFeld}
-            autoComplete="off"
-            required
-            className="h-14 flex-1 text-lg"
-            placeholder="Text eingeben, Enter speichert"
-            value={inhalt}
-            onChange={(e) => setInhalt(e.target.value)}
-          />
-          <Button type="submit" size="lg" aria-label="Eintrag speichern">
-            <CornerDownLeft /> <span className="hidden sm:inline">Speichern</span>
-          </Button>
-        </div>
-      </div>
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5 max-sm:col-span-2">
           <Label htmlFor="tb-verfasser">Verfasser</Label>
-          <Input
-            id="tb-verfasser"
-            autoComplete="off"
-            className="h-10 w-56"
-            value={verfasser}
-            onChange={(e) => setVerfasser(e.target.value)}
-          />
+          <Input id="tb-verfasser" autoComplete="off" value={verfasser} onChange={(e) => setVerfasser(e.target.value)} />
         </div>
-        <p className="text-xs text-muted-foreground">
-          Enter speichert · Alt+1 bis Alt+5 wählt die Art · Esc leert · / springt zur Suche · Uhrzeit leer = jetzt
-        </p>
       </div>
+      <p className="hidden text-xs text-muted-foreground lg:block">
+        Enter speichert · Alt+1 bis Alt+5 wählt die Art · Esc leert · / springt zur Suche · Uhrzeit leer = jetzt
+      </p>
       {fehler && (
         <p role="alert" className="text-sm text-destructive">
           {fehler}

@@ -70,8 +70,8 @@ export function Einsatztagebuch() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
+    <div className="flex flex-col gap-5">
+      <Card className="py-4">
         <CardContent>
           <Schnellerfassung
             einsatzId={einsatz.id}
@@ -83,26 +83,33 @@ export function Einsatztagebuch() {
       </Card>
 
       <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Nach Art filtern">
-          {EINTRAG_ARTEN.map((art) => (
-            <Button
-              key={art}
-              size="sm"
-              variant={arten.has(art) ? "default" : "outline"}
-              aria-pressed={arten.has(art)}
-              onClick={() => artUmschalten(art)}
-            >
-              {art}
-            </Button>
-          ))}
-          <div className="relative ml-auto w-full sm:w-72">
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
+          <div
+            className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0"
+            role="group"
+            aria-label="Nach Art filtern"
+          >
+            {EINTRAG_ARTEN.map((art) => (
+              <Button
+                key={art}
+                size="sm"
+                variant={arten.has(art) ? "default" : "outline"}
+                aria-pressed={arten.has(art)}
+                className="rounded-full"
+                onClick={() => artUmschalten(art)}
+              >
+                {art}
+              </Button>
+            ))}
+          </div>
+          <div className="relative w-full lg:ml-auto lg:w-72">
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground" />
             <Input
               ref={suchfeld}
               type="search"
               aria-label="Tagebuch durchsuchen"
               placeholder="Suchen (/)"
-              className="h-10 pl-9"
+              className="h-11 pl-10"
               value={suche}
               onChange={(e) => setSuche(e.target.value)}
             />

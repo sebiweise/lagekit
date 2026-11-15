@@ -38,7 +38,7 @@ export function EinsatzFormular({ onAngelegt }: { onAngelegt?: () => void }) {
   }
 
   return (
-    <form onSubmit={absenden} className="grid gap-4 sm:grid-cols-2" aria-label={t.einsatz.neu}>
+    <form onSubmit={absenden} className="grid grid-cols-1 gap-4 sm:grid-cols-2" aria-label={t.einsatz.neu}>
       <div className="flex flex-col gap-2 sm:col-span-2">
         <Label htmlFor="einsatz-stichwort">{t.einsatz.stichwort} *</Label>
         <Input
