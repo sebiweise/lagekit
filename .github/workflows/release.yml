@@ -120,5 +120,9 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: LAGEKIT_COMMIT=${{ github.sha }}
+          # Ohne Attestierungen: Buildx legt sie sonst als Manifeste mit
+          # Plattform „unknown/unknown“ ab, die GHCR wie eigene Images listet.
+          provenance: false
+          sbom: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
