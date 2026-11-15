@@ -52,9 +52,11 @@ export function Strahlenexposition() {
   const trupps = gruppiereTrupps(personen);
 
   return (
-    <div className="grid grid-cols-1 gap-6 2xl:grid-cols-[minmax(0,1fr)_26rem] 2xl:grid-rows-[auto_1fr] 2xl:items-start">
-      {/* Am breiten Bildschirm: Personen links, Übersicht und Steuerung rechts daneben. */}
-      <div className="flex flex-col gap-6 2xl:col-start-2 2xl:row-start-1">
+    // Container statt Fensterbreite: im geteilten Arbeitsbereich bleibt es einspaltig.
+    <div className="@container">
+    <div className="grid grid-cols-1 gap-6 @6xl:grid-cols-[minmax(0,1fr)_26rem] @6xl:grid-rows-[auto_1fr] @6xl:items-start">
+      {/* Bei viel Breite: Personen links, Übersicht und Steuerung rechts daneben. */}
+      <div className="flex flex-col gap-6 @6xl:col-start-2 @6xl:row-start-1">
         {personen.length > 0 && (
           <section aria-labelledby="uebersicht-titel" className="flex flex-col gap-3">
             <h2 id="uebersicht-titel" className="text-xl font-semibold">
@@ -119,7 +121,7 @@ export function Strahlenexposition() {
           })}
       </div>
 
-      <section aria-labelledby="personen-titel" className="flex flex-col gap-4 2xl:col-start-1 2xl:row-span-2 2xl:row-start-1">
+      <section aria-labelledby="personen-titel" className="flex flex-col gap-4 @6xl:col-start-1 @6xl:row-span-2 @6xl:row-start-1">
         <h2 id="personen-titel" className="text-xl font-semibold">
           Personen ({personen.length})
         </h2>
@@ -140,7 +142,7 @@ export function Strahlenexposition() {
         )}
       </section>
 
-      <div className="flex flex-col gap-6 2xl:col-start-2 2xl:row-start-2">
+      <div className="flex flex-col gap-6 @6xl:col-start-2 @6xl:row-start-2">
         <Card>
           <CardHeader>
             <CardTitle>Vorplanung</CardTitle>
@@ -192,6 +194,7 @@ export function Strahlenexposition() {
           </div>
         </details>
       </div>
+    </div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { koordinatenSchema } from "@/core/standort/standort";
 
 /**
  * Ein Einsatz ist die Klammer für alle Tool-Daten.
@@ -10,6 +11,8 @@ export const einsatzSchema = z.object({
   id: z.uuid(),
   stichwort: z.string().trim().min(1, "Stichwort fehlt"),
   ort: z.string().trim().default(""),
+  /** Einsatzort als Punkt, wenn per Standort oder Karte gesetzt. */
+  koordinaten: koordinatenSchema.nullable().default(null),
   einheit: z.string().trim().default(""),
   beginn: z.iso.datetime({ offset: true }),
   ende: z.iso.datetime({ offset: true }).nullable(),
@@ -26,6 +29,7 @@ export const neuerEinsatzSchema = einsatzSchema.pick({
   stichwort: true,
   ort: true,
   einheit: true,
+  koordinaten: true,
 }).extend({
   beginn: einsatzSchema.shape.beginn.optional(),
 });

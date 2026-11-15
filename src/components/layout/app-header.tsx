@@ -19,7 +19,7 @@ const uhrFormat = new Intl.DateTimeFormat("de-DE", { hour: "2-digit", minute: "2
 export function AppHeader() {
   return (
     <header className="sticky top-0 z-40 border-b bg-card/95 pt-[env(safe-area-inset-top)] backdrop-blur print:hidden">
-      <div className="flex w-full items-center gap-3 px-4 py-2 sm:px-6 lg:h-16 lg:py-0 lg:pl-0">
+      <div className="flex h-15 w-full items-center gap-3 px-4 sm:px-6 lg:h-16 lg:pl-0">
         <Link href="/" className="hidden w-60 shrink-0 px-6 text-xl font-bold lg:block">
           {t.app.name}
         </Link>

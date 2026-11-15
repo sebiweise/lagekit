@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Briefcase, Home, Info, Search, Users } from "lucide-react";
+import { Briefcase, Home, Info, LayoutPanelLeft, Search, Users } from "lucide-react";
 import { t } from "@/i18n";
 import { toolHref, toolRegistry } from "@/tools/registry";
 
@@ -50,6 +50,12 @@ export function navigationsZiele(): NavZiel[] {
       beschreibung: "Einsatz anlegen, wechseln, abschließen, sichern",
     },
     ...sonstige,
+    {
+      href: "/arbeitsbereich/",
+      text: t.nav.arbeitsbereich,
+      icon: LayoutPanelLeft,
+      beschreibung: "Mehrere Tools nebeneinander oder als Tabs",
+    },
     {
       href: "/sitzung/",
       text: t.nav.sitzung,

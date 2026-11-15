@@ -8,11 +8,16 @@ import { Label } from "@/components/ui/label";
 import { getDb } from "@/core/db/db";
 import { t } from "@/i18n";
 import { vonDatetimeLocal } from "@/lib/zeit";
+import { StandortKnopf } from "@/core/standort/components/standort-knopf";
+import type { Koordinaten } from "@/core/standort/standort";
+import { utmref } from "@/core/standort/utmref";
 import { einsatzAnlegen } from "../repository";
 
 export function EinsatzFormular({ onAngelegt }: { onAngelegt?: () => void }) {
   const [stichwort, setStichwort] = useState("");
   const [ort, setOrt] = useState("");
+  const [koordinaten, setKoordinaten] = useState<Koordinaten | null>(null);
+  const [standortFehler, setStandortFehler] = useState<string | null>(null);
   const [einheit, setEinheit] = useState("");
   // Leer heißt: Beginn ist der Zeitpunkt des Anlegens.
   const [beginn, setBeginn] = useState("");
@@ -25,11 +30,13 @@ export function EinsatzFormular({ onAngelegt }: { onAngelegt?: () => void }) {
       await einsatzAnlegen(getDb(), {
         stichwort,
         ort,
+        koordinaten,
         einheit,
         beginn: vonDatetimeLocal(beginn) ?? undefined,
       });
       setStichwort("");
       setOrt("");
+      setKoordinaten(null);
       setBeginn("");
       onAngelegt?.();
     } catch (e) {
@@ -50,9 +57,38 @@ export function EinsatzFormular({ onAngelegt }: { onAngelegt?: () => void }) {
           onChange={(e) => setStichwort(e.target.value)}
         />
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 sm:col-span-2">
         <Label htmlFor="einsatz-ort">{t.einsatz.ort}</Label>
-        <Input id="einsatz-ort" autoComplete="off" value={ort} onChange={(e) => setOrt(e.target.value)} />
+        <div className="flex gap-2">
+          <Input
+            id="einsatz-ort"
+            className="min-w-0 flex-1"
+            autoComplete="off"
+            value={ort}
+            onChange={(e) => setOrt(e.target.value)}
+          />
+          <StandortKnopf
+            onErgebnis={(e) => {
+              setOrt(e.ort);
+              setKoordinaten(e.koordinaten);
+            }}
+            onFehler={setStandortFehler}
+          />
+        </div>
+        {standortFehler && (
+          <p role="alert" className="text-sm text-destructive">
+            {standortFehler}
+          </p>
+        )}
+        {koordinaten && (
+          <p className="text-xs text-muted-foreground" data-testid="einsatz-koordinaten">
+            UTMREF {utmref(koordinaten.lat, koordinaten.lon)}
+            {koordinaten.genauigkeit !== undefined && ` · ± ${koordinaten.genauigkeit} m`}{" "}
+            <button type="button" className="underline" onClick={() => setKoordinaten(null)}>
+              Punkt entfernen
+            </button>
+          </p>
+        )}
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="einsatz-einheit">{t.einsatz.einheit}</Label>
@@ -73,7 +109,7 @@ export function EinsatzFormular({ onAngelegt }: { onAngelegt?: () => void }) {
         />
         <p className="text-xs text-muted-foreground">Leer lassen für „jetzt“.</p>
       </div>
-      <div className="flex items-end">
+      <div className="flex justify-end sm:col-span-2">
         <Button type="submit" className="w-full sm:w-auto">
           <Plus /> {t.einsatz.anlegen}
         </Button>

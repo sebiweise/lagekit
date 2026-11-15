@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FarbschemaUmschalter } from "@/core/darstellung/components/farbschema-umschalter";
 import { AktiverEinsatzKarte } from "@/core/einsatz/components/aktiver-einsatz-karte";
 import { ToolKacheln } from "@/core/einsatz/components/tool-kacheln";
 import { PwaStatus } from "@/core/pwa/components/pwa-status";
@@ -21,11 +22,14 @@ export default function Home() {
 
       <PwaStatus />
 
-      <footer className="mt-auto flex flex-col gap-2 border-t pt-4 text-sm text-muted-foreground">
+      <footer className="mt-auto flex flex-col gap-3 border-t pt-4 text-sm text-muted-foreground">
         <p>{t.start.untertitel}</p>
-        <Link href="/hinweise/" className="w-fit underline underline-offset-4 hover:text-foreground">
-          {t.hinweise.link}
-        </Link>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <Link href="/hinweise/" className="underline underline-offset-4 hover:text-foreground">
+            {t.hinweise.link}
+          </Link>
+          <FarbschemaUmschalter />
+        </div>
       </footer>
     </main>
   );

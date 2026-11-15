@@ -128,7 +128,7 @@ export function Schnellerfassung({
               }}
             >
               {a}
-              <span aria-hidden className="hidden text-xs opacity-60 lg:inline">
+              <span aria-hidden className="hidden text-xs opacity-60 @3xl:inline">
                 Alt+{i + 1}
               </span>
             </Button>

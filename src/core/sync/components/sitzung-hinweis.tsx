@@ -28,11 +28,10 @@ export function SitzungHinweis() {
   if (!sitzung) {
     if (!sitzungen.andererTab()) return null;
     return (
-      <div className="border-b border-warn bg-warn/10 print:hidden" role="status" data-testid="sitzung-anderer-tab">
+      <div className="border-b bg-muted/50 print:hidden" role="status" data-testid="sitzung-anderer-tab">
         <p className="mx-auto flex w-full max-w-6xl items-center gap-2 px-4 py-2 text-sm sm:px-6">
           <Users className="size-4 shrink-0" />
-          „Gemeinsam arbeiten“ läuft in einem anderen Tab. Änderungen in diesem Tab werden nicht abgeglichen. Bitte
-          dort weiterarbeiten.
+          Sitzung läuft in einem anderen Tab. Änderungen hier werden mit abgeglichen.
         </p>
       </div>
     );

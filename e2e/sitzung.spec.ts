@@ -75,6 +75,15 @@ test("Gemeinsam arbeiten offline: Beitritt per Code, Freigabe durch den Host, Ab
   await expect(gast.getByTestId("tagebuch-eintrag").filter({ hasText: "Lagemeldung an Leitstelle" })).toBeVisible();
   await expect(gast.getByTestId("tagebuch-eintrag")).toHaveCount(2);
 
+  // Ein zweiter Tab auf dem Host arbeitet mit: Seine Einträge erreichen den Gast.
+  const hostTab2 = await hostKontext.newPage();
+  await hostTab2.goto(`${baseURL}/tools/einsatztagebuch/`);
+  await expect(hostTab2.getByTestId("sitzung-anderer-tab")).toBeVisible();
+  await hostTab2.getByLabel("Inhalt").fill("Aus dem zweiten Tab des Hosts");
+  await hostTab2.getByLabel("Inhalt").press("Enter");
+  await expect(gast.getByTestId("tagebuch-eintrag").filter({ hasText: "Aus dem zweiten Tab des Hosts" })).toBeVisible();
+  await hostTab2.close();
+
   // Host trennt das Gerät.
   await host.getByRole("link", { name: "Gemeinsam" }).click();
   await host.locator('[data-gast="Schmidt"]').getByRole("button", { name: "Trennen" }).click();
@@ -153,10 +162,18 @@ test("Gemeinsam arbeiten mit Kurzcode: Host sieht die Anfrage auf jeder Seite un
   await expect(gast.getByText("Verbunden: Hochwasser")).toBeVisible({ timeout: 15_000 });
   await expect(host.getByTestId("sitzung-status")).toContainText("1 Gerät verbunden");
 
-  // Ein zweiter Tab auf dem Gast übernimmt die Sitzung nicht, sondern weist auf den ersten hin.
+  // Ein zweiter Tab auf dem Gast übernimmt die Sitzung nicht, arbeitet aber mit:
+  // Seine Einträge gehen über den ersten Tab an den Host, Einträge des Hosts erscheinen auch hier.
   const zweiterTab = await gastKontext.newPage();
-  await zweiterTab.goto(`${baseURL}/`);
+  await zweiterTab.goto(`${baseURL}/tools/einsatztagebuch/`);
   await expect(zweiterTab.getByTestId("sitzung-anderer-tab")).toBeVisible();
+  await zweiterTab.getByLabel("Inhalt").fill("Aus dem zweiten Tab");
+  await zweiterTab.getByLabel("Inhalt").press("Enter");
+  await host.getByRole("main").getByRole("link", { name: /Einsatztagebuch/ }).click();
+  await expect(host.getByTestId("tagebuch-eintrag").filter({ hasText: "Aus dem zweiten Tab" })).toBeVisible();
+  await host.getByLabel("Inhalt").fill("Vom Host an alle Tabs");
+  await host.getByLabel("Inhalt").press("Enter");
+  await expect(zweiterTab.getByTestId("tagebuch-eintrag").filter({ hasText: "Vom Host an alle Tabs" })).toBeVisible();
   await zweiterTab.close();
   await expect(gast.getByTestId("sitzung-status")).toContainText("Verbunden mit Müller");
   await expect(host.getByTestId("sitzung-status")).toContainText("1 Gerät verbunden");
