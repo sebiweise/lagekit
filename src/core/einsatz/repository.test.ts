@@ -6,9 +6,12 @@ import {
   einsaetzeAuflisten,
   einsatzAbschliessen,
   einsatzAnlegen,
+  einsatzBearbeiten,
   einsatzLoeschen,
+  einsatzOrtSetzen,
   einsatzWiederOeffnen,
 } from "./repository";
+import { eintraege, verfasserSpeichern } from "@/tools/einsatztagebuch/repository";
 
 let db: LagekitDB;
 
@@ -102,5 +105,72 @@ describe("Aktiver Einsatz und Löschen", () => {
     await einsatzLoeschen(db, einsatz.id);
     expect(await db.einsaetze.count()).toBe(0);
     expect(await aktiverEinsatz(db)).toBeNull();
+  });
+});
+
+describe("einsatzBearbeiten", () => {
+  it("ändert Stammdaten und vermerkt das im Einsatztagebuch", async () => {
+    neueDb();
+    const angelegt = new Date("2026-11-14T10:00:00.000Z");
+    const einsatz = await einsatzAnlegen(db, { stichwort: "TH 1", ort: "Hauptstraße 1", einheit: "ELW 1" }, angelegt);
+    await verfasserSpeichern(db, "Weise");
+
+    const jetzt = new Date("2026-11-14T10:20:00.000Z");
+    const neu = await einsatzBearbeiten(
+      db,
+      einsatz.id,
+      { stichwort: "  TH 2 VU eingeklemmt ", ort: "Hauptstraße 3", koordinaten: { lat: 50.1, lon: 8.6 } },
+      jetzt,
+    );
+
+    expect(neu).toMatchObject({
+      stichwort: "TH 2 VU eingeklemmt",
+      ort: "Hauptstraße 3",
+      einheit: "ELW 1",
+      beginn: angelegt.toISOString(),
+      status: "aktiv",
+      geaendertAm: jetzt.toISOString(),
+    });
+    expect(await db.einsaetze.get(einsatz.id)).toEqual(neu);
+
+    const tagebuch = await eintraege(db).where("einsatzId").equals(einsatz.id).toArray();
+    expect(tagebuch).toHaveLength(1);
+    expect(tagebuch[0]).toMatchObject({ nr: 1, art: "Notiz", verfasser: "Weise", zeitpunkt: jetzt.toISOString() });
+    expect(tagebuch[0]!.inhalt).toContain("Stichwort: „TH 1“ → „TH 2 VU eingeklemmt“");
+    expect(tagebuch[0]!.inhalt).toContain("Ort: „Hauptstraße 1“ → „Hauptstraße 3“");
+    expect(tagebuch[0]!.inhalt).toContain("Einsatzort-Punkt: (kein Punkt) → UTMREF");
+    expect(tagebuch[0]!.inhalt).not.toContain("Einheit");
+  });
+
+  it("speichert nichts und schreibt nichts ins Tagebuch, wenn sich nichts ändert", async () => {
+    neueDb();
+    const einsatz = await einsatzAnlegen(db, { stichwort: "TH 1", ort: "A" });
+    const ergebnis = await einsatzBearbeiten(db, einsatz.id, { stichwort: "TH 1 ", ort: "A" });
+    expect(ergebnis).toEqual(einsatz);
+    expect(await eintraege(db).count()).toBe(0);
+  });
+
+  it("lehnt ein leeres Stichwort ab", async () => {
+    neueDb();
+    const einsatz = await einsatzAnlegen(db, { stichwort: "TH 1" });
+    await expect(einsatzBearbeiten(db, einsatz.id, { stichwort: "  " })).rejects.toThrow();
+    expect((await db.einsaetze.get(einsatz.id))?.stichwort).toBe("TH 1");
+  });
+
+  it("lehnt einen Beginn nach dem Ende ab", async () => {
+    neueDb();
+    const einsatz = await einsatzAnlegen(db, { stichwort: "TH 1" }, new Date("2026-11-14T10:00:00.000Z"));
+    await einsatzAbschliessen(db, einsatz.id, new Date("2026-11-14T11:00:00.000Z"));
+    await expect(
+      einsatzBearbeiten(db, einsatz.id, { beginn: "2026-11-14T12:00:00.000Z" }),
+    ).rejects.toThrow("Beginn liegt nach dem Ende");
+  });
+
+  it("protokolliert auch den Ort aus Standort oder Karte", async () => {
+    neueDb();
+    const einsatz = await einsatzAnlegen(db, { stichwort: "B 2" });
+    await einsatzOrtSetzen(db, einsatz.id, "Marktplatz", { lat: 50, lon: 8 });
+    const [eintrag] = await eintraege(db).toArray();
+    expect(eintrag?.inhalt).toContain("Ort: (leer) → „Marktplatz“");
   });
 });

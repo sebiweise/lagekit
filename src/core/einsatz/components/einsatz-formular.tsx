@@ -1,32 +1,59 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getDb } from "@/core/db/db";
 import { t } from "@/i18n";
-import { vonDatetimeLocal } from "@/lib/zeit";
+import { vonDatetimeLocal, zuDatetimeLocal } from "@/lib/zeit";
 import { StandortKnopf } from "@/core/standort/components/standort-knopf";
 import type { Koordinaten } from "@/core/standort/standort";
 import { utmref } from "@/core/standort/utmref";
-import { einsatzAnlegen } from "../repository";
+import { einsatzAnlegen, einsatzBearbeiten } from "../repository";
+import type { Einsatz } from "../schema";
 
-export function EinsatzFormular({ onAngelegt }: { onAngelegt?: () => void }) {
-  const [stichwort, setStichwort] = useState("");
-  const [ort, setOrt] = useState("");
-  const [koordinaten, setKoordinaten] = useState<Koordinaten | null>(null);
+/**
+ * Formular für die Stammdaten eines Einsatzes. Ohne `einsatz` legt es einen
+ * neuen Einsatz an, mit `einsatz` ändert es dessen Angaben.
+ */
+export function EinsatzFormular({
+  einsatz,
+  onAngelegt,
+  onGespeichert,
+  onAbbrechen,
+}: {
+  einsatz?: Einsatz;
+  onAngelegt?: () => void;
+  onGespeichert?: () => void;
+  onAbbrechen?: () => void;
+}) {
+  const bearbeiten = einsatz !== undefined;
+  // Ids je Formular, damit Anlegen und Bearbeiten gleichzeitig auf einer Seite stehen können.
+  const praefix = bearbeiten ? `einsatz-${einsatz.id}` : "einsatz";
+  const [stichwort, setStichwort] = useState(einsatz?.stichwort ?? "");
+  const [ort, setOrt] = useState(einsatz?.ort ?? "");
+  const [koordinaten, setKoordinaten] = useState<Koordinaten | null>(einsatz?.koordinaten ?? null);
   const [standortFehler, setStandortFehler] = useState<string | null>(null);
-  const [einheit, setEinheit] = useState("");
-  // Leer heißt: Beginn ist der Zeitpunkt des Anlegens.
-  const [beginn, setBeginn] = useState("");
+  const [einheit, setEinheit] = useState(einsatz?.einheit ?? "");
+  // Beim Anlegen heißt leer: Beginn ist der Zeitpunkt des Anlegens.
+  const [beginn, setBeginn] = useState(einsatz ? zuDatetimeLocal(new Date(einsatz.beginn)) : "");
   const [fehler, setFehler] = useState<string | null>(null);
 
   async function absenden(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFehler(null);
     try {
+      if (bearbeiten) {
+        // Unveränderter Beginn behält seine Sekunden; das Feld zeigt nur Minuten.
+        const beginnUnveraendert = beginn === zuDatetimeLocal(new Date(einsatz.beginn));
+        const beginnNeu = beginnUnveraendert ? einsatz.beginn : vonDatetimeLocal(beginn);
+        if (!beginnNeu) throw new Error("Beginn fehlt");
+        await einsatzBearbeiten(getDb(), einsatz.id, { stichwort, ort, koordinaten, einheit, beginn: beginnNeu });
+        onGespeichert?.();
+        return;
+      }
       await einsatzAnlegen(getDb(), {
         stichwort,
         ort,
@@ -45,11 +72,15 @@ export function EinsatzFormular({ onAngelegt }: { onAngelegt?: () => void }) {
   }
 
   return (
-    <form onSubmit={absenden} className="grid grid-cols-1 gap-4 sm:grid-cols-2" aria-label={t.einsatz.neu}>
+    <form
+      onSubmit={absenden}
+      className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+      aria-label={bearbeiten ? t.einsatz.bearbeitenTitel : t.einsatz.neu}
+    >
       <div className="flex flex-col gap-2 sm:col-span-2">
-        <Label htmlFor="einsatz-stichwort">{t.einsatz.stichwort} *</Label>
+        <Label htmlFor={`${praefix}-stichwort`}>{t.einsatz.stichwort} *</Label>
         <Input
-          id="einsatz-stichwort"
+          id={`${praefix}-stichwort`}
           required
           autoComplete="off"
           placeholder={t.einsatz.stichwortBeispiel}
@@ -58,10 +89,10 @@ export function EinsatzFormular({ onAngelegt }: { onAngelegt?: () => void }) {
         />
       </div>
       <div className="flex flex-col gap-2 sm:col-span-2">
-        <Label htmlFor="einsatz-ort">{t.einsatz.ort}</Label>
+        <Label htmlFor={`${praefix}-ort`}>{t.einsatz.ort}</Label>
         <div className="flex gap-2">
           <Input
-            id="einsatz-ort"
+            id={`${praefix}-ort`}
             className="min-w-0 flex-1"
             autoComplete="off"
             value={ort}
@@ -91,27 +122,44 @@ export function EinsatzFormular({ onAngelegt }: { onAngelegt?: () => void }) {
         )}
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="einsatz-einheit">{t.einsatz.einheit}</Label>
+        <Label htmlFor={`${praefix}-einheit`}>{t.einsatz.einheit}</Label>
         <Input
-          id="einsatz-einheit"
+          id={`${praefix}-einheit`}
           autoComplete="off"
           value={einheit}
           onChange={(e) => setEinheit(e.target.value)}
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="einsatz-beginn">{t.einsatz.beginn}</Label>
+        <Label htmlFor={`${praefix}-beginn`}>{t.einsatz.beginn}</Label>
         <Input
-          id="einsatz-beginn"
+          id={`${praefix}-beginn`}
           type="datetime-local"
+          required={bearbeiten}
           value={beginn}
           onChange={(e) => setBeginn(e.target.value)}
         />
-        <p className="text-xs text-muted-foreground">Leer lassen für „jetzt“.</p>
+        {!bearbeiten && <p className="text-xs text-muted-foreground">Leer lassen für „jetzt“.</p>}
       </div>
-      <div className="flex justify-end sm:col-span-2">
+      {bearbeiten && (
+        <p className="text-sm text-muted-foreground sm:col-span-2">{t.einsatz.bearbeitenHinweis}</p>
+      )}
+      <div className="flex flex-col-reverse gap-2 sm:col-span-2 sm:flex-row sm:justify-end">
+        {onAbbrechen && (
+          <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={onAbbrechen}>
+            {t.einsatz.abbrechen}
+          </Button>
+        )}
         <Button type="submit" className="w-full sm:w-auto">
-          <Plus /> {t.einsatz.anlegen}
+          {bearbeiten ? (
+            <>
+              <Save /> {t.einsatz.speichern}
+            </>
+          ) : (
+            <>
+              <Plus /> {t.einsatz.anlegen}
+            </>
+          )}
         </Button>
       </div>
       {fehler && (
