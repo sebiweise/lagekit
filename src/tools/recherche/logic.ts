@@ -1,9 +1,36 @@
-import type { ExternesTool, Thema } from "./katalog";
+import type { BegriffArt, ExternesTool, Thema } from "./katalog";
 
-/** Adresse für eine Direktsuche oder `null`, wenn das Tool keine anbietet. */
-export function suchUrl(tool: ExternesTool, begriff: string, ort = ""): string | null {
-  if (!tool.suche) return null;
+export type { BegriffArt };
+
+/** Ob das Tool für diese Begriffsart direkt zu Treffern springen kann. */
+export function hatDirektsuche(tool: ExternesTool, art: BegriffArt = "text"): boolean {
+  if (art === "un" && tool.unMuster) return true;
+  return Boolean(tool.suche && (!tool.suche.arten || tool.suche.arten.includes(art)));
+}
+
+/** Was die Direktsuche erwartet bzw. liefert, als Untertitel. */
+export function direktHinweis(tool: ExternesTool, art: BegriffArt = "text"): string {
+  if (art === "un" && tool.unMuster) return "Datenblatt zur UN-Nummer";
+  return tool.suche?.begriff ?? "";
+}
+
+/** Ob der Ort in die Direktsuche eingeht. */
+export function nutztOrt(tool: ExternesTool, art: BegriffArt = "text"): boolean {
+  if (art === "un" && tool.unMuster) return false;
+  return Boolean(tool.suche && (tool.suche.muster.includes("{ort}") || tool.suche.ortAnhaengen));
+}
+
+/**
+ * Adresse für eine Direktsuche oder `null`, wenn das Tool für diese Begriffsart
+ * keine anbietet. Bei UN-Nummern hat `unMuster` Vorrang.
+ */
+export function suchUrl(tool: ExternesTool, begriff: string, ort = "", art: BegriffArt = "text"): string | null {
+  if (!hatDirektsuche(tool, art)) return null;
   const b = begriff.trim();
+  if (art === "un" && tool.unMuster) {
+    return tool.unMuster.replaceAll("{un}", encodeURIComponent(String(Number(b))));
+  }
+  if (!tool.suche) return null;
   const o = ort.trim();
   const q = tool.suche.ortAnhaengen && o ? `${b} ${o}` : b;
   return tool.suche.muster
@@ -19,9 +46,9 @@ const SCHLAGWORTE: Record<Exclude<Thema, "kontakt" | "karte">, string[]> = {
   gefahrstoff: ["abc", "cbrn", "gefahrgut", "gefahrstoff", "gas", "chemie", "chemikal", "austritt", "leck", "öl", "ölspur", "gasaus", "gasgeruch", "säure", "lauge", "ammoniak", "chlor", "un"],
   strahlung: ["abc", "cbrn", "radioaktiv", "strahl", "rn", "kern", "nuklear"],
   fahrzeug: ["vu", "verkehrsunfall", "pkw", "lkw", "kfz", "eingeklemmt", "thvu", "autobahn", "bab", "bus", "fahrzeug", "elektrofahrzeug", "e-auto", "auto"],
-  vegetation: ["wald", "vegetation", "flächenbrand", "feld", "wiese", "böschung", "gras", "moor", "heide", "flur", "stoppel", "acker"],
-  wasser: ["hochwasser", "überflutung", "überschwemmung", "starkregen", "pegel", "deich", "fluss", "ufer", "unwetter"],
-  warnung: ["unwetter", "sturm", "hochwasser", "großschaden", "manv", "abc", "cbrn", "katastrophe", "evakuierung"],
+  vegetation: ["wald", "vegetation", "flächenbrand", "feld", "wiese", "böschung", "gras", "moor", "heide", "flur", "stoppel", "acker", "forst"],
+  wasser: ["hochwasser", "überflutung", "überschwemmung", "starkregen", "pegel", "deich", "fluss", "ufer", "unwetter", "gewässer", "schiff", "wasserstraße", "hafen"],
+  warnung: ["unwetter", "sturm", "gewitter", "starkregen", "hochwasser", "großschaden", "manv", "abc", "cbrn", "katastrophe", "evakuierung"],
 };
 
 /** Kontakte und Karten passen zu jedem Einsatz. */
@@ -80,8 +107,6 @@ export function verlaufSortieren<T extends { zeitpunkt: string }>(liste: T[]): T
   return [...liste].sort((a, b) => b.zeitpunkt.localeCompare(a.zeitpunkt));
 }
 
-export type BegriffArt = "un" | "cas" | "text";
-
 /**
  * Erkennt UN-Nummern („1005“, „UN 1005“) und CAS-Nummern („7664-41-7“).
  * `wert` ist der Begriff so, wie er an die Ziele geht (UN-Nummer ohne „UN“).
@@ -115,7 +140,7 @@ export function suchziele(
   return {
     art,
     wert,
-    direkt: reihenfolge.filter((t) => t.suche),
-    kopieren: reihenfolge.filter((t) => !t.suche && t.kopierHinweis),
+    direkt: reihenfolge.filter((t) => hatDirektsuche(t, art)),
+    kopieren: reihenfolge.filter((t) => !hatDirektsuche(t, art) && t.kopierHinweis),
   };
 }

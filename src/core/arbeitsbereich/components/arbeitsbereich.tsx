@@ -13,6 +13,9 @@ import {
 } from "react";
 import { Columns2, Grid2x2, GripVertical, LayoutPanelLeft, Plus, Rows2, Square, X, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 import { ansichten, ansichtVon } from "@/tools/ansichten";
 import {
@@ -113,7 +116,6 @@ export function Arbeitsbereich() {
   const [ziel, setZiel] = useState<number | null>(null);
   const [hoehe, setHoehe] = useState(600);
   const flaeche = useRef<HTMLDivElement>(null);
-  const leiste = useRef<HTMLDivElement>(null);
   const breit = useBreit();
 
   // Erst im Browser laden: Die Seite ist statisch vorgerendert.
@@ -132,21 +134,6 @@ export function Arbeitsbereich() {
       // Privater Modus o. Ä.: dann eben ohne Merken.
     }
   }, [gespeichert]);
-
-  // Auswahl schließen bei Klick daneben oder Escape.
-  useEffect(() => {
-    if (!auswahlOffen) return;
-    const klick = (e: globalThis.PointerEvent) => {
-      if (!leiste.current?.contains(e.target as Node)) setAuswahlOffen(false);
-    };
-    const taste = (e: globalThis.KeyboardEvent) => e.key === "Escape" && setAuswahlOffen(false);
-    document.addEventListener("pointerdown", klick);
-    document.addEventListener("keydown", taste);
-    return () => {
-      document.removeEventListener("pointerdown", klick);
-      document.removeEventListener("keydown", taste);
-    };
-  }, [auswahlOffen]);
 
   // Auf schmalen Bildschirmen immer nur ein Tool; die Aufteilung bleibt für später gemerkt.
   const z: Zustand | null = gespeichert && (breit ? gespeichert : { ...gespeichert, aufteilung: "eins", fokus: 0 });
@@ -232,9 +219,10 @@ export function Arbeitsbereich() {
   };
 
   const feldWahl = (feld: number, id: string | null) => (
-    <select
+    <NativeSelect
+      size="sm"
       aria-label={`Tool in Feld ${feld + 1}`}
-      className="h-9 min-w-0 flex-1 truncate rounded-md border bg-background px-2 text-base font-medium"
+      className="flex-1"
       value={id ?? ""}
       onChange={(e) => {
         // Wert sofort lesen: React setzt das kontrollierte Feld zurück, bevor die Änderung angewendet wird.
@@ -242,13 +230,13 @@ export function Arbeitsbereich() {
         aendern((a) => (neu ? platzieren(a, feld, neu) : leeren(a, feld)));
       }}
     >
-      <option value="">Leer</option>
+      <NativeSelectOption value="">Leer</NativeSelectOption>
       {ansichten.map((a) => (
-        <option key={a.id} value={a.id}>
+        <NativeSelectOption key={a.id} value={a.id}>
           {a.name}
-        </option>
+        </NativeSelectOption>
       ))}
-    </select>
+    </NativeSelect>
   );
 
   const ablageHinweis = (feld: number) =>
@@ -267,7 +255,6 @@ export function Arbeitsbereich() {
   return (
     <div className="flex flex-1 flex-col gap-3" data-testid="arbeitsbereich">
       <div
-        ref={leiste}
         className="sticky top-[calc(3.75rem+1px+env(safe-area-inset-top))] z-30 -mx-4 lg:top-[calc(4rem+1px)] flex items-center gap-2 border-b bg-background/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 print:hidden"
       >
         <div role="tablist" aria-label="Offene Tools" className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
@@ -318,64 +305,55 @@ export function Arbeitsbereich() {
           })}
         </div>
         {nichtOffen.length > 0 && (
-          <Button
-            variant={auswahlOffen ? "secondary" : "outline"}
-            size="icon"
-            className="size-11"
-            aria-label="Tool öffnen"
-            aria-expanded={auswahlOffen}
-            onClick={() => setAuswahlOffen(!auswahlOffen)}
-          >
-            <Plus />
-          </Button>
+          <Popover open={auswahlOffen} onOpenChange={setAuswahlOffen}>
+            <PopoverTrigger
+              render={<Button variant={auswahlOffen ? "secondary" : "outline"} size="icon" className="size-11" />}
+              aria-label="Tool öffnen"
+            >
+              <Plus />
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-[min(28rem,calc(100vw-2rem))] p-2">
+              {raster && <p className="px-2 pb-2 text-sm text-muted-foreground">Öffnet in Feld {z.fokus + 1}.</p>}
+              <ul className="grid gap-2 sm:grid-cols-2" aria-label="Tool öffnen">
+                {nichtOffen.map((a) => (
+                  <li key={a.id}>
+                    <Button
+                      variant="outline"
+                      className="h-14 w-full justify-start gap-3 px-4 font-normal"
+                      onClick={() => {
+                        aendern((alt) => zeigen(alt, a.id));
+                        setAuswahlOffen(false);
+                      }}
+                    >
+                      <a.icon aria-hidden /> {a.name}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </PopoverContent>
+          </Popover>
         )}
-        <div role="radiogroup" aria-label="Aufteilung" className="hidden shrink-0 rounded-md border p-0.5 lg:flex">
+        <ToggleGroup
+          aria-label="Aufteilung"
+          size="sm"
+          variant="solid"
+          className="hidden shrink-0 lg:flex"
+          value={[z.aufteilung]}
+          onValueChange={(wert) => {
+            // Ein erneuter Klick auf die gewählte Aufteilung hebt sie nicht auf.
+            const neu = wert[0] as Aufteilung | undefined;
+            if (neu) aendern((alt) => aufteilen(alt, neu));
+          }}
+        >
           {AUFTEILUNGEN.map((auf) => {
             const Symbol = SYMBOLE[auf.id];
-            const gewaehlt = z.aufteilung === auf.id;
             return (
-              <button
-                key={auf.id}
-                type="button"
-                role="radio"
-                aria-checked={gewaehlt}
-                aria-label={auf.name}
-                title={auf.name}
-                className={cn(
-                  "flex size-10 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground",
-                  gewaehlt && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
-                )}
-                onClick={() => aendern((alt) => aufteilen(alt, auf.id))}
-              >
-                <Symbol className="size-5" />
-              </button>
+              <ToggleGroupItem key={auf.id} value={auf.id} aria-label={auf.name} title={auf.name} className="px-0">
+                <Symbol />
+              </ToggleGroupItem>
             );
           })}
-        </div>
-
-        {auswahlOffen && nichtOffen.length > 0 && (
-          <div className="absolute inset-x-4 top-full z-40 mt-1 rounded-xl border bg-popover p-2 text-popover-foreground shadow-lg sm:inset-x-auto sm:right-6 sm:w-[28rem]">
-            {raster && (
-              <p className="px-2 pb-2 text-sm text-muted-foreground">Öffnet in Feld {z.fokus + 1}.</p>
-            )}
-            <ul className="grid gap-2 sm:grid-cols-2" aria-label="Tool öffnen">
-              {nichtOffen.map((a) => (
-                <li key={a.id}>
-                  <button
-                    type="button"
-                    className="flex h-14 w-full items-center gap-3 rounded-md border px-4 text-left text-base hover:bg-accent"
-                    onClick={() => {
-                      aendern((alt) => zeigen(alt, a.id));
-                      setAuswahlOffen(false);
-                    }}
-                  >
-                    <a.icon className="size-5" aria-hidden /> {a.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        </ToggleGroup>
       </div>
 
       {z.offen.length === 0 && !auswahlOffen && (

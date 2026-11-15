@@ -8,7 +8,7 @@ import { UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { getDb } from "@/core/db/db";
 import { fehlerText } from "@/lib/formular";
 import { personAnlegen } from "../repository";
@@ -77,7 +77,7 @@ export function PersonFormular({
             />
             <datalist id="trupp-vorschlaege">
               {trupps.map((t) => (
-                <option key={t} value={t} />
+                <NativeSelectOption key={t} value={t} />
               ))}
             </datalist>
             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -90,13 +90,13 @@ export function PersonFormular({
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel htmlFor="person-richtwert">Richtwert</FieldLabel>
-            <Select {...field} id="person-richtwert" aria-invalid={fieldState.invalid}>
+            <NativeSelect {...field} id="person-richtwert" aria-invalid={fieldState.invalid}>
               {richtwerte.map((r) => (
-                <option key={r.id} value={r.id}>
+                <NativeSelectOption key={r.id} value={r.id}>
                   {r.bezeichnung} ({r.grenzeMsv} mSv)
-                </option>
+                </NativeSelectOption>
               ))}
-            </Select>
+            </NativeSelect>
             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
           </Field>
         )}

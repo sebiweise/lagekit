@@ -6,6 +6,7 @@ import { Download, Printer, Search } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useAktiverEinsatz } from "@/core/einsatz/hooks";
 import { csvHerunterladen } from "@/core/export/download";
 import { cn } from "@/lib/utils";
@@ -60,15 +61,6 @@ export function Einsatztagebuch() {
   const korrigiertDurch = korrekturen(eintraege);
   const sichtbar = filtern(eintraege, { arten, suche });
 
-  function artUmschalten(art: EintragArt) {
-    setArten((alt) => {
-      const neu = new Set(alt);
-      if (neu.has(art)) neu.delete(art);
-      else neu.add(art);
-      return neu;
-    });
-  }
-
   return (
     <div className="flex flex-col gap-5">
       <Card className="py-4">
@@ -84,24 +76,21 @@ export function Einsatztagebuch() {
 
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
-          <div
-            className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0"
-            role="group"
+          <ToggleGroup
+            multiple
+            variant="outline"
+            size="sm"
+            className="-mx-4 w-auto overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0"
             aria-label="Nach Art filtern"
+            value={[...arten]}
+            onValueChange={(wert) => setArten(new Set(wert as EintragArt[]))}
           >
             {EINTRAG_ARTEN.map((art) => (
-              <Button
-                key={art}
-                size="sm"
-                variant={arten.has(art) ? "default" : "outline"}
-                aria-pressed={arten.has(art)}
-                className="rounded-full"
-                onClick={() => artUmschalten(art)}
-              >
+              <ToggleGroupItem key={art} value={art} className="rounded-full">
                 {art}
-              </Button>
+              </ToggleGroupItem>
             ))}
-          </div>
+          </ToggleGroup>
           <div className="relative w-full lg:ml-auto lg:w-72">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-5 -translate-y-1/2 text-muted-foreground" />
             <Input

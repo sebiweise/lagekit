@@ -15,7 +15,7 @@ import {
   WifiOff,
   type LucideIcon,
 } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { getDb } from "@/core/db/db";
 import type { Einsatz } from "@/core/einsatz/schema";
 import { useOnline } from "@/core/pwa/components/use-online";
@@ -127,13 +127,9 @@ export function Suchverlauf({ verlauf }: { verlauf: Suche[] }) {
         ))}
       </Liste>
       {verlauf.length > VERLAUF_KURZ && (
-        <button
-          type="button"
-          className={buttonVariants({ variant: "ghost", size: "sm", className: "self-start" })}
-          onClick={() => setAlle((x) => !x)}
-        >
+        <Button variant="ghost" size="sm" className="self-start" onClick={() => setAlle((x) => !x)}>
           {alle ? "Weniger anzeigen" : `Alle ${verlauf.length} Suchen anzeigen`}
-        </button>
+        </Button>
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { Fragment, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
@@ -17,6 +17,14 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  Breadcrumb,
+  BreadcrumbButton,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { dateiArt, dateiZeigen, type DateiZiel } from "@/core/dateien/components/datei-vorschau";
@@ -288,24 +296,30 @@ export function Dateibrowser() {
   return (
     <div className="flex flex-col gap-4">
       {kopf}
-      <nav aria-label="Ordnerpfad" className="flex flex-wrap items-center gap-1 text-sm">
-        <button type="button" className="rounded px-2 py-1 underline-offset-4 hover:underline" onClick={() => setOrt(null)}>
-          Alle Ordner
-        </button>
-        {[aktuell.name, ...stufen].map((teil, i) => (
-          <span key={i} className="flex items-center gap-1">
-            <ChevronRight className="size-4 text-muted-foreground" aria-hidden />
-            <button
-              type="button"
-              className="rounded px-2 py-1 font-medium underline-offset-4 hover:underline aria-[current=page]:no-underline"
-              aria-current={i === stufen.length ? "page" : undefined}
-              onClick={() => setOrt({ ordner: aktuell.name, unter: stufen.slice(0, i).join("/") })}
-            >
-              {teil}
-            </button>
-          </span>
-        ))}
-      </nav>
+      <Breadcrumb aria-label="Ordnerpfad">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbButton onClick={() => setOrt(null)}>Alle Ordner</BreadcrumbButton>
+          </BreadcrumbItem>
+          {[aktuell.name, ...stufen].map((teil, i) => (
+            <Fragment key={i}>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                {i === stufen.length ? (
+                  <BreadcrumbPage>{teil}</BreadcrumbPage>
+                ) : (
+                  <BreadcrumbButton
+                    className="font-medium"
+                    onClick={() => setOrt({ ordner: aktuell.name, unter: stufen.slice(0, i).join("/") })}
+                  >
+                    {teil}
+                  </BreadcrumbButton>
+                )}
+              </BreadcrumbItem>
+            </Fragment>
+          ))}
+        </BreadcrumbList>
+      </Breadcrumb>
       <ul className="rounded-xl border">
         {unterordner.map((u) => (
           <li key={u.name} className="border-b last:border-b-0">

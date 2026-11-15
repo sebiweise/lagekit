@@ -130,13 +130,14 @@ export function EinsatzFormular({
               <FieldDescription data-testid="einsatz-koordinaten">
                 UTMREF {utmref(koordinaten.lat, koordinaten.lon)}
                 {koordinaten.genauigkeit !== undefined && ` · ± ${koordinaten.genauigkeit} m`}{" "}
-                <button
+                <Button
                   type="button"
-                  className="underline"
+                  variant="link"
+                  className="h-auto p-0 text-sm text-foreground underline"
                   onClick={() => form.setValue("koordinaten", null, { shouldDirty: true })}
                 >
                   Punkt entfernen
-                </button>
+                </Button>
               </FieldDescription>
             )}
           </Field>

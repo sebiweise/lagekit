@@ -116,8 +116,8 @@ test("Arbeitsbereich: Tools als Tabs öffnen, Eingaben bleiben beim Wechseln, ne
   await expect(seite.getByLabel("Inhalt")).toHaveValue("noch nicht abgeschickt");
 
   // Nebeneinander.
-  const aufteilung = seite.getByRole("radiogroup", { name: "Aufteilung" });
-  await aufteilung.getByRole("radio", { name: "Zwei nebeneinander" }).click();
+  const aufteilung = seite.getByRole("group", { name: "Aufteilung" });
+  await aufteilung.getByRole("button", { name: "Zwei nebeneinander" }).click();
   await expect(seite.getByTestId("ansicht-karte")).toBeVisible();
   await expect(seite.getByTestId("ansicht-einsatztagebuch")).toBeVisible();
 
@@ -145,7 +145,7 @@ test("Arbeitsbereich selbst anordnen: Raster, Feld wählen, Ziehen, Größe änd
   await seite.getByLabel("Inhalt").fill("bleibt stehen");
 
   // Vier Felder: Feld 1 hat das Tagebuch, die anderen sind leer und werden per Auswahl belegt.
-  await seite.getByRole("radiogroup", { name: "Aufteilung" }).getByRole("radio", { name: "Vier im Raster" }).click();
+  await seite.getByRole("group", { name: "Aufteilung" }).getByRole("button", { name: "Vier im Raster" }).click();
   await expect(seite.getByTestId("feld-leer-2")).toBeVisible();
   await seite.getByLabel("Tool in Feld 2").selectOption({ label: "Karte" });
   await seite.getByLabel("Tool in Feld 3").selectOption({ label: "Strahlenexposition" });
