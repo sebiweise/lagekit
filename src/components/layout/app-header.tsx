@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { AlertTriangle, Plus } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { Befehlspalette } from "@/core/befehle/components/befehlspalette";
 import { Glocke } from "@/core/benachrichtigungen/components/glocke";
 import { useAktiverEinsatz } from "@/core/einsatz/hooks";
 import { t } from "@/i18n";
@@ -26,6 +27,7 @@ export function AppHeader() {
           {t.app.name}
         </Link>
         <EinsatzAnzeige />
+        <Befehlspalette />
         <Glocke />
         <Uhr />
       </div>

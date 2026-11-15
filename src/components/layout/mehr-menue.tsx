@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { ChevronRight, ExternalLink, Menu } from "lucide-react";
+import { ChevronRight, Command, ExternalLink, Menu } from "lucide-react";
 import { BetaMarke } from "@/components/beta-marke";
+import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { befehlspaletteOeffnen } from "@/core/befehle/oeffnen";
 import { cn } from "@/lib/utils";
 import { externeLinks, istAktiv, type NavZiel } from "./navigation";
 
@@ -38,6 +40,26 @@ export function MehrMenue({ ziele }: { ziele: NavZiel[] }) {
           <SheetTitle>Mehr</SheetTitle>
         </SheetHeader>
         <ul className="flex flex-col p-2">
+          <li>
+            <Button
+              variant="ghost"
+              className="h-auto min-h-16 w-full justify-start gap-4 rounded-lg px-3 py-2 text-left whitespace-normal"
+              onClick={() => {
+                schliessen();
+                befehlspaletteOeffnen();
+              }}
+              data-testid="mehr-befehle"
+            >
+              <Command className="size-7 shrink-0" aria-hidden />
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="text-lg font-medium">Befehle und Suche</span>
+                <span className="line-clamp-1 text-sm font-normal text-muted-foreground">
+                  Tool, Einsatz oder Aktion eintippen, z. B. „Eintrag“ oder „wechseln“
+                </span>
+              </span>
+              <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+            </Button>
+          </li>
           {ziele.map((ziel) => (
             <li key={ziel.href}>
               <Link

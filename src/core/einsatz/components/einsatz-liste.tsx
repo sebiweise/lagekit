@@ -3,9 +3,21 @@
 import { useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, Download, FileArchive, Lock, Pencil, RotateCcw, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { anfrageOffen, useAnfrage } from "@/core/befehle/anfrage";
 import { getDb } from "@/core/db/db";
 import { exportHref } from "@/core/export/hooks";
 import { t } from "@/i18n";
@@ -59,9 +71,21 @@ function EinsatzEintrag({
   geradeAbgeschlossen: boolean;
   onAbgeschlossen: () => void;
 }) {
-  const [loeschenFragen, setLoeschenFragen] = useState(false);
-  const [bearbeiten, setBearbeiten] = useState(false);
+  const [bearbeiten, setBearbeiten] = useState(() => ausgewaehlt && anfrageOffen("einsatz-bearbeiten"));
   const db = getDb();
+  // Befehlspalette „Einsatz bearbeiten“: Formular des ausgewählten Einsatzes öffnen.
+  useAnfrage(
+    "einsatz-bearbeiten",
+    () => {
+      setBearbeiten(true);
+      requestAnimationFrame(() => {
+        const feld = document.getElementById(`einsatz-${einsatz.id}-stichwort`);
+        feld?.scrollIntoView({ block: "center" });
+        feld?.focus();
+      });
+    },
+    ausgewaehlt,
+  );
   const abgeschlossen = einsatz.status === "abgeschlossen";
 
   return (
@@ -140,11 +164,23 @@ function EinsatzEintrag({
           <Link href={exportHref("/export/", einsatz.id)} className={buttonVariants({ variant: "outline" })}>
             <FileArchive /> Druck, ZIP, Mail
           </Link>
-          {!loeschenFragen && (
-            <Button variant="ghost" onClick={() => setLoeschenFragen(true)}>
+          <AlertDialog>
+            <AlertDialogTrigger render={<Button variant="ghost" />}>
               <Trash2 /> {t.einsatz.loeschen}
-            </Button>
-          )}
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>„{einsatz.stichwort}“ löschen?</AlertDialogTitle>
+                <AlertDialogDescription>{t.einsatz.loeschenFrage}</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t.einsatz.abbrechen}</AlertDialogCancel>
+                <AlertDialogAction onClick={() => void einsatzLoeschen(db, einsatz.id)}>
+                  <Trash2 /> {t.einsatz.loeschenBestaetigen}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
 
         {geradeAbgeschlossen && abgeschlossen && (
@@ -156,19 +192,6 @@ function EinsatzEintrag({
           </div>
         )}
 
-        {loeschenFragen && (
-          <div role="alertdialog" aria-label={t.einsatz.loeschen} className="flex flex-col gap-3 rounded-md border border-destructive p-3">
-            <p>{t.einsatz.loeschenFrage}</p>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="destructive" onClick={() => void einsatzLoeschen(db, einsatz.id)}>
-                <Trash2 /> {t.einsatz.loeschenBestaetigen}
-              </Button>
-              <Button variant="outline" onClick={() => setLoeschenFragen(false)}>
-                {t.einsatz.abbrechen}
-              </Button>
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   );

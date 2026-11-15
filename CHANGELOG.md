@@ -11,6 +11,19 @@ Regeln für diese Datei:
 
 ## [Unveröffentlicht]
 
+## [0.6.0] - 2026-11-15
+
+### Neu
+
+- Befehlspalette: Strg+K (am Mac ⌘K) oder die Lupe oben in der Kopfzeile öffnet ein Suchfeld über allem. Ein paar Buchstaben tippen, mit ↑↓ wählen, Enter führt aus. So erreicht man jedes Tool und jede Seite, schreibt einen Tagebuch-Eintrag (der Cursor steht gleich in der Eingabezeile), legt einen Einsatz an, bearbeitet oder wechselt ihn, druckt den Einsatzbericht, sichert den Einsatz oder schaltet zwischen hell und dunkel um. Umlaute dürfen fehlen („uebung“ findet „Übung“).
+- Ein Suchbegriff wie „UN 1005“ führt aus der Befehlspalette direkt zur Suche in den externen Tools oder öffnet die passende Datenbank sofort.
+- Am Handy steht die Befehlspalette oben unter „Mehr“.
+
+### Geändert
+
+- Löschen von Einsätzen, Personen und Aufenthalten fragt in einem eigenen Fenster nach. Der Fokus steht auf „Abbrechen“, damit ein versehentliches Enter nichts löscht.
+- Der Papierkorb bei Aufenthalten zeigt am PC beim Darüberfahren, was er tut.
+
 ## [0.5.0] - 2026-11-15
 
 ### Neu

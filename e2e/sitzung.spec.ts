@@ -216,7 +216,7 @@ test("Gemeinsam arbeiten mit Kurzcode: Host sieht die Anfrage auf jeder Seite un
   await gast.getByRole("link", { name: "Einsatz", exact: true }).click();
   const eintrag = gast.getByTestId("einsatz-eintrag").filter({ hasText: "Hochwasser" });
   await eintrag.getByRole("button", { name: "Löschen" }).click();
-  await eintrag.getByRole("button", { name: "Endgültig löschen" }).click();
+  await gast.getByRole("alertdialog").getByRole("button", { name: "Endgültig löschen" }).click();
   await expect(gast.getByTestId("einsatz-eintrag")).toHaveCount(0);
   await expect(host.getByTestId("sitzung-status")).toContainText("0 Geräte verbunden", { timeout: 15_000 });
   await host.getByRole("link", { name: "Einsatz", exact: true }).click();
