@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Briefcase, History, Home, Info, LayoutPanelLeft, Search, Users } from "lucide-react";
+import { Briefcase, FileArchive, History, Home, Info, LayoutPanelLeft, Search, Users } from "lucide-react";
 import { t } from "@/i18n";
 import { toolHref, toolRegistry } from "@/tools/registry";
 
@@ -48,6 +48,12 @@ export function navigationsZiele(): NavZiel[] {
       text: t.nav.einsatz,
       icon: Briefcase,
       beschreibung: "Einsatz anlegen, wechseln, abschließen, sichern",
+    },
+    {
+      href: "/export/",
+      text: "Export, Druck, Mail",
+      icon: FileArchive,
+      beschreibung: "Alles zum Einsatz als ZIP, Bericht drucken, per Mail senden, Ordner verknüpfen",
     },
     ...sonstige,
     {

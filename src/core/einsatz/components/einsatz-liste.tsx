@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Download, Lock, RotateCcw, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { CheckCircle2, Download, FileArchive, Lock, RotateCcw, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDb } from "@/core/db/db";
+import { exportHref } from "@/core/export/hooks";
 import { t } from "@/i18n";
 import { formatDatumZeit } from "@/lib/zeit";
 import { useAktiverEinsatz, useEinsaetze } from "../hooks";
@@ -118,6 +120,9 @@ function EinsatzEintrag({
           <Button variant="outline" onClick={() => void einsaetzeSichern([einsatz.id])}>
             <Download /> {t.einsatz.exportieren}
           </Button>
+          <Link href={exportHref("/export/", einsatz.id)} className={buttonVariants({ variant: "outline" })}>
+            <FileArchive /> Druck, ZIP, Mail
+          </Link>
           {!loeschenFragen && (
             <Button variant="ghost" onClick={() => setLoeschenFragen(true)}>
               <Trash2 /> {t.einsatz.loeschen}

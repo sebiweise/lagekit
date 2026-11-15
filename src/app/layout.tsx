@@ -3,6 +3,7 @@ import { AppHeader } from "@/components/layout/app-header";
 import { Seitenleiste } from "@/components/layout/seitenleiste";
 import { UntereLeiste } from "@/components/layout/untere-leiste";
 import { FARBSCHEMA_SKRIPT } from "@/core/darstellung/farbschema";
+import { OrdnerHinweis } from "@/core/dateien/components/ordner-hinweis";
 import { UpdateHinweis } from "@/core/pwa/components/update-hinweis";
 import { SitzungHinweis } from "@/core/sync/components/sitzung-hinweis";
 import { t } from "@/i18n";
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <div className="flex min-w-0 flex-1 flex-col">
             <UpdateHinweis />
             <SitzungHinweis />
+            <OrdnerHinweis />
             {children}
           </div>
         </div>

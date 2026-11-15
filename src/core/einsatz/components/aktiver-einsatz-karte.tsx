@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, Settings2, Siren } from "lucide-react";
+import { FileArchive, Plus, Settings2, Siren } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { t } from "@/i18n";
@@ -54,9 +54,14 @@ export function AktiverEinsatzKarte() {
             </p>
           </div>
         </div>
-        <Link href="/einsatz/" className={buttonVariants({ variant: "outline" })}>
-          <Settings2 /> {t.einsatz.zurVerwaltung}
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/export/" className={buttonVariants({ variant: "outline" })}>
+            <FileArchive /> Export, Druck, Mail
+          </Link>
+          <Link href="/einsatz/" className={buttonVariants({ variant: "outline" })}>
+            <Settings2 /> {t.einsatz.zurVerwaltung}
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );

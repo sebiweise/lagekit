@@ -11,6 +11,17 @@ Regeln für diese Datei:
 
 ## [Unveröffentlicht]
 
+### Neu
+
+- Seite „Export, Druck, Mail“: alles zum Einsatz als eine ZIP-Datei (Einsatzbericht, Tagebuch, Strahlenexposition und Suchverlauf als CSV, Sicherung zum Wiedereinlesen, dazu Dateien wie Fotos oder Drohnenaufnahmen).
+- Einsatzbericht mit allen Daten zum Drucken oder als PDF.
+- Per E-Mail senden ohne Server: Lagekit öffnet das eigene Mailprogramm mit Betreff und Kurzbericht; auf iPhone, iPad, Android und unter Windows lässt sich die Datei direkt an Mail oder Outlook teilen.
+- Ordner verknüpfen (Chrome und Edge am PC): Lagekit prüft z. B. den Ordner mit Drohnenaufnahmen alle 15 Sekunden, meldet neue Dateien und nimmt sie in den ZIP-Export mit.
+
+### Daten
+
+- Lokale Datenbank auf Version 6: neue Tabelle für verknüpfte Ordner. Vorhandene Daten bleiben unverändert.
+
 ## [0.1.0] - 2026-11-15
 
 Erste Version für den Praxistest.

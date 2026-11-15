@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from "dexie";
+import type { VerknuepfterOrdner } from "@/core/dateien/repository";
 import type { Einsatz } from "@/core/einsatz/schema";
 import { migrations } from "./migrations";
 
@@ -12,6 +13,7 @@ export interface Einstellung {
 export class LagekitDB extends Dexie {
   einsaetze!: EntityTable<Einsatz, "id">;
   einstellungen!: EntityTable<Einstellung, "schluessel">;
+  ordner!: EntityTable<VerknuepfterOrdner, "id">;
 
   constructor(name: string = DB_NAME) {
     super(name);
