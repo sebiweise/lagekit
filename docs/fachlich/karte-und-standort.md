@@ -30,4 +30,4 @@ Es gibt keine Verfügbarkeitsgarantie. Eine echte Offline-Karte bräuchte einen 
 
 ## Arbeitsbereich
 
-`/arbeitsbereich/`: mehrere Tools als Tabs in einem Fenster, auf breiten Bildschirmen (ab 1024 px) zwei nebeneinander. Offene Tabs bleiben geladen, halb ausgefüllte Eingaben gehen beim Wechseln nicht verloren. Die offenen Tabs merkt sich jedes Gerät selbst. Neue Tools tragen ihre Hauptkomponente in `src/tools/ansichten.tsx` ein.
+`/arbeitsbereich/`: mehrere Tools als Tabs in einem Fenster, auf breiten Bildschirmen (ab 1024 px) frei aufgeteilt (siehe [Bedienung im Einsatz](../konzept/bedienung-im-einsatz.md#arbeitsbereich-selbst-anordnen)). Offene Tabs bleiben geladen, halb ausgefüllte Eingaben gehen beim Wechseln nicht verloren. Die offenen Tabs merkt sich jedes Gerät selbst. Neue Tools tragen ihre Hauptkomponente in `src/tools/ansichten.tsx` ein.

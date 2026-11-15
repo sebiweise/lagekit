@@ -4,11 +4,9 @@ Offline-Toolbox für Einsatzkräfte im Einsatzleitwagen (ELW): Erfassung, Dokume
 
 > **Haftungshinweis:** Lagekit ist ein Hilfsmittel zur Dokumentation und Berechnung. Es ersetzt weder Messgeräte wie Dosimeter noch die Verantwortung der Einsatzleitung. Alle Ergebnisse sind vor einer Entscheidung zu prüfen. Die Nutzung erfolgt ohne Gewähr (siehe [Lizenz](LICENSE), Abschnitte 15 und 16).
 
-Projektplan, Meilensteine und Architektur: [docs/PLAN.md](docs/PLAN.md).
+## Funktionen
 
-## Stand
-
-Meilensteine **M0** bis **M3**: Die App startet offline, Einsätze lassen sich verwalten und per JSON-Sicherung auf ein anderes Gerät übertragen, die Dosisüberwachung ersetzt die Whiteboard-Tabelle und das Einsatztagebuch schreibt einen Übungsabend digital mit. Als Nächstes folgt M4 (Praxistest und v1.0).
+Die App startet offline, Einsätze lassen sich verwalten und per JSON-Sicherung auf ein anderes Gerät übertragen, die Dosisüberwachung ersetzt die Tabelle auf dem Whiteboard und das Einsatztagebuch wird digital mitgeschrieben.
 
 - Statischer Export mit Next.js (`out/`), kein Server, keine extern geladenen Schriften oder Skripte
 - Service Worker (Serwist) mit Precache aller Dateien, Web-App-Manifest, installierbar
@@ -23,6 +21,12 @@ Meilensteine **M0** bis **M3**: Die App startet offline, Einsätze lassen sich v
 - Tool **Einsatztagebuch** unter `/tools/einsatztagebuch/`: Schnellerfassung (Enter speichert, Zeit automatisch oder als HH:MM nachgetragen), Arten per Alt+1 bis Alt+5, von/an und Verfasser bleiben stehen, Einträge sind weder lösch- noch änderbar, Korrektur als neuer Eintrag mit Verweis, Filter nach Art, Volltextsuche (`/`), Druckfassung mit Kopf auf jeder Seite und Seitenzahlen (PDF), CSV
 - Tests: Vitest für Logik und Datenbank, Playwright startet die App bei abgeschaltetem Server
 
+## Dokumentation
+
+- [Architektur und Grundsätze](docs/architektur.md): Leitprinzipien, Technik, Tool-Module, Risiken
+- [Bedienung im Einsatz](docs/konzept/bedienung-im-einsatz.md) und [Gemeinsam arbeiten](docs/konzept/gemeinsam-arbeiten.md)
+- Fachliche Grundlagen: [Strahlenexposition](docs/fachlich/strahlenexposition.md), [Karte und Standort](docs/fachlich/karte-und-standort.md), [Externe Tools](docs/fachlich/externe-tools.md)
+- [Mitmachen](CONTRIBUTING.md), [Sicherheit](SECURITY.md), [Änderungen](CHANGELOG.md)
 
 ## Daten und Datenschutz
 

@@ -16,16 +16,16 @@ Der Katalog liegt in `src/tools/recherche/katalog.ts`.
 - **Suchverlauf:** Jede aus Lagekit gestartete Suche wird beim aktiven Einsatz gespeichert (Tabelle `rechercheSuchen`), mit Zeit, Tool, Begriff, Ort und Adresse. „Erneut öffnen“ ruft sie wieder auf. Der Verlauf läuft mit Export/Import, Löschen und „Gemeinsam arbeiten“ mit.
 - **Offline:** Die Seite selbst und der Verlauf funktionieren ohne Netz. Die Ziele brauchen Internet; ohne Netz zeigt die Seite einen Hinweis.
 
-## Prüfprotokoll (14.11.2026)
+## Prüfprotokoll
 
 Aufgenommen wurde nur, was tatsächlich abgerufen wurde. Viele Seiten rendern per JavaScript oder sperren automatische Abrufe; deren Suchadressen sind deshalb nicht als Direktsuche eingetragen.
 
 | Tool | Adresse | Direktsuche | Prüfung |
 | --- | --- | --- | --- |
-| Das Örtliche | mobil.dasoertliche.de | `/Themen?was={q}&wo={ort}` | Von Sebastian auf dem iPhone bestätigt (die Desktop-Adresse `?kw=&ci=` verliert mobil die Suche) |
+| Das Örtliche | mobil.dasoertliche.de | `/Themen?was={q}&wo={ort}` | Im mobilen Browser geprüft (die Desktop-Adresse `?kw=&ci=` verliert mobil die Suche) |
 | Google Maps | google.com/maps | `/maps/search/?api=1&query={q}` | Dokumentiert in Google „Maps URLs“ |
 | BAM Gefahrgut (DGG-Info) | dgg.bam.de | `/dgginfo/search/query?value={q}&partialWord=true&results=all&lang=de` | Parameter `value` (UN-Nr., Name, Synonym, Formel, CAS) in der BAM-Hilfe dokumentiert |
-| OpenStreetMap | openstreetmap.org | `/search?query={q}` | Auf Wunsch aufgenommen; automatischer Abruf gesperrt, im Browser bestätigen |
+| OpenStreetMap | openstreetmap.org | `/search?query={q}` | Im Browser geprüft; automatischer Abruf gesperrt |
 | GESTIS | gestis.dguv.de | nein (nur Datenblatt per ZVG-Nr. dokumentiert) | Startseite 200 |
 | ERI-Cards | ericards.net | nein | Startseite 200 |
 | CAMEO Chemicals | cameochemicals.noaa.gov | nein (Suchseite für Abruf gesperrt) | Startseite 200 |
@@ -39,18 +39,6 @@ Aufgenommen wurde nur, was tatsächlich abgerufen wurde. Viele Seiten rendern pe
 | Warnungen (NINA) | warnung.bund.de/meldungen | – | 200 |
 | Hochwasserportal | hochwasserzentralen.de | – | 200 |
 | Pegelonline | pegelonline.wsv.de | – | 200 |
-
-## Kandidaten, die noch geprüft werden müssen
-
-Diese sind sinnvoll, ließen sich aber nicht automatisch abrufen. Bitte einmal im Browser antippen; was funktioniert, kommt in den Katalog.
-
-- DWD Waldbrandgefahrenindex: `https://www.dwd.de/DE/leistungen/waldbrandgef/waldbrandgef.html`
-- DWD Graslandfeuerindex: `https://www.dwd.de/DE/leistungen/graslandfeuerindex/graslandfeuerindex.html`
-- DWD Wetterwarnungen: `https://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html`
-- Wikipedia-Suche: `https://de.wikipedia.org/w/index.php?search={q}`
-- PubChem-Suche: `https://pubchem.ncbi.nlm.nih.gov/#query={q}`
-- OpenFireMap (Hydranten): `https://openfiremap.de/`
-- Gelbe Seiten / Das Telefonbuch (Abruf gesperrt)
 
 ## Neues Tool aufnehmen
 
