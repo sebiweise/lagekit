@@ -36,7 +36,7 @@ export async function einsaetzeAuflisten(db: LagekitDB): Promise<Einsatz[]> {
 async function aendern(
   db: LagekitDB,
   id: string,
-  aenderung: Partial<Pick<Einsatz, "ende" | "status">>,
+  aenderung: Partial<Pick<Einsatz, "ende" | "status" | "ort" | "koordinaten">>,
   jetzt: Date,
 ): Promise<Einsatz> {
   const einsatz = await db.einsaetze.get(id);
@@ -53,6 +53,17 @@ export function einsatzAbschliessen(
   jetzt: Date = new Date(),
 ): Promise<Einsatz> {
   return aendern(db, id, { status: "abgeschlossen", ende: jetzt.toISOString() }, jetzt);
+}
+
+/** Setzt den Einsatzort (Text und optional Koordinaten), z. B. aus Standort oder Karte. */
+export function einsatzOrtSetzen(
+  db: LagekitDB,
+  id: string,
+  ort: string,
+  koordinaten: Einsatz["koordinaten"],
+  jetzt: Date = new Date(),
+): Promise<Einsatz> {
+  return aendern(db, id, { ort, koordinaten }, jetzt);
 }
 
 /** Öffnet einen abgeschlossenen Einsatz wieder (z. B. nach versehentlichem Abschluss). */
