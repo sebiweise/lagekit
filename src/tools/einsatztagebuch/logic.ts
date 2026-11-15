@@ -57,3 +57,64 @@ export function filtern(eintraege: Eintrag[], filter: Filter): Eintrag[] {
 export function chronologisch(eintraege: Eintrag[]): Eintrag[] {
   return [...eintraege].sort((a, b) => a.zeitpunkt.localeCompare(b.zeitpunkt) || a.nr - b.nr);
 }
+
+/**
+ * Bereits genutzte Angaben aus „von“ und „an“ als Vorschläge: zuerst die des
+ * angegebenen Einsatzes, dann die aus anderen Einsätzen, jeweils zuletzt genutzte
+ * zuerst. Gleiche Werte ohne Rücksicht auf Groß/Klein zählen einmal, in der
+ * zuletzt genutzten Schreibweise.
+ */
+export function vonAnVorschlaege(
+  eintraege: Pick<Eintrag, "einsatzId" | "erfasstAm" | "nr" | "von" | "an">[],
+  einsatzId: string,
+): string[] {
+  const sortiert = [...eintraege].sort(
+    (a, b) =>
+      Number(b.einsatzId === einsatzId) - Number(a.einsatzId === einsatzId) ||
+      b.erfasstAm.localeCompare(a.erfasstAm) ||
+      b.nr - a.nr,
+  );
+  const gesehen = new Set<string>();
+  const ergebnis: string[] = [];
+  for (const e of sortiert) {
+    for (const wert of [e.von, e.an]) {
+      const text = wert.trim();
+      const schluessel = text.toLocaleLowerCase("de");
+      if (!text || gesehen.has(schluessel)) continue;
+      gesehen.add(schluessel);
+      ergebnis.push(text);
+    }
+  }
+  return ergebnis;
+}
+
+/**
+ * Vorschläge zur Eingabe, ohne Groß/Klein: erst die, die mit der Eingabe beginnen,
+ * dann die, bei denen ein späteres Wort so beginnt, dann alle, die sie enthalten.
+ * Der eingegebene Wert selbst wird nicht vorgeschlagen. Leere Eingabe liefert alle.
+ */
+export function vorschlaegeFiltern(vorschlaege: string[], eingabe: string, hoechstens = 6): string[] {
+  const suche = eingabe.trim().toLocaleLowerCase("de");
+  if (!suche) return vorschlaege.slice(0, hoechstens);
+  const anfang: string[] = [];
+  const wortanfang: string[] = [];
+  const enthalten: string[] = [];
+  for (const v of vorschlaege) {
+    const klein = v.toLocaleLowerCase("de");
+    if (klein === suche) continue;
+    if (klein.startsWith(suche)) anfang.push(v);
+    else if (klein.split(/[\s/,.\-()]+/).some((wort) => wort.startsWith(suche))) wortanfang.push(v);
+    else if (klein.includes(suche)) enthalten.push(v);
+  }
+  return [...anfang, ...wortanfang, ...enthalten].slice(0, hoechstens);
+}
+
+/**
+ * Inline-Ergänzung: der erste Vorschlag, der mit der Eingabe beginnt (ohne Groß/Klein),
+ * sonst `null`. Leerzeichen am Ende der Eingabe zählen mit, damit „ELW “ zu „ELW 1“ passt.
+ */
+export function ergaenzungFinden(vorschlaege: string[], eingabe: string): string | null {
+  if (!eingabe.trim()) return null;
+  const suche = eingabe.toLocaleLowerCase("de");
+  return vorschlaege.find((v) => v.length > eingabe.length && v.toLocaleLowerCase("de").startsWith(suche)) ?? null;
+}

@@ -15,6 +15,7 @@ Regeln für diese Datei:
 
 ### Neu
 
+- Einsatztagebuch: Von und An schlagen beim Tippen bereits genutzte Angaben vor, zuerst die aus dem laufenden Einsatz, dann aus früheren Einsätzen. Die wahrscheinlichste Ergänzung steht grau im Feld, Tab übernimmt sie. Mit ↑↓ lässt sich ein anderer Vorschlag aus der Liste wählen, am Handy einfach antippen. Ohne Vorschlag wechselt Tab wie gewohnt ins nächste Feld.
 - Suche: Eine UN-Nummer öffnet jetzt auch in CAMEO Chemicals direkt das Datenblatt mit ERG-Leitfaden und Schutzabständen. Stoffnamen und CAS-Nummern springen in PubChem direkt zum Stoff.
 - Neue externe Tools: DWD Waldbrand-Gefahrenindex und Grasland-Feuerindex, Rettungspunkte im Wald (KWF), Amtliche Warnungen des DWD, Naturgefahrenportal, ChemInfo mit Gefahrstoffschnellauskunft, Rigoletto (Wassergefährdungsklassen), EURDEP-Messnetz, ELWIS und OpenFireMap (Hydranten und Feuerwachen).
 - Mehr Vorschläge passend zum Einsatz, z. B. bei „Gewitter“, „Starkregen“, „Gewässer“, „Schiff“ oder „Forst“.

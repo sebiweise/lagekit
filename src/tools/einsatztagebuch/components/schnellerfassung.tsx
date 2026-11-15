@@ -14,11 +14,13 @@ import { ordnerDesEinsatzes } from "@/core/dateien/repository";
 import { dateienFiltern, verweisText, type DateiTreffer } from "@/core/dateien/verweis";
 import { getDb } from "@/core/db/db";
 import { fehlerText } from "@/lib/formular";
+import { useVonAnVorschlaege } from "../hooks";
 import { eintragHinzufuegen, verfasserSpeichern } from "../repository";
 import { eintragFormularSchema, type EintragFormularWerte } from "../formular";
 import { uhrzeitAnwenden } from "../logic";
 import { EINTRAG_ARTEN, type Eintrag } from "../schema";
 import { ausloeserFinden, DateiAuswahl, type Ausloeser } from "./datei-auswahl";
+import { VorschlagFeld } from "./vorschlag-feld";
 
 /**
  * Eine Eingabezeile: Inhalt tippen, Enter speichert, die Zeit wird automatisch gesetzt.
@@ -50,6 +52,7 @@ export function Schnellerfassung({
   });
   const inhalt = useWatch({ control: form.control, name: "inhalt" });
   const inhaltFeld = useRef<HTMLInputElement | null>(null);
+  const vonAnVorschlaege = useVonAnVorschlaege(einsatzId);
 
   // „/“ im Inhalt: Datei aus einem verknüpften Ordner auswählen.
   const ordner = useLiveQuery(() => ordnerDesEinsatzes(getDb(), einsatzId), [einsatzId]);
@@ -268,7 +271,7 @@ export function Schnellerfassung({
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid} className="gap-1.5">
               <FieldLabel htmlFor="tb-von">Von</FieldLabel>
-              <Input {...field} id="tb-von" aria-invalid={fieldState.invalid} autoComplete="off" />
+              <VorschlagFeld {...field} id="tb-von" aria-invalid={fieldState.invalid} vorschlaege={vonAnVorschlaege} />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
@@ -294,7 +297,7 @@ export function Schnellerfassung({
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid} className="gap-1.5">
               <FieldLabel htmlFor="tb-an">An</FieldLabel>
-              <Input {...field} id="tb-an" aria-invalid={fieldState.invalid} autoComplete="off" />
+              <VorschlagFeld {...field} id="tb-an" aria-invalid={fieldState.invalid} vorschlaege={vonAnVorschlaege} />
               {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
             </Field>
           )}
@@ -323,7 +326,7 @@ export function Schnellerfassung({
         />
       </div>
       <p className="hidden text-xs text-muted-foreground lg:block">
-        Enter speichert · Alt+1 bis Alt+5 wählt die Art · Esc leert · / außerhalb des Textfelds springt zur Suche, im Textfeld verknüpft es eine Datei · Uhrzeit leer = jetzt
+        Enter speichert · Alt+1 bis Alt+5 wählt die Art · Tab ergänzt Von/An · Esc leert · / außerhalb des Textfelds springt zur Suche, im Textfeld verknüpft es eine Datei · Uhrzeit leer = jetzt
       </p>
       {fehler && (
         <p role="alert" className="text-sm text-destructive">
