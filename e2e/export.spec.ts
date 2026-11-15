@@ -119,3 +119,26 @@ test("Export: ohne Ordner-Zugriff (Safari, Firefox) nur einmalige Dateien", asyn
   await expect(page.getByRole("button", { name: "Ordner verknüpfen" })).toHaveCount(0);
   await expect(page.getByText("Dateien hinzufügen")).toBeVisible();
 });
+
+test("Dateien: Verweis im Tagebuch öffnet die Vorschau, Dateibrowser ohne Ordner", async ({ page }) => {
+  await einsatzMitEintrag(page);
+  const inhalt = page.getByLabel("Inhalt");
+  await inhalt.fill("Leck sichtbar auf [[Drohne/Flug1/DJI_0001.JPG]] laut Drohnenpilot");
+  await inhalt.press("Enter");
+  const verweis = page.getByTestId("datei-verweis");
+  await expect(verweis).toHaveText("DJI_0001.JPG");
+  await verweis.click();
+  const vorschau = page.getByTestId("datei-vorschau");
+  await expect(vorschau).toBeVisible();
+  // Auf diesem Gerät ist kein Ordner verknüpft: verständliche Meldung statt Absturz.
+  await expect(vorschau.getByRole("alert")).toHaveText("Der Ordner „Drohne“ ist auf diesem Gerät nicht verknüpft.");
+  await page.keyboard.press("Escape");
+  await expect(vorschau).toBeHidden();
+
+  // Ohne verknüpfte Ordner gibt es keine Dateiauswahl beim Tippen von „/“.
+  await inhalt.fill("/");
+  await expect(page.getByRole("listbox", { name: "Datei verknüpfen" })).toHaveCount(0);
+
+  await page.goto(`${baseURL}/tools/dateien/`);
+  await expect(page.getByTestId("dateien-leer")).toBeVisible();
+});

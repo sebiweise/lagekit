@@ -17,6 +17,7 @@ const komponenten: Record<string, ComponentType> = {
   ),
   einsatztagebuch: dynamic(() => import("./einsatztagebuch/components/einsatztagebuch").then((m) => m.Einsatztagebuch)),
   karte: dynamic(() => import("./karte/components/karte").then((m) => m.Karte)),
+  dateien: dynamic(() => import("./dateien/components/dateibrowser").then((m) => m.Dateibrowser)),
   recherche: dynamic(() => import("./recherche/components/linksammlung").then((m) => m.Linksammlung)),
   suche: dynamic(() => import("./recherche/components/suche").then((m) => m.Universalsuche)),
 };

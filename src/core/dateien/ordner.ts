@@ -22,6 +22,8 @@ export interface OrdnerHandle {
   kind: "directory";
   name: string;
   values(): AsyncIterable<DateiHandle | OrdnerHandle>;
+  getDirectoryHandle?(name: string): Promise<OrdnerHandle>;
+  getFileHandle?(name: string): Promise<DateiHandle>;
   queryPermission?(beschreibung: { mode: "read" }): Promise<PermissionState>;
   requestPermission?(beschreibung: { mode: "read" }): Promise<PermissionState>;
 }

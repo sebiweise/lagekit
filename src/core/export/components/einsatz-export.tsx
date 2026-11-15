@@ -371,7 +371,10 @@ function ExportInhalt({ daten }: { daten: EinsatzDaten }) {
           <CardTitle className="flex items-center gap-2 text-xl">
             <FolderOpen className="size-5" aria-hidden /> Ordner und weitere Dateien
           </CardTitle>
-          <CardDescription>Zum Beispiel Drohnenaufnahmen, Fotos oder Lagepläne für den ZIP-Export.</CardDescription>
+          <CardDescription>
+            Zum Beispiel Drohnenaufnahmen, Fotos oder Lagepläne für den ZIP-Export. Ansehen und öffnen im{" "}
+            <Link href="/tools/dateien/" className="underline">Dateibrowser</Link>.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <OrdnerVerwaltung einsatzId={einsatz.id} zusaetzlich={zusaetzlich} setZusaetzlich={setZusaetzlich} />

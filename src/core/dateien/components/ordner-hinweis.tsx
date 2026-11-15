@@ -33,7 +33,7 @@ export function OrdnerHinweis() {
     return ueberwachungStarten(getDb());
   }, [vorhanden]);
 
-  if (!ordner || !vorhanden || pfad === EXPORT_PFAD) return null;
+  if (!ordner || !vorhanden || pfad === EXPORT_PFAD || pfad === "/tools/dateien/") return null;
 
   const mitNeuen = ordner.filter((o) => o.neu.length > 0);
   const ohneZugriff = ordner.filter((o) => zugriffe.get(o.id) === "fragen");
@@ -60,7 +60,7 @@ export function OrdnerHinweis() {
             „{o.name}“ wieder überwachen
           </Button>
         ))}
-        <Link href={EXPORT_PFAD} className="font-medium underline underline-offset-4 hover:text-foreground">
+        <Link href="/tools/dateien/" className="font-medium underline underline-offset-4 hover:text-foreground">
           Ansehen
         </Link>
         {mitNeuen.length > 0 && (
