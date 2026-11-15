@@ -39,7 +39,8 @@ test("Suche: Direktsuche, UN-Nummer, Kopieren, Verlauf; Linksammlung mit Vorschl
   // UN-Nummer: nur Stoffdatenbanken, ohne Ort.
   await page.getByLabel("Suchbegriff").fill("UN 1005");
   await expect(page.getByRole("heading", { name: "UN-Nummer 1005" })).toBeVisible();
-  await expect(direkt.locator("a")).toHaveCount(1);
+  await expect(direkt.locator("a")).toHaveCount(2);
+  await expect(direkt.locator('[data-tool="cameo"]')).toHaveAttribute("href", "https://cameochemicals.noaa.gov/unna/1005");
   const [bam] = await Promise.all([page.waitForEvent("popup"), direkt.locator('[data-tool="bam-dgg"]').click()]);
   expect(bam.url()).toBe("https://www.dgg.bam.de/dgginfo/search/query?value=1005&partialWord=true&results=all&lang=de");
   await bam.close();

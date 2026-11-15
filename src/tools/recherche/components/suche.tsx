@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useAktiverEinsatz } from "@/core/einsatz/hooks";
 import { useSuchverlauf } from "../hooks";
 import { externeTools } from "../katalog";
-import { suchUrl, suchziele, type BegriffArt } from "../logic";
+import { direktHinweis, nutztOrt, suchUrl, suchziele, type BegriffArt } from "../logic";
 import { kopieren, Liste, OfflineHinweis, sucheMerken, Suchverlauf, ZielZeile } from "./teile";
 
 const ERKANNT: Record<Exclude<BegriffArt, "text">, string> = {
@@ -101,15 +101,16 @@ export function Universalsuche() {
           </h2>
           <Liste data-testid="direktsuche">
             {ziele.direkt.map((tool) => {
-              const url = suchUrl(tool, ziele.wert, ortFuerSuche)!;
-              const mitOrt = Boolean(ortFuerSuche) && (tool.suche!.muster.includes("{ort}") || tool.suche!.ortAnhaengen);
+              const url = suchUrl(tool, ziele.wert, ortFuerSuche, ziele.art)!;
+              const hinweis = direktHinweis(tool, ziele.art);
+              const mitOrt = Boolean(ortFuerSuche) && nutztOrt(tool, ziele.art);
               return (
                 <ZielZeile
                   key={tool.id}
                   tool={tool}
                   href={url}
                   testId="suchziel"
-                  untertitel={mitOrt ? `${tool.suche!.begriff} · in ${ortFuerSuche}` : tool.suche!.begriff}
+                  untertitel={mitOrt ? `${hinweis} · in ${ortFuerSuche}` : hinweis}
                   onClick={() => sucheMerken(einsatz, tool, { begriff: ziele.wert, ort: ortFuerSuche, url, art: "direkt" })}
                 />
               );
