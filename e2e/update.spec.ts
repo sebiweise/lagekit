@@ -9,7 +9,7 @@ import { stoppeServer } from "./server";
 
 /**
  * Update mit Änderungsliste: Eine Kopie von out/ wird ausgeliefert, danach
- * erscheint dort ein geänderter Service Worker, der sich als Version 0.2.0
+ * erscheint dort ein geänderter Service Worker, der sich als Version 99.0.0
  * mit Datenbank-Umbau ausgibt.
  */
 let server: Server;
@@ -29,14 +29,14 @@ test.afterEach(async () => {
 });
 
 const NEUE_VERSION = {
-  version: "0.2.0",
+  version: "99.0.0",
   commit: "neu1234",
   schemaVersion: 99,
   migrationen: [{ version: 99, beschreibung: "Testumbau: Tagebucheinträge bekommen ein Feld für Fotos." }],
   changelog: [
     { version: null, datum: null, einleitung: null, gruppen: [] },
     {
-      version: "0.2.0",
+      version: "99.0.0",
       datum: "2026-12-01",
       einleitung: null,
       gruppen: [
@@ -64,13 +64,13 @@ test("zeigt vor dem Update Änderungen und Datenumbau, aktualisiert erst nach Kl
   await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.update());
 
   const hinweis = page.getByTestId("update-hinweis");
-  await expect(hinweis).toContainText("Neue Version 0.2.0 bereit.");
+  await expect(hinweis).toContainText("Neue Version 99.0.0 bereit.");
   await expect(hinweis).toContainText("Umstellung gespeicherter Daten");
 
   await page.getByTestId("update-hinweis-link").click();
   await expect(page.getByRole("heading", { level: 1, name: "Änderungen" })).toBeVisible();
   const pruefung = page.getByTestId("update-pruefung");
-  await expect(pruefung.getByText("Neue Version 0.2.0 bereit")).toBeVisible();
+  await expect(pruefung.getByText("Neue Version 99.0.0 bereit")).toBeVisible();
   await expect(pruefung).toContainText("Fotos im Einsatztagebuch");
   const daten = page.getByTestId("update-daten");
   await expect(daten).toHaveAttribute("data-umbau", "ja");
