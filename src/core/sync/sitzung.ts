@@ -280,6 +280,21 @@ export class HostSitzung extends Beobachtbar {
     this.abmelden();
   }
 
+  /** Einsatz, den ein weiterer Tab dieses Geräts mitbeobachten soll. */
+  get einsatzKennung(): string | null {
+    return this.beendet ? null : this.einsatz.id;
+  }
+
+  /** Änderungen aus einem weiteren Tab dieses Geräts: wie eigene verteilen. */
+  async fremdeAenderungen(einsatzId: string, liste: Aenderung[]) {
+    if (!this.beendet && einsatzId === this.einsatz.id) this.verteilen(liste);
+  }
+
+  /** Ein weiterer Tab dieses Geräts hat den Einsatz gelöscht. */
+  async fremdGeloescht(einsatzId: string) {
+    if (einsatzId === this.einsatz.id) this.beenden("Der Einsatz wurde auf dem Host gelöscht.");
+  }
+
   get verbunden() {
     return this.gaeste.filter((g) => g.status === "verbunden");
   }
@@ -453,19 +468,39 @@ export class GastSitzung extends Beobachtbar {
     this.abmelden = aenderungenBeobachten(
       this.db,
       einsatzId,
-      (liste) =>
-        void this.ausgang.einreihen(async () => {
-          await ablage.ausstehendAnhaengen(this.db, einsatzId, liste);
-          if (this.status === "verbunden" && this.verbindung.zustand === "offen") {
-            this.verbindung.senden({ typ: "aenderungen", liste });
-          }
-        }, "Änderung nicht vorgemerkt"),
-      () => {
-        // Eigene Kopie gelöscht: Sitzung verlassen, beim Host bleibt alles erhalten.
-        void ablage.ausstehendSchreiben(this.db, null);
-        this.beenden("Der Einsatz wurde auf diesem Gerät gelöscht. Die Sitzung wurde verlassen.");
-      },
+      (liste) => void this.vormerken(einsatzId, liste),
+      () => this.kopieGeloescht(),
     );
+  }
+
+  private vormerken(einsatzId: string, liste: Aenderung[]) {
+    return this.ausgang.einreihen(async () => {
+      await ablage.ausstehendAnhaengen(this.db, einsatzId, liste);
+      if (this.status === "verbunden" && this.verbindung.zustand === "offen") {
+        this.verbindung.senden({ typ: "aenderungen", liste });
+      }
+    }, "Änderung nicht vorgemerkt");
+  }
+
+  private kopieGeloescht() {
+    // Eigene Kopie gelöscht: Sitzung verlassen, beim Host bleibt alles erhalten.
+    void ablage.ausstehendSchreiben(this.db, null);
+    this.beenden("Der Einsatz wurde auf diesem Gerät gelöscht. Die Sitzung wurde verlassen.");
+  }
+
+  /** Einsatz, den ein weiterer Tab dieses Geräts mitbeobachten soll. */
+  get einsatzKennung(): string | null {
+    return this.status === "abgelehnt" ? null : this.einsatzId;
+  }
+
+  /** Änderungen aus einem weiteren Tab dieses Geräts: wie eigene in den Ausgang. */
+  async fremdeAenderungen(einsatzId: string, liste: Aenderung[]) {
+    if (this.status !== "abgelehnt" && einsatzId === this.einsatzId) await this.vormerken(einsatzId, liste);
+  }
+
+  /** Ein weiterer Tab dieses Geräts hat den Einsatz gelöscht. */
+  async fremdGeloescht(einsatzId: string) {
+    if (this.status !== "abgelehnt" && einsatzId === this.einsatzId) this.kopieGeloescht();
   }
 
   private halloSenden() {
@@ -598,6 +633,7 @@ let stand = 0;
 
 function melden() {
   stand++;
+  einsatzMitteilen();
   for (const f of hoerer) f();
 }
 
@@ -608,7 +644,7 @@ function setzen(sitzung: Sitzung | null) {
   abmeldenAktuell = sitzung ? sitzung.abonnieren(melden) : null;
   if (sitzung?.rolle === "gast") sitzung.onVerloren = () => void wiederverbinden(sitzung);
   if (sitzung?.rolle === "host") sitzung.onBeendet = () => aktuell === sitzung && setzen(null);
-  if (sitzung) kanal()?.postMessage("gestartet");
+  if (sitzung) senden("gestartet");
   else {
     // Erst freigeben, wenn das Ende gespeichert ist; sonst stellt ein wartender Tab die Sitzung wieder her.
     const frei = sperreFreigeben;
@@ -622,21 +658,45 @@ function setzen(sitzung: Sitzung | null) {
 // ---------------------------------------------------------------- Mehrere Tabs
 
 /**
- * Nur ein Tab pro Gerät führt die Sitzung. Zwei Tabs mit derselben Geräte-Kennung
- * würden sich beim Host gegenseitig verdrängen, und jeder Tab sieht nur seine
- * eigenen Änderungen. Die Web-Locks-API sorgt dafür, dass genau ein Tab die Sitzung
- * hält; die anderen zeigen einen Hinweis und übernehmen, sobald der Tab geschlossen wird.
+ * Nur ein Tab pro Gerät führt die Sitzung (der „führende Tab“). Zwei Tabs mit derselben
+ * Geräte-Kennung würden sich beim Host gegenseitig verdrängen. Die Web-Locks-API sorgt
+ * dafür, dass genau ein Tab die Sitzung hält; die anderen übernehmen, sobald er
+ * geschlossen wird.
+ *
+ * Alle Tabs teilen sich dieselbe Datenbank: Was der führende Tab empfängt, sehen die
+ * anderen Tabs sofort. Was in einem weiteren Tab entsteht, meldet dieser über einen
+ * BroadcastChannel an den führenden Tab, der es wie eine eigene Änderung abgleicht.
+ * Bis der führende Tab den Empfang bestätigt, behält der weitere Tab die Meldung;
+ * übernimmt er selbst die Sitzung, gleicht er sie dann selbst ab.
  */
 const SPERRE = "lagekit-sitzung";
 let sperreFreigeben: (() => void) | null = null;
 let andererTab = false;
 let tabKanal: BroadcastChannel | null | undefined;
 
+type TabNachricht =
+  /** Ein Tab hat eine Sitzung gestartet. (Text statt Objekt: so verstehen es auch ältere Versionen.) */
+  | "gestartet"
+  /** Weiterer Tab fragt, welchen Einsatz die Sitzung abgleicht. */
+  | { typ: "frage" }
+  /** Führender Tab: Diesen Einsatz gleicht die Sitzung ab (`null`: noch keinen). */
+  | { typ: "einsatz"; einsatzId: string | null }
+  /** Weiterer Tab: Änderungen, die hier entstanden sind. */
+  | { typ: "aenderungen"; id: string; einsatzId: string; liste: Aenderung[] }
+  /** Weiterer Tab: Der Einsatz wurde hier gelöscht. */
+  | { typ: "geloescht"; id: string; einsatzId: string }
+  /** Führender Tab: Meldung übernommen. */
+  | { typ: "erhalten"; id: string };
+
 function kanal(): BroadcastChannel | null {
   if (tabKanal === undefined) {
     tabKanal = typeof BroadcastChannel === "undefined" ? null : new BroadcastChannel(SPERRE);
   }
   return tabKanal;
+}
+
+function senden(n: TabNachricht) {
+  kanal()?.postMessage(n);
 }
 
 /** Holt die Sperre. Mit `warten` erst, wenn der andere Tab sie freigibt. */
@@ -662,8 +722,104 @@ function sperreHolen(warten: boolean): Promise<boolean> {
 
 class AndererTabFehler extends Error {
   constructor() {
-    super("„Gemeinsam arbeiten“ läuft bereits in einem anderen Tab dieser App. Bitte dort weiterarbeiten.");
+    super("„Gemeinsam arbeiten“ läuft bereits in einem anderen Tab dieser App. Die Sitzung dort steuern.");
   }
+}
+
+/** Führender Tab: zuletzt mitgeteilter Einsatz, damit nur Änderungen gesendet werden. */
+let mitgeteilt: string | null | undefined;
+
+function einsatzMitteilen(immer = false) {
+  if (!aktuell) {
+    mitgeteilt = undefined;
+    return;
+  }
+  const einsatzId = aktuell.einsatzKennung;
+  if (!immer && einsatzId === mitgeteilt) return;
+  mitgeteilt = einsatzId;
+  senden({ typ: "einsatz", einsatzId });
+}
+
+/** Weiterer Tab: beobachtet den Einsatz der Sitzung und meldet Änderungen an den führenden Tab. */
+const mitlauf = {
+  db: null as LagekitDB | null,
+  einsatzId: null as string | null,
+  abmelden: null as (() => void) | null,
+  /** Meldungen, die der führende Tab noch nicht bestätigt hat. */
+  offen: new Map<string, Extract<TabNachricht, { typ: "aenderungen" | "geloescht" }>>(),
+
+  starten(db: LagekitDB, einsatzId: string | null) {
+    this.db = db;
+    this.beobachten(einsatzId);
+    senden({ typ: "frage" });
+  },
+
+  beobachten(einsatzId: string | null) {
+    if (!this.db || einsatzId === this.einsatzId) return;
+    this.abmelden?.();
+    this.abmelden = null;
+    this.einsatzId = einsatzId;
+    if (!einsatzId) return;
+    this.abmelden = aenderungenBeobachten(
+      this.db,
+      einsatzId,
+      (liste) => this.melden({ typ: "aenderungen", id: crypto.randomUUID(), einsatzId, liste }),
+      () => this.melden({ typ: "geloescht", id: crypto.randomUUID(), einsatzId }),
+    );
+  },
+
+  melden(n: Extract<TabNachricht, { typ: "aenderungen" | "geloescht" }>) {
+    this.offen.set(n.id, n);
+    senden(n);
+  },
+
+  /** Dieser Tab führt jetzt selbst: Beobachten beenden, Unbestätigtes zurückgeben. */
+  beenden() {
+    this.abmelden?.();
+    this.abmelden = null;
+    this.einsatzId = null;
+    const rest = [...this.offen.values()];
+    this.offen.clear();
+    return rest;
+  },
+};
+
+/** Führender Tab: Meldung eines weiteren Tabs abgleichen und bestätigen. */
+async function meldungUebernehmen(n: Extract<TabNachricht, { typ: "aenderungen" | "geloescht" }>) {
+  if (!aktuell) return; // Kein führender Tab: Der weitere Tab behält die Meldung.
+  try {
+    if (n.typ === "aenderungen") await aktuell.fremdeAenderungen(n.einsatzId, n.liste);
+    else await aktuell.fremdGeloescht(n.einsatzId);
+  } finally {
+    senden({ typ: "erhalten", id: n.id });
+  }
+}
+
+function tabNachricht(db: LagekitDB, dienst: Vermittlung | undefined, n: TabNachricht) {
+  if (n === "gestartet") {
+    if (!aktuell) void sitzungen.wiederherstellen(db, dienst);
+    return;
+  }
+  switch (n.typ) {
+    case "frage":
+      einsatzMitteilen(true);
+      return;
+    case "einsatz":
+      if (andererTab) mitlauf.beobachten(n.einsatzId);
+      return;
+    case "aenderungen":
+    case "geloescht":
+      void meldungUebernehmen(n);
+      return;
+    case "erhalten":
+      mitlauf.offen.delete(n.id);
+      return;
+  }
+}
+
+function kanalVerbinden(db: LagekitDB, dienst: Vermittlung | undefined) {
+  const k = kanal();
+  if (k) k.onmessage = (e: MessageEvent<TabNachricht>) => tabNachricht(db, dienst, e.data);
 }
 
 const WARTEZEITEN_MS = [1_000, 3_000, 5_000, 10_000, 20_000, 30_000];
@@ -707,12 +863,13 @@ export const sitzungen = {
   aktuell: () => aktuell,
   setzen,
 
-  /** Läuft die Sitzung in einem anderen Tab? Dann wird hier nichts abgeglichen. */
+  /** Läuft die Sitzung in einem anderen Tab? Dann meldet dieser Tab seine Änderungen dorthin. */
   andererTab: () => andererTab,
 
   /** Startet als Host. */
   async leiten(db: LagekitDB, einsatz: Einsatz, ich: Teilnehmer, dienst?: Vermittlung) {
     if (!(await sperreHolen(false))) throw new AndererTabFehler();
+    kanalVerbinden(db, dienst);
     const host = new HostSitzung(db, einsatz, ich, dienst);
     setzen(host);
     void host.kurzcodeAnfordern();
@@ -722,6 +879,7 @@ export const sitzungen = {
   /** Tritt bei; beim Kurzcode-Weg wird die Anfrage gleich gesendet. */
   async beitreten(db: LagekitDB, ich: Teilnehmer, weg: "kurzcode" | "qr", kurzcode: string, dienst?: Vermittlung) {
     if (!(await sperreHolen(false))) throw new AndererTabFehler();
+    kanalVerbinden(db, dienst);
     dienstFuerWiederverbinden = dienst;
     const bisher = await ablage.gastLesen(db);
     const gast = await GastSitzung.starten(
@@ -746,18 +904,29 @@ export const sitzungen = {
   async wiederherstellen(db: LagekitDB, dienst?: Vermittlung): Promise<void> {
     if (aktuell || andererTab) return;
     dienstFuerWiederverbinden = dienst;
-    // Startet ein anderer Tab eine Sitzung, prüft dieser Tab erneut (und zeigt den Hinweis).
-    const k = kanal();
-    if (k && !k.onmessage) k.onmessage = () => void sitzungen.wiederherstellen(db, dienst);
-    if (!(await ablage.hostLesen(db)) && !(await ablage.gastLesen(db))) return;
+    // Startet ein anderer Tab eine Sitzung, prüft dieser Tab erneut (und läuft dann mit).
+    kanalVerbinden(db, dienst);
+    const hostVorher = await ablage.hostLesen(db);
+    const gastVorher = await ablage.gastLesen(db);
+    if (!hostVorher && !gastVorher) return;
+    let uebrig: ReturnType<typeof mitlauf.beenden> = [];
     if (!(await sperreHolen(false))) {
       andererTab = true;
+      mitlauf.starten(db, hostVorher?.einsatzId ?? gastVorher?.einsatzId ?? null);
       melden();
       await sperreHolen(true);
       andererTab = false;
+      uebrig = mitlauf.beenden();
       melden();
     }
     if (aktuell) return;
+    /** Was der bisher führende Tab nicht mehr bestätigt hat, gleicht dieser Tab jetzt selbst ab. */
+    const nachholen = (sitzung: Sitzung) => {
+      for (const n of uebrig) {
+        if (n.typ === "aenderungen") void sitzung.fremdeAenderungen(n.einsatzId, n.liste);
+        else void sitzung.fremdGeloescht(n.einsatzId);
+      }
+    };
     const host = await ablage.hostLesen(db);
     if (host) {
       const einsatz = await db.einsaetze.get(host.einsatzId);
@@ -766,6 +935,7 @@ export const sitzungen = {
       } else {
         const sitzung = new HostSitzung(db, einsatz, await ichLesen(db), dienst, host);
         setzen(sitzung);
+        nachholen(sitzung);
         void sitzung.kurzcodeAnfordern();
         return;
       }
@@ -783,6 +953,7 @@ export const sitzungen = {
         return;
       }
       setzen(sitzung);
+      nachholen(sitzung);
       if (gast.weg === "kurzcode" && gast.kurzcode) {
         sitzung.meldung = "Verbinde wieder mit dem Host …";
         await sitzung.perKurzcode(gast.kurzcode).catch(() => sitzung.onVerloren?.());
