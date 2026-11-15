@@ -1,17 +1,22 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { z } from "zod";
 import { useLiveQuery } from "dexie-react-hooks";
 import { ArrowLeftRight, CornerDownLeft, Paperclip, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { ordnerDesEinsatzes } from "@/core/dateien/repository";
 import { dateienFiltern, verweisText, type DateiTreffer } from "@/core/dateien/verweis";
 import { getDb } from "@/core/db/db";
-import { uhrzeitAnwenden } from "../logic";
+import { fehlerText } from "@/lib/formular";
 import { eintragHinzufuegen, verfasserSpeichern } from "../repository";
-import { EINTRAG_ARTEN, type Eintrag, type EintragArt } from "../schema";
+import { eintragFormularSchema, type EintragFormularWerte } from "../formular";
+import { uhrzeitAnwenden } from "../logic";
+import { EINTRAG_ARTEN, type Eintrag } from "../schema";
 import { ausloeserFinden, DateiAuswahl, type Ausloeser } from "./datei-auswahl";
 
 /**
@@ -30,14 +35,20 @@ export function Schnellerfassung({
   korrektur: Eintrag | null;
   onKorrekturEnde: () => void;
 }) {
-  const [art, setArt] = useState<EintragArt>("Meldung");
-  const [uhrzeit, setUhrzeit] = useState("");
-  const [von, setVon] = useState("");
-  const [an, setAn] = useState("");
-  const [inhalt, setInhalt] = useState("");
-  const [verfasser, setVerfasser] = useState(verfasserGespeichert);
   const [fehler, setFehler] = useState<string | null>(null);
-  const inhaltFeld = useRef<HTMLInputElement>(null);
+  const form = useForm({
+    resolver: zodResolver(eintragFormularSchema),
+    defaultValues: {
+      art: "Meldung",
+      inhalt: "",
+      von: "",
+      an: "",
+      verfasser: verfasserGespeichert,
+      uhrzeit: "",
+    } satisfies EintragFormularWerte,
+  });
+  const inhalt = useWatch({ control: form.control, name: "inhalt" });
+  const inhaltFeld = useRef<HTMLInputElement | null>(null);
 
   // „/“ im Inhalt: Datei aus einem verknüpften Ordner auswählen.
   const ordner = useLiveQuery(() => ordnerDesEinsatzes(getDb(), einsatzId), [einsatzId]);
@@ -47,8 +58,12 @@ export function Schnellerfassung({
   const treffer = ausloeser && hatDateien ? dateienFiltern(ordner ?? [], ausloeser.suche) : [];
   const auswahlOffen = treffer.length > 0;
 
+  function inhaltSetzen(wert: string) {
+    form.setValue("inhalt", wert, { shouldValidate: form.formState.isSubmitted });
+  }
+
   function inhaltGeaendert(wert: string, marke: number | null) {
-    setInhalt(wert);
+    inhaltSetzen(wert);
     setAusloeser(marke === null ? null : ausloeserFinden(wert, marke));
     setAktiveDatei(0);
   }
@@ -58,7 +73,7 @@ export function Schnellerfassung({
     const verweis = verweisText(t.ordner, t.pfad) + " ";
     const neu = inhalt.slice(0, ausloeser.start) + verweis + inhalt.slice(ausloeser.ende);
     const marke = ausloeser.start + verweis.length;
-    setInhalt(neu);
+    inhaltSetzen(neu);
     setAusloeser(null);
     markeNachher.current = marke;
   }
@@ -96,68 +111,57 @@ export function Schnellerfassung({
   }, [inhalt]);
 
   // Korrekturmodus: Felder mit dem alten Eintrag vorbelegen.
-  const [korrekturId, setKorrekturId] = useState<string | null>(null);
-  if (korrektur && korrektur.id !== korrekturId) {
-    setKorrekturId(korrektur.id);
-    setArt(korrektur.art);
-    setVon(korrektur.von);
-    setAn(korrektur.an);
-    setInhalt(korrektur.inhalt);
-  } else if (!korrektur && korrekturId) {
-    setKorrekturId(null);
-  }
-
   useEffect(() => {
+    if (korrektur) {
+      form.setValue("art", korrektur.art);
+      form.setValue("von", korrektur.von);
+      form.setValue("an", korrektur.an);
+      form.setValue("inhalt", korrektur.inhalt);
+      form.clearErrors();
+    }
     inhaltFeld.current?.focus();
-  }, [korrektur]);
+  }, [korrektur, form]);
 
-  async function absenden(event: FormEvent) {
-    event.preventDefault();
+  async function absenden(werte: z.output<typeof eintragFormularSchema>) {
     setFehler(null);
     const jetzt = new Date();
-    let zeitpunkt: Date | undefined;
-    if (uhrzeit.trim()) {
-      const z = uhrzeitAnwenden(jetzt, uhrzeit);
-      if (!z) {
-        setFehler("Uhrzeit bitte als HH:MM eingeben oder leer lassen.");
-        return;
-      }
-      zeitpunkt = z;
-    }
+    const zeitpunkt = werte.uhrzeit ? (uhrzeitAnwenden(jetzt, werte.uhrzeit) ?? undefined) : undefined;
     // Zeile sofort leeren, damit schnelles Weitertippen nicht vom Speichern
     // überschrieben wird; bei einem Fehler kommt der Text zurück.
-    const gesendet = { inhalt, uhrzeit };
-    setInhalt("");
-    setUhrzeit("");
+    const gesendet = form.getValues();
+    form.setValue("inhalt", "");
+    form.setValue("uhrzeit", "");
     if (korrektur) onKorrekturEnde();
     inhaltFeld.current?.focus();
     try {
+      const { art, von, an, inhalt, verfasser } = werte;
       await eintragHinzufuegen(
         getDb(),
         { einsatzId, art, von, an, inhalt, verfasser, zeitpunkt, korrigiertEintragId: korrektur?.id ?? null },
         jetzt,
       );
-      if (verfasser.trim() !== verfasserGespeichert) await verfasserSpeichern(getDb(), verfasser);
+      if (werte.verfasser !== verfasserGespeichert) await verfasserSpeichern(getDb(), werte.verfasser);
     } catch (e) {
-      setInhalt(gesendet.inhalt);
-      setUhrzeit(gesendet.uhrzeit);
-      setFehler(e instanceof Error ? e.message : String(e));
+      form.setValue("inhalt", gesendet.inhalt);
+      form.setValue("uhrzeit", gesendet.uhrzeit);
+      setFehler(fehlerText(e));
     }
   }
 
   function tasten(event: KeyboardEvent<HTMLFormElement>) {
     if (event.altKey && /^[1-5]$/.test(event.key)) {
       event.preventDefault();
-      setArt(EINTRAG_ARTEN[Number(event.key) - 1]);
+      form.setValue("art", EINTRAG_ARTEN[Number(event.key) - 1]);
     } else if (event.key === "Escape" && !event.defaultPrevented) {
       event.preventDefault();
       if (korrektur) onKorrekturEnde();
-      setInhalt("");
+      form.setValue("inhalt", "");
+      form.clearErrors();
     }
   }
 
   return (
-    <form onSubmit={absenden} onKeyDown={tasten} className="flex flex-col gap-3" aria-label="Neuer Tagebucheintrag">
+    <form noValidate onSubmit={(e) => void form.handleSubmit(absenden)(e)} onKeyDown={tasten} className="flex flex-col gap-3" aria-label="Neuer Tagebucheintrag">
       {korrektur && (
         <div role="status" className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-warn bg-warn/10 p-3">
           <span>
@@ -169,110 +173,154 @@ export function Schnellerfassung({
           </Button>
         </div>
       )}
-      <div className="flex flex-col gap-1.5">
-        <span id="tb-art-titel" className="text-sm font-medium">
-          Art
-        </span>
-        <div role="radiogroup" aria-labelledby="tb-art-titel" className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-          {EINTRAG_ARTEN.map((a, i) => (
-            <Button
-              key={a}
-              type="button"
-              role="radio"
-              aria-checked={art === a}
-              variant={art === a ? "default" : "outline"}
-              className="px-2"
-              onClick={() => {
-                setArt(a);
-                inhaltFeld.current?.focus();
-              }}
-            >
-              {a}
-              <span aria-hidden className="hidden text-xs opacity-60 @3xl:inline">
-                Alt+{i + 1}
-              </span>
-            </Button>
-          ))}
-        </div>
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="tb-inhalt">Inhalt</Label>
-        <div className="relative flex gap-2">
-          <Input
-            id="tb-inhalt"
-            role="combobox"
-            aria-expanded={auswahlOffen}
-            aria-controls={auswahlOffen ? "tb-dateien" : undefined}
-            aria-activedescendant={auswahlOffen ? `tb-datei-${aktiveDatei}` : undefined}
-            aria-autocomplete="list"
-            ref={inhaltFeld}
-            autoComplete="off"
-            enterKeyHint="send"
-            required
-            className="h-14 flex-1 text-lg"
-            placeholder={hatDateien ? "Text eingeben, / verknüpft eine Datei, Enter speichert" : "Text eingeben, Enter speichert"}
-            value={inhalt}
-            onChange={(e) => inhaltGeaendert(e.target.value, e.target.selectionStart)}
-            onKeyDown={dateiTasten}
-            onBlur={() => setAusloeser(null)}
-          />
-          {hatDateien && (
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="h-14 w-14"
-              aria-label="Datei verknüpfen"
-              title="Datei verknüpfen (/ im Text)"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={dateiKnopf}
-            >
-              <Paperclip />
-            </Button>
+      <Controller
+        name="art"
+        control={form.control}
+        render={({ field }) => (
+          <div className="flex flex-col gap-1.5">
+            <span id="tb-art-titel" className="text-sm font-medium">
+              Art
+            </span>
+            <div role="radiogroup" aria-labelledby="tb-art-titel" className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+              {EINTRAG_ARTEN.map((a, i) => (
+                <Button
+                  key={a}
+                  type="button"
+                  role="radio"
+                  aria-checked={field.value === a}
+                  variant={field.value === a ? "default" : "outline"}
+                  className="px-2"
+                  onClick={() => {
+                    field.onChange(a);
+                    inhaltFeld.current?.focus();
+                  }}
+                >
+                  {a}
+                  <span aria-hidden className="hidden text-xs opacity-60 @3xl:inline">
+                    Alt+{i + 1}
+                  </span>
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+      />
+      <Controller
+        name="inhalt"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid} className="gap-1.5">
+            <FieldLabel htmlFor="tb-inhalt">Inhalt</FieldLabel>
+            <div className="relative flex gap-2">
+              <Input
+                id="tb-inhalt"
+                name={field.name}
+                role="combobox"
+                aria-expanded={auswahlOffen}
+                aria-controls={auswahlOffen ? "tb-dateien" : undefined}
+                aria-activedescendant={auswahlOffen ? `tb-datei-${aktiveDatei}` : undefined}
+                aria-autocomplete="list"
+                aria-required
+                aria-invalid={fieldState.invalid}
+                ref={(el) => {
+                  field.ref(el);
+                  inhaltFeld.current = el;
+                }}
+                autoComplete="off"
+                enterKeyHint="send"
+                className="h-14 flex-1 text-lg"
+                placeholder={hatDateien ? "Text eingeben, / verknüpft eine Datei, Enter speichert" : "Text eingeben, Enter speichert"}
+                value={field.value}
+                onChange={(e) => inhaltGeaendert(e.target.value, e.target.selectionStart)}
+                onKeyDown={dateiTasten}
+                onBlur={() => {
+                  field.onBlur();
+                  setAusloeser(null);
+                }}
+              />
+              {hatDateien && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-14 w-14"
+                  aria-label="Datei verknüpfen"
+                  title="Datei verknüpfen (/ im Text)"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={dateiKnopf}
+                >
+                  <Paperclip />
+                </Button>
+              )}
+              {auswahlOffen && <DateiAuswahl treffer={treffer} aktiv={aktiveDatei} onWaehlen={dateiWaehlen} />}
+              <Button type="submit" size="lg" className="h-14 px-5" aria-label="Eintrag speichern">
+                <CornerDownLeft /> <span className="hidden sm:inline">Speichern</span>
+              </Button>
+            </div>
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        )}
+      />
+      <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-2 sm:grid-cols-[1fr_auto_1fr_8rem_14rem]">
+        <Controller
+          name="von"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid} className="gap-1.5">
+              <FieldLabel htmlFor="tb-von">Von</FieldLabel>
+              <Input {...field} id="tb-von" aria-invalid={fieldState.invalid} autoComplete="off" />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
           )}
-          {auswahlOffen && <DateiAuswahl treffer={treffer} aktiv={aktiveDatei} onWaehlen={dateiWaehlen} />}
-          <Button type="submit" size="lg" className="h-14 px-5" aria-label="Eintrag speichern">
-            <CornerDownLeft /> <span className="hidden sm:inline">Speichern</span>
-          </Button>
-        </div>
-      </div>
-      <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2 sm:grid-cols-[1fr_auto_1fr_8rem_14rem]">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="tb-von">Von</Label>
-          <Input id="tb-von" autoComplete="off" value={von} onChange={(e) => setVon(e.target.value)} />
-        </div>
+        />
         <Button
           type="button"
           variant="ghost"
           size="icon"
           aria-label="Von und An tauschen"
           title="Von und An tauschen (Rückmeldung)"
+          className="mt-5"
           onClick={() => {
-            setVon(an);
-            setAn(von);
+            const { von, an } = form.getValues();
+            form.setValue("von", an);
+            form.setValue("an", von);
           }}
         >
           <ArrowLeftRight />
         </Button>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="tb-an">An</Label>
-          <Input id="tb-an" autoComplete="off" value={an} onChange={(e) => setAn(e.target.value)} />
-        </div>
-        <div className="flex flex-col gap-1.5 max-sm:col-span-1">
-          <Label htmlFor="tb-uhrzeit">Uhrzeit</Label>
-          <Input
-            id="tb-uhrzeit"
-            inputMode="numeric"
-            placeholder="jetzt"
-            autoComplete="off"
-            value={uhrzeit}
-            onChange={(e) => setUhrzeit(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5 max-sm:col-span-2">
-          <Label htmlFor="tb-verfasser">Verfasser</Label>
-          <Input id="tb-verfasser" autoComplete="off" value={verfasser} onChange={(e) => setVerfasser(e.target.value)} />
-        </div>
+        <Controller
+          name="an"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid} className="gap-1.5">
+              <FieldLabel htmlFor="tb-an">An</FieldLabel>
+              <Input {...field} id="tb-an" aria-invalid={fieldState.invalid} autoComplete="off" />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Controller
+          name="uhrzeit"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid} className="gap-1.5">
+              <FieldLabel htmlFor="tb-uhrzeit">Uhrzeit</FieldLabel>
+              <Input {...field} id="tb-uhrzeit" aria-invalid={fieldState.invalid} autoComplete="off" inputMode="numeric" placeholder="jetzt" />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <Controller
+          name="verfasser"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid} className="gap-1.5 max-sm:col-span-2">
+              <FieldLabel htmlFor="tb-verfasser">Verfasser</FieldLabel>
+              <Input {...field} id="tb-verfasser" aria-invalid={fieldState.invalid} autoComplete="off" />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
       </div>
       <p className="hidden text-xs text-muted-foreground lg:block">
         Enter speichert · Alt+1 bis Alt+5 wählt die Art · Esc leert · / außerhalb des Textfelds springt zur Suche, im Textfeld verknüpft es eine Datei · Uhrzeit leer = jetzt

@@ -12,9 +12,9 @@ export const PRAEFIX_ANTWORT = "LKB1";
 export const teilnehmerSchema = z.object({
   /** Zufällige Kennung des Geräts, bleibt auf dem Gerät gespeichert. */
   geraetId: z.uuid(),
-  name: z.string().trim().min(1, "Name fehlt").max(60),
-  funktion: z.string().trim().max(60).default(""),
-  fahrzeug: z.string().trim().max(60).default(""),
+  name: z.string().trim().min(1, "Bitte einen Namen angeben.").max(60, "Höchstens 60 Zeichen."),
+  funktion: z.string().trim().max(60, "Höchstens 60 Zeichen.").default(""),
+  fahrzeug: z.string().trim().max(60, "Höchstens 60 Zeichen.").default(""),
   /** Kurzbeschreibung des Geräts, z. B. „iPhone · Safari“. */
   geraet: z.string().trim().max(80).default(""),
 });

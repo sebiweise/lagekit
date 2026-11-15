@@ -1,16 +1,27 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
+import { Controller, FormProvider, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { z } from "zod";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { getDb } from "@/core/db/db";
-import { zahlLesen } from "@/lib/zahl";
-import { vonDatetimeLocal } from "@/lib/zeit";
+import { fehlerText } from "@/lib/formular";
 import { aufenthaltNachtragen, truppNachtragen } from "../repository";
-import type { OdlEinheit } from "../schema";
+import { aufenthaltNachtragenFormularSchema, type AufenthaltNachtragenFormularWerte } from "../schema";
 import { OdlEingabe } from "./odl-eingabe";
+
+const LEER: AufenthaltNachtragenFormularWerte = {
+  ort: "",
+  beginn: "",
+  ende: "",
+  odl: "",
+  odlEinheit: "µSv/h",
+  dosimeterMsv: "",
+};
 
 /**
  * Abgeschlossenen Aufenthalt nachtragen, z. B. von der Whiteboard-Tabelle.
@@ -19,73 +30,75 @@ import { OdlEingabe } from "./odl-eingabe";
  */
 export function AufenthaltNachtragen({ idPrefix, personIds }: { idPrefix: string; personIds: string[] }) {
   const einzeln = personIds.length === 1;
-  const [ort, setOrt] = useState("");
-  const [beginn, setBeginn] = useState("");
-  const [ende, setEnde] = useState("");
-  const [odl, setOdl] = useState("");
-  const [einheit, setEinheit] = useState<OdlEinheit>("µSv/h");
-  const [dosimeter, setDosimeter] = useState("");
   const [fehler, setFehler] = useState<string | null>(null);
+  const form = useForm({ resolver: zodResolver(aufenthaltNachtragenFormularSchema), defaultValues: LEER });
   const p = idPrefix;
 
-  async function absenden(event: FormEvent) {
-    event.preventDefault();
+  async function absenden(werte: z.output<typeof aufenthaltNachtragenFormularSchema>) {
     setFehler(null);
-    const wert = zahlLesen(odl);
-    const von = vonDatetimeLocal(beginn);
-    const bis = vonDatetimeLocal(ende);
-    if (wert === null || !von || !bis) {
-      setFehler("Bitte Beginn, Ende und ODL vollständig angeben.");
-      return;
-    }
     try {
-      const eingabe = { ort, odl: wert, odlEinheit: einheit, beginn: von, ende: bis };
+      const { dosimeterMsv, ...eingabe } = werte;
       if (einzeln) {
-        await aufenthaltNachtragen(getDb(), personIds[0], { ...eingabe, dosimeterMsv: zahlLesen(dosimeter) });
+        await aufenthaltNachtragen(getDb(), personIds[0], { ...eingabe, dosimeterMsv });
       } else {
         await truppNachtragen(getDb(), personIds, eingabe);
       }
-      setOrt("");
-      setBeginn("");
-      setEnde("");
-      setOdl("");
-      setDosimeter("");
+      // Einheit bleibt für den nächsten Aufenthalt stehen.
+      form.reset({ ...LEER, odlEinheit: werte.odlEinheit });
     } catch (e) {
-      setFehler(e instanceof Error ? e.message : String(e));
+      setFehler(fehlerText(e));
     }
   }
 
+  const textFeld = (
+    name: "ort" | "beginn" | "ende" | "dosimeterMsv",
+    titel: string,
+    props: React.ComponentProps<typeof Input>,
+    className?: string,
+  ) => (
+    <Controller
+      name={name}
+      control={form.control}
+      render={({ field, fieldState }) => (
+        <Field data-invalid={fieldState.invalid} className={className}>
+          <FieldLabel htmlFor={`${p}-${name === "dosimeterMsv" ? "dosimeter" : name}`}>{titel}</FieldLabel>
+          <Input
+            {...props}
+            {...field}
+            id={`${p}-${name === "dosimeterMsv" ? "dosimeter" : name}`}
+            aria-invalid={fieldState.invalid}
+          />
+          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+        </Field>
+      )}
+    />
+  );
+
   return (
-    <form onSubmit={absenden} className="grid grid-cols-1 gap-3 @xl:grid-cols-2" aria-label="Aufenthalt nachtragen">
-      <div className="flex flex-col gap-2 @xl:col-span-2">
-        <Label htmlFor={`${p}-ort`}>Ort</Label>
-        <Input id={`${p}-ort`} required autoComplete="off" value={ort} onChange={(e) => setOrt(e.target.value)} />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor={`${p}-beginn`}>Beginn</Label>
-        <Input id={`${p}-beginn`} type="datetime-local" required value={beginn} onChange={(e) => setBeginn(e.target.value)} />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor={`${p}-ende`}>Ende</Label>
-        <Input id={`${p}-ende`} type="datetime-local" required value={ende} onChange={(e) => setEnde(e.target.value)} />
-      </div>
-      <OdlEingabe id={`${p}-odl`} wert={odl} einheit={einheit} onWert={setOdl} onEinheit={setEinheit} />
-      {einzeln && (
-        <div className="flex flex-col gap-2">
-          <Label htmlFor={`${p}-dosimeter`}>Dosimeter abgelesen (mSv, optional)</Label>
-          <Input id={`${p}-dosimeter`} inputMode="decimal" autoComplete="off" value={dosimeter} onChange={(e) => setDosimeter(e.target.value)} />
+    <FormProvider {...form}>
+      <form
+        noValidate
+        onSubmit={form.handleSubmit(absenden)}
+        className="grid grid-cols-1 gap-3 @xl:grid-cols-2"
+        aria-label="Aufenthalt nachtragen"
+      >
+        {textFeld("ort", "Ort", { autoComplete: "off", "aria-required": true }, "@xl:col-span-2")}
+        {textFeld("beginn", "Beginn", { type: "datetime-local", "aria-required": true })}
+        {textFeld("ende", "Ende", { type: "datetime-local", "aria-required": true })}
+        <OdlEingabe id={`${p}-odl`} />
+        {einzeln &&
+          textFeld("dosimeterMsv", "Dosimeter abgelesen (mSv, optional)", { inputMode: "decimal", autoComplete: "off" })}
+        <div className="@xl:col-span-2">
+          <Button type="submit" variant="secondary">
+            <Plus /> {einzeln ? "Aufenthalt nachtragen" : "Für den Trupp nachtragen"}
+          </Button>
         </div>
-      )}
-      <div className="@xl:col-span-2">
-        <Button type="submit" variant="secondary">
-          <Plus /> {einzeln ? "Aufenthalt nachtragen" : "Für den Trupp nachtragen"}
-        </Button>
-      </div>
-      {fehler && (
-        <p role="alert" className="text-sm text-destructive @xl:col-span-2">
-          {fehler}
-        </p>
-      )}
-    </form>
+        {fehler && (
+          <p role="alert" className="text-sm text-destructive @xl:col-span-2">
+            {fehler}
+          </p>
+        )}
+      </form>
+    </FormProvider>
   );
 }

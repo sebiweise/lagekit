@@ -23,7 +23,7 @@ export const eintragSchema = z.object({
   art: eintragArtSchema,
   von: z.string().trim().default(""),
   an: z.string().trim().default(""),
-  inhalt: z.string().trim().min(1, "Inhalt fehlt"),
+  inhalt: z.string().trim().min(1, "Bitte einen Inhalt eingeben."),
   verfasser: z.string().trim().default(""),
   korrigiertEintragId: z.uuid().nullable(),
 });

@@ -21,6 +21,7 @@ Lagekit ist eine statisch exportierte Next.js-PWA: Ein Service Worker hält alle
 | Offline | Service Worker mit Precache aller Routen (Serwist) und Web-App-Manifest | Läuft nach dem ersten Laden ohne Netz, als App installierbar |
 | Speicher | IndexedDB über Dexie | Große Datenmengen, Transaktionen, Schema-Migrationen |
 | Validierung | Zod-Schemas je Tool | Gleiche Schemas für Formular, Speicher und Import |
+| Formulare | react-hook-form mit `zodResolver` und den shadcn/ui-Feldbausteinen (`Field`, `FieldLabel`, `FieldError`) | Fehler direkt am Feld, auf Deutsch, ohne Browser-Hinweisblasen |
 | UI | Tailwind CSS und shadcn/ui, für Einblendungen der Toast aus Base UI (`@base-ui/react`) | Zugänglich, Dunkelmodus; im eigenen Bundle und damit im Precache |
 | Export | JSON und CSV direkt im Browser, PDF über Druckansicht mit Print-CSS | Keine schwere PDF-Bibliothek nötig, funktioniert offline |
 | Tests | Vitest für Rechenlogik und Datenbank, Playwright mit abgeschaltetem Server | Rechenergebnisse und Offline-Fähigkeit sind die kritischen Punkte |
@@ -47,6 +48,8 @@ src/tools/<tool-id>/
   components/
   export.ts
 ```
+
+Formularschemas stehen neben den Datenschemas (in `schema.ts` oder `formular.ts`) und bauen auf deren Regeln auf, etwa `aufenthaltSchema.shape.odl`. Formularfelder liefern Text; die Bausteine aus `src/lib/formular.ts` lesen Zahlen mit Komma, Datum und Uhrzeit und leere Felder und geben die Werte im Format des Datenmodells weiter. Dort sind auch die deutschen Standardmeldungen von zod eingeschaltet.
 
 Rechenlogik steht immer in `logic.ts` ohne UI-Abhängigkeit. So lässt sie sich testen und fachlich prüfen, ohne die Oberfläche zu lesen. Wie ein neues Tool angelegt wird, steht in [CONTRIBUTING.md](../CONTRIBUTING.md#ein-neues-tool-anlegen).
 

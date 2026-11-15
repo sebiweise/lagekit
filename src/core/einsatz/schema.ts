@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { koordinatenSchema } from "@/core/standort/standort";
+import { optionalerZeitpunktText } from "@/lib/formular";
 
 /**
  * Ein Einsatz ist die Klammer für alle Tool-Daten.
@@ -9,7 +10,7 @@ export const einsatzStatusSchema = z.enum(["aktiv", "abgeschlossen"]);
 
 export const einsatzSchema = z.object({
   id: z.uuid(),
-  stichwort: z.string().trim().min(1, "Stichwort fehlt"),
+  stichwort: z.string().trim().min(1, "Bitte ein Stichwort angeben."),
   ort: z.string().trim().default(""),
   /** Einsatzort als Punkt, wenn per Standort oder Karte gesetzt. */
   koordinaten: koordinatenSchema.nullable().default(null),
@@ -46,3 +47,23 @@ export const einsatzAenderungSchema = z.object({
 });
 
 export type EinsatzAenderung = z.input<typeof einsatzAenderungSchema>;
+
+/**
+ * Formular „Einsatz anlegen/bearbeiten“: Felder als Text, wie sie im Formular stehen.
+ * Stichwort und Koordinaten prüfen dieselben Regeln wie das Datenmodell.
+ * Beginn leer heißt beim Anlegen „jetzt“; beim Bearbeiten ist er Pflicht (siehe `einsatzBearbeitenFormularSchema`).
+ */
+export const einsatzFormularSchema = z.object({
+  stichwort: einsatzSchema.shape.stichwort,
+  ort: z.string().trim(),
+  einheit: z.string().trim(),
+  koordinaten: koordinatenSchema.nullable(),
+  beginn: optionalerZeitpunktText(),
+});
+
+export const einsatzBearbeitenFormularSchema = einsatzFormularSchema.refine((w) => w.beginn !== undefined, {
+  message: "Bitte den Beginn angeben.",
+  path: ["beginn"],
+});
+
+export type EinsatzFormularWerte = z.input<typeof einsatzFormularSchema>;

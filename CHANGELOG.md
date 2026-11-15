@@ -11,6 +11,18 @@ Regeln für diese Datei:
 
 ## [Unveröffentlicht]
 
+## [0.4.0] - 2026-11-15
+
+### Neu
+
+- Eingaben werden direkt am Feld geprüft, mit verständlichen Hinweisen auf Deutsch statt der Hinweisblasen des Browsers: Einsatz anlegen und bearbeiten, Einsatztagebuch, Personen, Aufenthalte, Dosimeterwerte, Richtwerte, Vorplanung, „Gemeinsam arbeiten“ und Senden per E-Mail.
+- Senden per E-Mail: Lagekit meldet Empfänger, die keine gültige E-Mail-Adresse sind, bevor sich das Mailprogramm öffnet.
+
+### Geändert
+
+- Zahlen wie ODL oder Dosimeterwerte: Ungültige Eingaben (z. B. Buchstaben oder negative Werte) bleiben stehen und werden am Feld erklärt; ein ungültiger Dosimeterwert wird nicht mehr still verworfen.
+- Ende vor Beginn beim Nachtragen eines Aufenthalts und ein unvollständiger Kurzcode werden sofort am Feld gemeldet.
+
 ## [0.3.0] - 2026-11-15
 
 ### Neu
