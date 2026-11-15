@@ -1,6 +1,15 @@
 import type { LagekitDB } from "@/core/db/db";
 import { toolTabellen } from "@/tools/registry";
-import { einsatzSchema, neuerEinsatzSchema, type Einsatz, type NeuerEinsatz } from "./schema";
+import { eintraege, eintragHinzufuegen, verfasserLesen } from "@/tools/einsatztagebuch/repository";
+import { aenderungenBeschreiben } from "./logic";
+import {
+  einsatzAenderungSchema,
+  einsatzSchema,
+  neuerEinsatzSchema,
+  type Einsatz,
+  type EinsatzAenderung,
+  type NeuerEinsatz,
+} from "./schema";
 
 const AKTIVER_EINSATZ = "aktiverEinsatz";
 
@@ -55,6 +64,44 @@ export function einsatzAbschliessen(
   return aendern(db, id, { status: "abgeschlossen", ende: jetzt.toISOString() }, jetzt);
 }
 
+/**
+ * Ändert die Stammdaten eines Einsatzes (Stichwort, Ort, Einheit, Beginn).
+ * Jede tatsächliche Änderung wird im Einsatztagebuch als Notiz festgehalten,
+ * damit nachvollziehbar bleibt, unter welchem Stichwort und Ort der Einsatz lief.
+ * Ohne Änderung wird nichts gespeichert.
+ */
+export async function einsatzBearbeiten(
+  db: LagekitDB,
+  id: string,
+  eingabe: EinsatzAenderung,
+  jetzt: Date = new Date(),
+): Promise<Einsatz> {
+  const aenderung = einsatzAenderungSchema.parse(eingabe);
+  return db.transaction("rw", [db.einsaetze, db.einstellungen, eintraege(db)], async () => {
+    const alt = await db.einsaetze.get(id);
+    if (!alt) throw new Error(`Einsatz ${id} nicht gefunden`);
+    const kandidat = einsatzSchema.parse({ ...alt, ...aenderung });
+    if (kandidat.ende && kandidat.beginn > kandidat.ende) {
+      throw new Error("Der Beginn liegt nach dem Ende des Einsatzes.");
+    }
+    const zeilen = aenderungenBeschreiben(alt, kandidat);
+    if (zeilen.length === 0) return alt;
+    const neu = einsatzSchema.parse({ ...kandidat, geaendertAm: jetzt.toISOString() });
+    await db.einsaetze.put(neu);
+    await eintragHinzufuegen(
+      db,
+      {
+        einsatzId: id,
+        art: "Notiz",
+        inhalt: ["Einsatzdaten geändert:", ...zeilen].join("\n"),
+        verfasser: await verfasserLesen(db),
+      },
+      jetzt,
+    );
+    return neu;
+  });
+}
+
 /** Setzt den Einsatzort (Text und optional Koordinaten), z. B. aus Standort oder Karte. */
 export function einsatzOrtSetzen(
   db: LagekitDB,
@@ -63,7 +110,7 @@ export function einsatzOrtSetzen(
   koordinaten: Einsatz["koordinaten"],
   jetzt: Date = new Date(),
 ): Promise<Einsatz> {
-  return aendern(db, id, { ort, koordinaten }, jetzt);
+  return einsatzBearbeiten(db, id, { ort, koordinaten }, jetzt);
 }
 
 /** Öffnet einen abgeschlossenen Einsatz wieder (z. B. nach versehentlichem Abschluss). */
