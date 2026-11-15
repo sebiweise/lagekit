@@ -6,7 +6,8 @@
  * - `suche` nur, wenn das Muster beim Anbieter dokumentiert ist oder ein Abruf
  *   mit Beispielbegriff echte Treffer geliefert hat. Sonst kopiert Lagekit den
  *   Suchbegriff in die Zwischenablage und öffnet die Startseite.
- * - Platzhalter: `{q}` = Suchbegriff, `{ort}` = Ort (beide URL-kodiert).
+ * - Platzhalter: `{q}` = Suchbegriff, `{ort}` = Ort (beide URL-kodiert),
+ *   `{un}` = UN-Nummer ohne führende Nullen (nur in `unMuster`).
  * Prüfprotokoll und Kandidaten: docs/fachlich/externe-tools.md
  */
 
@@ -23,6 +24,9 @@ export const THEMEN = {
 
 export type Thema = keyof typeof THEMEN;
 
+/** Art des Suchbegriffs: UN-Nummer, CAS-Nummer oder freier Text. */
+export type BegriffArt = "un" | "cas" | "text";
+
 export interface ExternesTool {
   id: string;
   name: string;
@@ -38,7 +42,11 @@ export interface ExternesTool {
     begriff: string;
     /** Ort an den Suchbegriff anhängen (für Ziele ohne eigenes Ortsfeld). */
     ortAnhaengen?: boolean;
+    /** Nur für diese Begriffsarten (Standard: alle). */
+    arten?: BegriffArt[];
   };
+  /** Direkte Adresse für UN-Nummern, z. B. ein Datenblatt. Hat bei UN-Nummern Vorrang vor `suche`. */
+  unMuster?: string;
   /** Was man nach „Begriff kopieren und öffnen“ dort eingeben kann. */
   kopierHinweis?: string;
   /** Tag der letzten Prüfung (ISO-Datum) und wie geprüft wurde. */
@@ -46,6 +54,7 @@ export interface ExternesTool {
 }
 
 const PRUEFTAG = "2026-11-14";
+const PRUEFTAG_2 = "2026-11-15";
 
 export const externeTools: ExternesTool[] = [
   {
@@ -76,10 +85,13 @@ export const externeTools: ExternesTool[] = [
     name: "ERI-Cards",
     anbieter: "Cefic",
     beschreibung: "Emergency Response Intervention Cards: Erstmaßnahmen nach UN-Nummer.",
-    url: "https://ericards.net/",
+    url: "https://www.ericards.net/psp/ericards.psp_search",
     themen: ["gefahrstoff"],
-    kopierHinweis: "UN-Nummer oder Stoffname einfügen.",
-    geprueft: { am: PRUEFTAG, wie: "Startseite abgerufen (HTTP 200). Keine Direktsuche gefunden." },
+    kopierHinweis: "4-stellige UN-Nummer oder Anfang des Stoffnamens einfügen.",
+    geprueft: {
+      am: PRUEFTAG_2,
+      wie: "Suchseite abgerufen (HTTP 200, Auswahl nach UN-Nummer oder Stoffname). Die alte Startseite ist nur ein Frameset; Suchparameter nicht prüfbar.",
+    },
   },
   {
     id: "cameo",
@@ -88,8 +100,12 @@ export const externeTools: ExternesTool[] = [
     beschreibung: "Stoffdatenblätter mit Reaktivität und Schutzabständen, Suche auch nach UN-Nummer.",
     url: "https://cameochemicals.noaa.gov/",
     themen: ["gefahrstoff"],
-    kopierHinweis: "Englischen Stoffnamen oder UN-Nummer einfügen.",
-    geprueft: { am: PRUEFTAG, wie: "Startseite abgerufen (HTTP 200). Suchparameter nicht prüfbar." },
+    unMuster: "https://cameochemicals.noaa.gov/unna/{un}",
+    kopierHinweis: "Englischen Stoffnamen einfügen.",
+    geprueft: {
+      am: PRUEFTAG_2,
+      wie: "UN-Datenblätter /unna/1005 und /unna/1203 abgerufen (HTTP 200, mit ERG-Guide und Schutzabständen); Muster aus der Liste /browse/unna. Textsuche für Abruf gesperrt.",
+    },
   },
   {
     id: "pubchem",
@@ -98,17 +114,45 @@ export const externeTools: ExternesTool[] = [
     beschreibung: "Chemische Datenbank: Synonyme, CAS-Nummern, Sicherheitsangaben.",
     url: "https://pubchem.ncbi.nlm.nih.gov/",
     themen: ["gefahrstoff"],
-    kopierHinweis: "Stoffname oder CAS-Nummer einfügen.",
-    geprueft: { am: PRUEFTAG, wie: "Startseite abgerufen (HTTP 200)." },
+    suche: {
+      muster: "https://pubchem.ncbi.nlm.nih.gov/compound/{q}",
+      begriff: "Englischer Stoffname oder CAS-Nummer",
+      arten: ["text", "cas"],
+    },
+    kopierHinweis: "UN-Nummer ins Suchfeld einfügen.",
+    geprueft: {
+      am: PRUEFTAG_2,
+      wie: "/compound/ammonia und /compound/7664-41-7 abgerufen (HTTP 200), beide auf Ammonia (CID 222) aufgelöst. Zahlen ohne Bindestrich wären eine CID, darum nicht für UN-Nummern.",
+    },
+  },
+  {
+    id: "cheminfo",
+    name: "ChemInfo und Gefahrstoffschnellauskunft",
+    anbieter: "Bund und Länder",
+    beschreibung: "Stoffdaten aus dem Gemeinsamen Stoffdatenpool. Öffentliche Recherche ohne Anmeldung; die Gefahrstoffschnellauskunft (GSA) ist für Einsatzkräfte nach Registrierung kostenlos.",
+    url: "https://recherche.chemikalieninfo.de/",
+    themen: ["gefahrstoff"],
+    kopierHinweis: "Stoffnamen einfügen, Platzhalter * und ? sind erlaubt.",
+    geprueft: { am: PRUEFTAG_2, wie: "Startseite ChemInfo public abgerufen (HTTP 200); Suchadresse nicht sichtbar." },
+  },
+  {
+    id: "rigoletto",
+    name: "Rigoletto (Wassergefährdungsklassen)",
+    anbieter: "Umweltbundesamt",
+    beschreibung: "Wassergefährdungsklasse (WGK) eines Stoffes, z. B. bei Ölspur oder Austritt in Gewässer und Kanal.",
+    url: "https://webrigoletto.uba.de/rigoletto/",
+    themen: ["gefahrstoff", "wasser"],
+    kopierHinweis: "Stoffnamen in die Suche einfügen.",
+    geprueft: { am: PRUEFTAG_2, wie: "Startseite abgerufen (HTTP 200); Detailseiten nur per Kenn-Nummer, keine Suchadresse." },
   },
   {
     id: "giftnotruf",
     name: "Giftinformationszentren",
     anbieter: "BfR",
     beschreibung: "Liste aller Giftnotrufe in Deutschland mit Telefonnummern.",
-    url: "https://www.bfr.bund.de/deutsches-produktregister-de-pro/giftinformationszentren-in-deutschland/",
+    url: "https://www.bfr.bund.de/deutsches-produktregister-depro/giftinformationszentren-in-deutschland/",
     themen: ["gefahrstoff", "kontakt"],
-    geprueft: { am: PRUEFTAG, wie: "Seite abgerufen (HTTP 200), enthält die Liste mit Nummern." },
+    geprueft: { am: PRUEFTAG_2, wie: "Seite unter neuer Adresse abgerufen (HTTP 200, Verzeichnis Stand 22.07.2026)." },
   },
   {
     id: "odlinfo",
@@ -119,6 +163,15 @@ export const externeTools: ExternesTool[] = [
     themen: ["strahlung"],
     kopierHinweis: "Ort oder Postleitzahl in die Liste der Messstellen einfügen.",
     geprueft: { am: PRUEFTAG, wie: "Kartenseite abgerufen (HTTP 200)." },
+  },
+  {
+    id: "eurdep",
+    name: "EURDEP-Messnetz Europa",
+    anbieter: "EU / JRC (englisch)",
+    beschreibung: "Gamma-Ortsdosisleistung von rund 5.500 Messstellen in Europa, stündliche Mittelwerte. Nicht validiert, keine Alarmfunktion.",
+    url: "https://remap.jrc.ec.europa.eu/Advanced.aspx",
+    themen: ["strahlung"],
+    geprueft: { am: PRUEFTAG_2, wie: "Kartenseite abgerufen (HTTP 200); fragt ggf. eine Robot-Prüfung ab." },
   },
   {
     id: "adac-rettungskarten",
@@ -159,6 +212,34 @@ export const externeTools: ExternesTool[] = [
     geprueft: { am: PRUEFTAG, wie: "Karte abgerufen (HTTP 200)." },
   },
   {
+    id: "dwd-waldbrand",
+    name: "Waldbrand-Gefahrenindex (DWD)",
+    anbieter: "Deutscher Wetterdienst",
+    beschreibung: "Waldbrandgefahr in fünf Stufen je Station, heute und die nächsten vier Tage.",
+    url: "https://www.wettergefahren.de/warnungen/indizes/waldbrand.html",
+    themen: ["vegetation"],
+    geprueft: { am: PRUEFTAG_2, wie: "Seite abgerufen (HTTP 200), Tabellen je Bundesland und Station." },
+  },
+  {
+    id: "dwd-grasland",
+    name: "Grasland-Feuerindex (DWD)",
+    anbieter: "Deutscher Wetterdienst",
+    beschreibung: "Feuergefahr auf Wiesen, Feldern und Böschungen in fünf Stufen, heute und die nächsten vier Tage.",
+    url: "https://www.wettergefahren.de/warnungen/indizes/grasland.html",
+    themen: ["vegetation"],
+    geprueft: { am: PRUEFTAG_2, wie: "Seite abgerufen (HTTP 200), Tabellen je Bundesland und Station." },
+  },
+  {
+    id: "kwf-rettungspunkte",
+    name: "Rettungspunkte im Wald",
+    anbieter: "KWF",
+    beschreibung: "Rettungstreffpunkte der Forstbetriebe: Karte, Download und Hinweise. Nummer vom Schild im Wald.",
+    url: "https://kwf-online.de/rettungspunkte",
+    themen: ["vegetation"],
+    kopierHinweis: "Zur Karte wechseln, dort Ort oder Rettungspunkt suchen.",
+    geprueft: { am: PRUEFTAG_2, wie: "Seite abgerufen (HTTP 200), verlinkt Karte (rettungspunkte-forst.de/map), Download und WMS. Keine Suchadresse." },
+  },
+  {
     id: "warnung-bund",
     name: "Warnungen (NINA)",
     anbieter: "BBK",
@@ -166,6 +247,24 @@ export const externeTools: ExternesTool[] = [
     url: "https://warnung.bund.de/meldungen",
     themen: ["warnung", "wasser", "strahlung"],
     geprueft: { am: PRUEFTAG, wie: "Seite abgerufen (HTTP 200)." },
+  },
+  {
+    id: "dwd-warnungen",
+    name: "Amtliche Warnungen (DWD)",
+    anbieter: "Deutscher Wetterdienst",
+    beschreibung: "Unwetter- und Wetterwarnungen auf der Karte, je Landkreis, mit Warnlagebericht.",
+    url: "https://www.wettergefahren.de/warnungen/warnsituation.html",
+    themen: ["warnung"],
+    geprueft: { am: PRUEFTAG_2, wie: "Seite abgerufen (HTTP 200); Warnungen werden per JavaScript geladen." },
+  },
+  {
+    id: "naturgefahrenportal",
+    name: "Naturgefahrenportal",
+    anbieter: "DWD mit BBK, BSH und Ländern",
+    beschreibung: "Warnungen zu Starkregen, Sturm und Hochwasser mit Gefährdungskarten für Hochwasser und Starkregen.",
+    url: "https://www.naturgefahrenportal.de/de",
+    themen: ["warnung", "wasser"],
+    geprueft: { am: PRUEFTAG_2, wie: "Startseite abgerufen (HTTP 200); Karte per JavaScript." },
   },
   {
     id: "hochwasserzentralen",
@@ -185,6 +284,15 @@ export const externeTools: ExternesTool[] = [
     themen: ["wasser"],
     kopierHinweis: "Gewässer oder Pegelname in der Pegeltabelle suchen.",
     geprueft: { am: PRUEFTAG, wie: "Startseite abgerufen (HTTP 200)." },
+  },
+  {
+    id: "elwis",
+    name: "ELWIS",
+    anbieter: "WSV",
+    beschreibung: "Wasserstraßen: Nachrichten für die Schifffahrt, Wasserstände, Schleusen und Sperrungen.",
+    url: "https://www.elwis.de/",
+    themen: ["wasser"],
+    geprueft: { am: PRUEFTAG_2, wie: "Startseite abgerufen (HTTP 200)." },
   },
   {
     id: "dasoertliche",
@@ -232,6 +340,16 @@ export const externeTools: ExternesTool[] = [
       am: PRUEFTAG,
       wie: "Suchadresse der OSM-Website im Browser geprüft; automatischer Abruf gesperrt.",
     },
+  },
+  {
+    id: "openfiremap",
+    name: "OpenFireMap",
+    anbieter: "OpenStreetMap-Community",
+    beschreibung: "Hydranten, Löschwasserstellen, Feuerwachen und Defibrillatoren aus OpenStreetMap. Nicht amtlich, kann lückenhaft sein.",
+    url: "https://openfiremap.org/",
+    themen: ["karte"],
+    kopierHinweis: "Ort oder Adresse in „Ort suchen“ einfügen.",
+    geprueft: { am: PRUEFTAG_2, wie: "Karte abgerufen (HTTP 200); Positionsparameter nicht prüfbar." },
   },
 ];
 

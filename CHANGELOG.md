@@ -11,6 +11,22 @@ Regeln für diese Datei:
 
 ## [Unveröffentlicht]
 
+## [0.5.0] - 2026-11-15
+
+### Neu
+
+- Suche: Eine UN-Nummer öffnet jetzt auch in CAMEO Chemicals direkt das Datenblatt mit ERG-Leitfaden und Schutzabständen. Stoffnamen und CAS-Nummern springen in PubChem direkt zum Stoff.
+- Neue externe Tools: DWD Waldbrand-Gefahrenindex und Grasland-Feuerindex, Rettungspunkte im Wald (KWF), Amtliche Warnungen des DWD, Naturgefahrenportal, ChemInfo mit Gefahrstoffschnellauskunft, Rigoletto (Wassergefährdungsklassen), EURDEP-Messnetz, ELWIS und OpenFireMap (Hydranten und Feuerwachen).
+- Mehr Vorschläge passend zum Einsatz, z. B. bei „Gewitter“, „Starkregen“, „Gewässer“, „Schiff“ oder „Forst“.
+
+### Geändert
+
+- ERI-Cards öffnet direkt die Suchseite statt der alten Startseite.
+
+### Behoben
+
+- Link zu den Giftinformationszentren zeigt auf die neue Adresse beim BfR.
+
 ## [0.4.0] - 2026-11-15
 
 ### Neu
