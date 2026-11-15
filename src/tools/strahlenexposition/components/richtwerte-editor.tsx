@@ -1,38 +1,47 @@
 "use client";
 
 import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { z } from "zod";
 import { Button } from "@/components/ui/button";
+import { FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { getDb } from "@/core/db/db";
-import { zahlLesen } from "@/lib/zahl";
 import { richtwerteSpeichern } from "../repository";
-import type { Richtwert } from "../schema";
+import { richtwerteFormularSchema, type Richtwert, type RichtwerteFormularWerte } from "../schema";
+
+function alsText(richtwerte: Richtwert[]): RichtwerteFormularWerte {
+  return { werte: richtwerte.map((r) => ({ grenzeMsv: String(r.grenzeMsv).replace(".", ",") })) };
+}
 
 /** Richtwerte anpassen; gilt für alle Einsätze auf diesem Gerät. */
 export function RichtwerteEditor({ richtwerte }: { richtwerte: Richtwert[] }) {
-  const [werte, setWerte] = useState(() => richtwerte.map((r) => String(r.grenzeMsv).replace(".", ",")));
   const [meldung, setMeldung] = useState<string | null>(null);
+  const form = useForm({ resolver: zodResolver(richtwerteFormularSchema), defaultValues: alsText(richtwerte) });
 
-  async function speichern() {
-    const zahlen = werte.map(zahlLesen);
-    if (zahlen.some((z) => z === null || z <= 0)) {
-      setMeldung("Alle Richtwerte müssen positive Zahlen sein.");
-      return;
-    }
+  async function speichern({ werte }: z.output<typeof richtwerteFormularSchema>) {
     await richtwerteSpeichern(
       getDb(),
-      richtwerte.map((r, i) => ({ ...r, grenzeMsv: zahlen[i]! })),
+      richtwerte.map((r, i) => ({ ...r, grenzeMsv: werte[i].grenzeMsv })),
     );
     setMeldung("Gespeichert.");
   }
 
   async function zuruecksetzen() {
     await richtwerteSpeichern(getDb(), null);
+    // Die Standardwerte kommen über `richtwerte` zurück; der Aufrufer baut das Formular dann neu auf.
+    form.clearErrors();
     setMeldung("Standardwerte wiederhergestellt.");
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <form
+      noValidate
+      onSubmit={form.handleSubmit(speichern, () => setMeldung(null))}
+      className="flex flex-col gap-3"
+      aria-label="Richtwerte"
+    >
       <table className="w-full text-left text-sm">
         <thead className="text-muted-foreground">
           <tr className="border-b">
@@ -46,12 +55,21 @@ export function RichtwerteEditor({ richtwerte }: { richtwerte: Richtwert[] }) {
             <tr key={r.id} className="border-b align-top">
               <td className="py-2 pr-3">{r.bezeichnung}</td>
               <td className="py-2 pr-3">
-                <Input
-                  aria-label={`Richtwert ${r.bezeichnung}`}
-                  inputMode="decimal"
-                  className="h-10 w-24"
-                  value={werte[i]}
-                  onChange={(e) => setWerte((alt) => alt.map((w, j) => (j === i ? e.target.value : w)))}
+                <Controller
+                  name={`werte.${i}.grenzeMsv`}
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <div className="flex flex-col gap-1">
+                      <Input
+                        {...field}
+                        aria-label={`Richtwert ${r.bezeichnung}`}
+                        aria-invalid={fieldState.invalid}
+                        inputMode="decimal"
+                        className="h-10 w-24"
+                      />
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    </div>
+                  )}
                 />
               </td>
               <td className="py-2 text-muted-foreground">{r.hinweis}</td>
@@ -60,14 +78,14 @@ export function RichtwerteEditor({ richtwerte }: { richtwerte: Richtwert[] }) {
         </tbody>
       </table>
       <div className="flex flex-wrap gap-2">
-        <Button variant="secondary" onClick={() => void speichern()}>
+        <Button type="submit" variant="secondary">
           Richtwerte speichern
         </Button>
-        <Button variant="ghost" onClick={() => void zuruecksetzen()}>
+        <Button type="button" variant="ghost" onClick={() => void zuruecksetzen()}>
           Standardwerte
         </Button>
       </div>
       {meldung && <p role="status">{meldung}</p>}
-    </div>
+    </form>
   );
 }

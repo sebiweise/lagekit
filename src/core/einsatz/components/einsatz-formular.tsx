@@ -1,18 +1,26 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { z } from "zod";
 import { Plus, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { getDb } from "@/core/db/db";
 import { t } from "@/i18n";
+import { fehlerText } from "@/lib/formular";
 import { vonDatetimeLocal, zuDatetimeLocal } from "@/lib/zeit";
 import { StandortKnopf } from "@/core/standort/components/standort-knopf";
-import type { Koordinaten } from "@/core/standort/standort";
 import { utmref } from "@/core/standort/utmref";
 import { einsatzAnlegen, einsatzBearbeiten } from "../repository";
-import type { Einsatz } from "../schema";
+import {
+  einsatzBearbeitenFormularSchema,
+  einsatzFormularSchema,
+  type Einsatz,
+  type EinsatzFormularWerte,
+} from "../schema";
 
 /**
  * Formular für die Stammdaten eines Einsatzes. Ohne `einsatz` legt es einen
@@ -32,115 +40,137 @@ export function EinsatzFormular({
   const bearbeiten = einsatz !== undefined;
   // Ids je Formular, damit Anlegen und Bearbeiten gleichzeitig auf einer Seite stehen können.
   const praefix = bearbeiten ? `einsatz-${einsatz.id}` : "einsatz";
-  const [stichwort, setStichwort] = useState(einsatz?.stichwort ?? "");
-  const [ort, setOrt] = useState(einsatz?.ort ?? "");
-  const [koordinaten, setKoordinaten] = useState<Koordinaten | null>(einsatz?.koordinaten ?? null);
   const [standortFehler, setStandortFehler] = useState<string | null>(null);
-  const [einheit, setEinheit] = useState(einsatz?.einheit ?? "");
-  // Beim Anlegen heißt leer: Beginn ist der Zeitpunkt des Anlegens.
-  const [beginn, setBeginn] = useState(einsatz ? zuDatetimeLocal(new Date(einsatz.beginn)) : "");
   const [fehler, setFehler] = useState<string | null>(null);
+  const form = useForm({
+    resolver: zodResolver(bearbeiten ? einsatzBearbeitenFormularSchema : einsatzFormularSchema),
+    defaultValues: {
+      stichwort: einsatz?.stichwort ?? "",
+      ort: einsatz?.ort ?? "",
+      einheit: einsatz?.einheit ?? "",
+      koordinaten: einsatz?.koordinaten ?? null,
+      // Beim Anlegen heißt leer: Beginn ist der Zeitpunkt des Anlegens.
+      beginn: einsatz ? zuDatetimeLocal(new Date(einsatz.beginn)) : "",
+    } satisfies EinsatzFormularWerte,
+  });
+  const koordinaten = useWatch({ control: form.control, name: "koordinaten" });
 
-  async function absenden(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function absenden(werte: z.output<typeof einsatzFormularSchema>) {
     setFehler(null);
     try {
       if (bearbeiten) {
         // Unveränderter Beginn behält seine Sekunden; das Feld zeigt nur Minuten.
-        const beginnUnveraendert = beginn === zuDatetimeLocal(new Date(einsatz.beginn));
-        const beginnNeu = beginnUnveraendert ? einsatz.beginn : vonDatetimeLocal(beginn);
-        if (!beginnNeu) throw new Error("Beginn fehlt");
-        await einsatzBearbeiten(getDb(), einsatz.id, { stichwort, ort, koordinaten, einheit, beginn: beginnNeu });
+        const beginnUnveraendert = werte.beginn === vonDatetimeLocal(zuDatetimeLocal(new Date(einsatz.beginn)));
+        await einsatzBearbeiten(getDb(), einsatz.id, {
+          ...werte,
+          beginn: beginnUnveraendert ? einsatz.beginn : werte.beginn,
+        });
         onGespeichert?.();
         return;
       }
-      await einsatzAnlegen(getDb(), {
-        stichwort,
-        ort,
-        koordinaten,
-        einheit,
-        beginn: vonDatetimeLocal(beginn) ?? undefined,
-      });
-      setStichwort("");
-      setOrt("");
-      setKoordinaten(null);
-      setBeginn("");
+      await einsatzAnlegen(getDb(), werte);
+      // Einheit bleibt für den nächsten Einsatz stehen.
+      form.reset({ stichwort: "", ort: "", koordinaten: null, beginn: "", einheit: werte.einheit });
       onAngelegt?.();
     } catch (e) {
-      setFehler(e instanceof Error ? e.message : String(e));
+      setFehler(fehlerText(e));
     }
   }
 
   return (
     <form
-      onSubmit={absenden}
+      noValidate
+      onSubmit={form.handleSubmit(absenden)}
       className="grid grid-cols-1 gap-4 sm:grid-cols-2"
       aria-label={bearbeiten ? t.einsatz.bearbeitenTitel : t.einsatz.neu}
     >
-      <div className="flex flex-col gap-2 sm:col-span-2">
-        <Label htmlFor={`${praefix}-stichwort`}>{t.einsatz.stichwort} *</Label>
-        <Input
-          id={`${praefix}-stichwort`}
-          required
-          autoComplete="off"
-          placeholder={t.einsatz.stichwortBeispiel}
-          value={stichwort}
-          onChange={(e) => setStichwort(e.target.value)}
-        />
-      </div>
-      <div className="flex flex-col gap-2 sm:col-span-2">
-        <Label htmlFor={`${praefix}-ort`}>{t.einsatz.ort}</Label>
-        <div className="flex gap-2">
-          <Input
-            id={`${praefix}-ort`}
-            className="min-w-0 flex-1"
-            autoComplete="off"
-            value={ort}
-            onChange={(e) => setOrt(e.target.value)}
-          />
-          <StandortKnopf
-            onErgebnis={(e) => {
-              setOrt(e.ort);
-              setKoordinaten(e.koordinaten);
-            }}
-            onFehler={setStandortFehler}
-          />
-        </div>
-        {standortFehler && (
-          <p role="alert" className="text-sm text-destructive">
-            {standortFehler}
-          </p>
+      <Controller
+        name="stichwort"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid} className="sm:col-span-2">
+            <FieldLabel htmlFor={`${praefix}-stichwort`}>{t.einsatz.stichwort} *</FieldLabel>
+            <Input
+              {...field}
+              id={`${praefix}-stichwort`}
+              aria-invalid={fieldState.invalid}
+              aria-required
+              autoComplete="off"
+              placeholder={t.einsatz.stichwortBeispiel}
+            />
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
         )}
-        {koordinaten && (
-          <p className="text-xs text-muted-foreground" data-testid="einsatz-koordinaten">
-            UTMREF {utmref(koordinaten.lat, koordinaten.lon)}
-            {koordinaten.genauigkeit !== undefined && ` · ± ${koordinaten.genauigkeit} m`}{" "}
-            <button type="button" className="underline" onClick={() => setKoordinaten(null)}>
-              Punkt entfernen
-            </button>
-          </p>
+      />
+      <Controller
+        name="ort"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid} className="sm:col-span-2">
+            <FieldLabel htmlFor={`${praefix}-ort`}>{t.einsatz.ort}</FieldLabel>
+            <div className="flex gap-2">
+              <Input
+                {...field}
+                id={`${praefix}-ort`}
+                aria-invalid={fieldState.invalid}
+                className="min-w-0 flex-1"
+                autoComplete="off"
+              />
+              <StandortKnopf
+                onErgebnis={(e) => {
+                  form.setValue("ort", e.ort, { shouldDirty: true, shouldValidate: true });
+                  form.setValue("koordinaten", e.koordinaten, { shouldDirty: true });
+                }}
+                onFehler={setStandortFehler}
+              />
+            </div>
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            {standortFehler && <FieldError>{standortFehler}</FieldError>}
+            {koordinaten && (
+              <FieldDescription data-testid="einsatz-koordinaten">
+                UTMREF {utmref(koordinaten.lat, koordinaten.lon)}
+                {koordinaten.genauigkeit !== undefined && ` · ± ${koordinaten.genauigkeit} m`}{" "}
+                <button
+                  type="button"
+                  className="underline"
+                  onClick={() => form.setValue("koordinaten", null, { shouldDirty: true })}
+                >
+                  Punkt entfernen
+                </button>
+              </FieldDescription>
+            )}
+          </Field>
         )}
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor={`${praefix}-einheit`}>{t.einsatz.einheit}</Label>
-        <Input
-          id={`${praefix}-einheit`}
-          autoComplete="off"
-          value={einheit}
-          onChange={(e) => setEinheit(e.target.value)}
-        />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor={`${praefix}-beginn`}>{t.einsatz.beginn}</Label>
-        <Input
-          id={`${praefix}-beginn`}
-          type="datetime-local"
-          required={bearbeiten}
-          value={beginn}
-          onChange={(e) => setBeginn(e.target.value)}
-        />
-        {!bearbeiten && <p className="text-xs text-muted-foreground">Leer lassen für „jetzt“.</p>}
-      </div>
+      />
+      <Controller
+        name="einheit"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor={`${praefix}-einheit`}>{t.einsatz.einheit}</FieldLabel>
+            <Input {...field} id={`${praefix}-einheit`} aria-invalid={fieldState.invalid} autoComplete="off" />
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        )}
+      />
+      <Controller
+        name="beginn"
+        control={form.control}
+        render={({ field, fieldState }) => (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor={`${praefix}-beginn`}>{t.einsatz.beginn}</FieldLabel>
+            <Input
+              {...field}
+              id={`${praefix}-beginn`}
+              type="datetime-local"
+              aria-invalid={fieldState.invalid}
+              aria-required={bearbeiten}
+            />
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            {!bearbeiten && <FieldDescription>Leer lassen für „jetzt“.</FieldDescription>}
+          </Field>
+        )}
+      />
       {bearbeiten && (
         <p className="text-sm text-muted-foreground sm:col-span-2">{t.einsatz.bearbeitenHinweis}</p>
       )}

@@ -8,6 +8,9 @@
  *   Gibt es auf iPhone, iPad, Android und in Chrome/Edge unter Windows.
  */
 
+import { z } from "zod";
+import "@/lib/formular";
+
 /**
  * Längster mailto-Link, den Windows (Outlook, Thunderbird über ShellExecute)
  * sicher annimmt. Längere Texte werden gekürzt.
@@ -27,11 +30,29 @@ export interface Mail {
   text: string;
 }
 
+/** Empfänger aus einem Textfeld: getrennt durch Komma, Semikolon oder Leerzeichen. */
+export function empfaengerListe(text: string): string[] {
+  return text.split(/[;,\s]+/).filter(Boolean);
+}
+
+const adresseSchema = z.email();
+
+/** Empfängerfeld: leer oder nur gültige E-Mail-Adressen. */
+export const empfaengerSchema = z.string().superRefine((text, ctx) => {
+  const falsch = empfaengerListe(text).filter((a) => !adresseSchema.safeParse(a).success);
+  if (falsch.length === 0) return;
+  ctx.addIssue({
+    code: "custom",
+    message:
+      falsch.length === 1
+        ? `„${falsch[0]}“ ist keine gültige E-Mail-Adresse.`
+        : `Keine gültigen E-Mail-Adressen: ${falsch.map((a) => `„${a}“`).join(", ")}.`,
+  });
+});
+
 /** Baut einen mailto-Link; zu lange Texte werden zeilenweise gekürzt. */
 export function mailtoLink({ an = "", betreff, text }: Mail, max = MAILTO_MAX): string {
-  const empfaenger = an
-    .split(/[;,\s]+/)
-    .filter(Boolean)
+  const empfaenger = empfaengerListe(an)
     .map((a) => encodeURIComponent(a).replace(/%40/g, "@"))
     .join(",");
   const anfang = `mailto:${empfaenger}?subject=${kodieren(betreff)}&body=`;

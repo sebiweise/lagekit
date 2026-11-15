@@ -33,16 +33,17 @@ const MAX_AUFRUFE_PRO_MINUTE = 600;
 const MAX_ANFRAGEN_PRO_MINUTE = 30;
 const MAX_CODE_LAENGE = 4_000;
 
-const kurzcode = z.string().regex(/^\d{6}$/);
+/** Kurzcode, wie der Dienst ihn vergibt: sechs Ziffern. */
+export const kurzcodeSchema = z.string().regex(/^\d{6}$/);
 const geheim = z.string().regex(/^[0-9a-f-]{36}$/);
 const code = z.string().min(10).max(MAX_CODE_LAENGE);
 
 const eingabeSchema = z.discriminatedUnion("aktion", [
   z.object({ aktion: z.literal("sitzung") }),
-  z.object({ aktion: z.literal("abholen"), kurzcode, schluessel: geheim }),
-  z.object({ aktion: z.literal("antworten"), kurzcode, schluessel: geheim, anfrageId: geheim, antwort: code.nullable() }),
-  z.object({ aktion: z.literal("beenden"), kurzcode, schluessel: geheim }),
-  z.object({ aktion: z.literal("anfrage"), kurzcode, anfrage: code }),
+  z.object({ aktion: z.literal("abholen"), kurzcode: kurzcodeSchema, schluessel: geheim }),
+  z.object({ aktion: z.literal("antworten"), kurzcode: kurzcodeSchema, schluessel: geheim, anfrageId: geheim, antwort: code.nullable() }),
+  z.object({ aktion: z.literal("beenden"), kurzcode: kurzcodeSchema, schluessel: geheim }),
+  z.object({ aktion: z.literal("anfrage"), kurzcode: kurzcodeSchema, anfrage: code }),
   z.object({ aktion: z.literal("antwort"), anfrageId: geheim }),
 ]);
 

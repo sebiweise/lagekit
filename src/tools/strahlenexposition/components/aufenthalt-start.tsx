@@ -1,14 +1,17 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
+import { Controller, FormProvider, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { z } from "zod";
 import { Play, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { getDb } from "@/core/db/db";
-import { zahlLesen } from "@/lib/zahl";
+import { fehlerText } from "@/lib/formular";
 import { aufenthaltStarten, odlWechseln } from "../repository";
-import type { OdlEinheit } from "../schema";
+import { aufenthaltStartFormularSchema, type AufenthaltStartFormularWerte } from "../schema";
 import { OdlEingabe } from "./odl-eingabe";
 
 /**
@@ -28,47 +31,55 @@ export function AufenthaltStart({
   wechseln?: boolean;
   ortVorgabe?: string;
 }) {
-  const [ort, setOrt] = useState(ortVorgabe);
-  const [odl, setOdl] = useState("");
-  const [einheit, setEinheit] = useState<OdlEinheit>("µSv/h");
   const [fehler, setFehler] = useState<string | null>(null);
+  const form = useForm({
+    resolver: zodResolver(aufenthaltStartFormularSchema),
+    defaultValues: { ort: ortVorgabe, odl: "", odlEinheit: "µSv/h" } satisfies AufenthaltStartFormularWerte,
+  });
 
-  async function absenden(event: FormEvent) {
-    event.preventDefault();
+  async function absenden(werte: z.output<typeof aufenthaltStartFormularSchema>) {
     setFehler(null);
-    const wert = zahlLesen(odl);
-    if (wert === null) {
-      setFehler("Bitte eine ODL als Zahl eingeben.");
-      return;
-    }
     try {
-      const eingabe = { ort, odl: wert, odlEinheit: einheit };
       if (wechseln) {
-        await odlWechseln(getDb(), personIds, eingabe);
-        setOdl("");
+        await odlWechseln(getDb(), personIds, werte);
+        form.resetField("odl");
       } else {
-        await aufenthaltStarten(getDb(), personIds, eingabe);
+        await aufenthaltStarten(getDb(), personIds, werte);
       }
     } catch (e) {
-      setFehler(e instanceof Error ? e.message : String(e));
+      setFehler(fehlerText(e));
     }
   }
 
   return (
-    <form onSubmit={absenden} className="grid grid-cols-1 gap-3 @xl:grid-cols-[1fr_1fr_auto] @xl:items-end" aria-label={beschriftung}>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor={`${idPrefix}-ort`}>Ort</Label>
-        <Input id={`${idPrefix}-ort`} required autoComplete="off" value={ort} onChange={(e) => setOrt(e.target.value)} />
-      </div>
-      <OdlEingabe id={`${idPrefix}-odl`} wert={odl} einheit={einheit} onWert={setOdl} onEinheit={setEinheit} />
-      <Button type="submit" variant={wechseln ? "secondary" : "default"}>
-        {wechseln ? <RefreshCw /> : <Play />} {beschriftung}
-      </Button>
-      {fehler && (
-        <p role="alert" className="text-sm text-destructive @xl:col-span-3">
-          {fehler}
-        </p>
-      )}
-    </form>
+    <FormProvider {...form}>
+      <form
+        noValidate
+        onSubmit={form.handleSubmit(absenden)}
+        className="grid grid-cols-1 gap-3 @xl:grid-cols-[1fr_1fr_auto] @xl:items-start"
+        aria-label={beschriftung}
+      >
+        <Controller
+          name="ort"
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={`${idPrefix}-ort`}>Ort</FieldLabel>
+              <Input {...field} id={`${idPrefix}-ort`} aria-required aria-invalid={fieldState.invalid} autoComplete="off" />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
+        />
+        <OdlEingabe id={`${idPrefix}-odl`} />
+        <Button type="submit" variant={wechseln ? "secondary" : "default"} className="@xl:mt-[1.375rem]">
+          {wechseln ? <RefreshCw /> : <Play />} {beschriftung}
+        </Button>
+        {fehler && (
+          <p role="alert" className="text-sm text-destructive @xl:col-span-3">
+            {fehler}
+          </p>
+        )}
+      </form>
+    </FormProvider>
   );
 }

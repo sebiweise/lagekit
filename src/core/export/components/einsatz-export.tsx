@@ -1,13 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Download, FileArchive, FolderOpen, Mail, Printer, Share2 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Select } from "@/components/ui/select";
 import { groesseText } from "@/core/dateien/ordner";
 import { OrdnerVerwaltung } from "@/core/dateien/components/ordner-verwaltung";
@@ -26,7 +29,7 @@ import {
   type ExportArt,
 } from "../export-dateien";
 import { useExportDaten, exportHref } from "../hooks";
-import { dateienTeilenMoeglich, dateiTeilen, mailprogrammOeffnen, mailtoLink } from "../mail";
+import { dateienTeilenMoeglich, dateiTeilen, empfaengerSchema, mailprogrammOeffnen, mailtoLink } from "../mail";
 
 const EMPFAENGER_SCHLUESSEL = "lagekit.mail.empfaenger";
 /** Viele Mailserver nehmen nicht mehr an. */
@@ -39,6 +42,12 @@ function gespeicherterEmpfaenger(): string {
     return "";
   }
 }
+
+const mailFormularSchema = z.object({
+  empfaenger: empfaengerSchema,
+  anhang: z.custom<ExportArt | "keiner">((wert) => typeof wert === "string" && wert !== ""),
+});
+type MailFormularWerte = z.infer<typeof mailFormularSchema>;
 
 type Meldung = { art: "ok" | "fehler" | "info"; text: string } | null;
 
@@ -89,8 +98,10 @@ function ExportInhalt({ daten }: { daten: EinsatzDaten }) {
   const [fortschritt, setFortschritt] = useState<number | null>(null);
   const [zipMeldung, setZipMeldung] = useState<Meldung>(null);
 
-  const [empfaenger, setEmpfaenger] = useState(gespeicherterEmpfaenger);
-  const [mailArt, setMailArt] = useState<ExportArt | "keiner">("pdf");
+  const mailForm = useForm({
+    resolver: zodResolver(mailFormularSchema),
+    defaultValues: { empfaenger: gespeicherterEmpfaenger(), anhang: "pdf" } satisfies MailFormularWerte,
+  });
   const [mailMeldung, setMailMeldung] = useState<Meldung>(null);
   const [teilenMoeglich] = useState(dateienTeilenMoeglich);
   const [arbeitet, setArbeitet] = useState(false);
@@ -143,7 +154,6 @@ function ExportInhalt({ daten }: { daten: EinsatzDaten }) {
   }
 
   function empfaengerMerken(wert: string) {
-    setEmpfaenger(wert);
     try {
       localStorage.setItem(EMPFAENGER_SCHLUESSEL, wert);
     } catch {
@@ -151,7 +161,7 @@ function ExportInhalt({ daten }: { daten: EinsatzDaten }) {
     }
   }
 
-  async function mailOeffnen() {
+  async function mailOeffnen({ empfaenger, anhang: mailArt }: MailFormularWerte) {
     setArbeitet(true);
     setMailMeldung(null);
     try {
@@ -174,7 +184,7 @@ function ExportInhalt({ daten }: { daten: EinsatzDaten }) {
     }
   }
 
-  async function teilen() {
+  async function teilen({ anhang: mailArt }: MailFormularWerte) {
     setArbeitet(true);
     setMailMeldung(null);
     try {
@@ -298,39 +308,70 @@ function ExportInhalt({ daten }: { daten: EinsatzDaten }) {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="mail-an">Empfänger (optional, mehrere mit Komma)</Label>
-              <Input
-                id="mail-an"
-                type="email"
-                multiple
-                autoComplete="email"
-                placeholder="leitstelle@beispiel.de"
-                value={empfaenger}
-                onChange={(e) => empfaengerMerken(e.target.value)}
+            <form
+              noValidate
+              onSubmit={mailForm.handleSubmit(mailOeffnen)}
+              className="flex flex-col gap-4"
+              aria-label="Per E-Mail senden"
+            >
+              <Controller
+                name="empfaenger"
+                control={mailForm.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="mail-an">Empfänger (optional, mehrere mit Komma)</FieldLabel>
+                    <Input
+                      {...field}
+                      id="mail-an"
+                      type="email"
+                      multiple
+                      autoComplete="email"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="leitstelle@beispiel.de"
+                      onChange={(e) => {
+                        field.onChange(e);
+                        empfaengerMerken(e.target.value);
+                      }}
+                    />
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
               />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="mail-anhang">Anhang (Format)</Label>
-              <Select id="mail-anhang" value={mailArt} onChange={(e) => setMailArt(e.target.value as ExportArt | "keiner")}>
-                {EXPORT_ARTEN.filter((a) => exportArtVorhanden(a.art, daten)).map((a) => (
-                  <option key={a.art} value={a.art}>
-                    {a.titel}
-                  </option>
-                ))}
-                <option value="keiner">Kein Anhang, nur Kurzbericht</option>
-              </Select>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button disabled={arbeitet} onClick={() => void mailOeffnen()} data-testid="mail-oeffnen">
-                <Mail /> Im Mailprogramm öffnen
-              </Button>
-              {teilenMoeglich && (
-                <Button variant="outline" disabled={arbeitet} onClick={() => void teilen()} data-testid="mail-teilen">
-                  <Share2 /> Mit Anhang teilen …
+              <Controller
+                name="anhang"
+                control={mailForm.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="mail-anhang">Anhang (Format)</FieldLabel>
+                    <Select {...field} id="mail-anhang" aria-invalid={fieldState.invalid}>
+                      {EXPORT_ARTEN.filter((a) => exportArtVorhanden(a.art, daten)).map((a) => (
+                        <option key={a.art} value={a.art}>
+                          {a.titel}
+                        </option>
+                      ))}
+                      <option value="keiner">Kein Anhang, nur Kurzbericht</option>
+                    </Select>
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
+              <div className="flex flex-wrap gap-3">
+                <Button type="submit" disabled={arbeitet} data-testid="mail-oeffnen">
+                  <Mail /> Im Mailprogramm öffnen
                 </Button>
-              )}
-            </div>
+                {teilenMoeglich && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={arbeitet}
+                    onClick={() => void mailForm.handleSubmit(teilen)()}
+                    data-testid="mail-teilen"
+                  >
+                    <Share2 /> Mit Anhang teilen …
+                  </Button>
+                )}
+              </div>
+            </form>
             <p className="text-sm text-muted-foreground">
               {teilenMoeglich
                 ? "„Mit Anhang teilen“ übergibt die Datei direkt an Mail, Outlook & Co. Beim Mailprogramm-Link wird die Datei gespeichert und muss angehängt werden."
