@@ -74,6 +74,10 @@ export const de = {
     abbrechen: "Abbrechen",
     abgeschlossenHinweis: "Einsatz abgeschlossen. Sichern Sie die Daten jetzt als Datei, bevor das Gerät wieder in den Alltag geht.",
     jetztSichern: "Jetzt sichern",
+    bearbeiten: "Bearbeiten",
+    bearbeitenTitel: "Einsatz bearbeiten",
+    bearbeitenHinweis: "Änderungen werden im Einsatztagebuch vermerkt.",
+    speichern: "Änderungen speichern",
   },
   sicherung: {
     titel: "Sicherung und Gerätewechsel",

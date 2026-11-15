@@ -1,6 +1,6 @@
 # Fachliche Grundlage: Strahlenexposition (Dosisüberwachung)
 
-Stand: 14.11.2026. Dieses Dokument fasst zusammen, worauf das Tool Strahlenexposition rechnet und welche Werte voreingestellt sind. Vor Version 1.0 prüft ein ABC-Ausbilder die Werte und die Rechnung (siehe Risikotabelle in [PLAN.md](../PLAN.md)).
+Stand: 14.11.2026. Dieses Dokument fasst zusammen, worauf das Tool Strahlenexposition rechnet und welche Werte voreingestellt sind. Hinweise zu Werten und Rechnung bitte über die Issue-Vorlage „Fachliche Prüfung“, mit Quelle.
 
 ## Rechnung
 
@@ -28,8 +28,8 @@ Die Richtwerte lassen sich im Tool unter „Richtwerte einstellen“ je Gerät �
 
 | Einsatzanlass | Richtwert | Quelle | Status |
 | --- | --- | --- | --- |
-| Übung | 1 mSv je Übung und Kalenderjahr | FwDV 500 | Angabe aus der Praxis (Feuerwehr), 14.11.2026 |
-| Schutz von Sachwerten | 20 mSv | FwDV 500 | Angabe aus der Praxis (Feuerwehr), 14.11.2026 |
+| Übung | 1 mSv je Übung und Kalenderjahr | FwDV 500 | übliche Praxis bei Feuerwehren |
+| Schutz von Sachwerten | 20 mSv | FwDV 500 | übliche Praxis bei Feuerwehren |
 | Schutz von Leben oder Gesundheit | 100 mSv | § 114 Abs. 2 StrlSchG | geprüft am Gesetzestext |
 | Lebensrettung, Vermeidung schwerer Gesundheitsschäden, Abwehr einer Katastrophe | 250 mSv | § 114 Abs. 3 StrlSchG | geprüft am Gesetzestext |
 | Ausnahme, von der Einsatzleitung festgelegt | 500 mSv | § 114 Abs. 3 StrlSchG | geprüft am Gesetzestext |
@@ -44,12 +44,10 @@ Aus § 114 StrlSchG (in Kraft seit 1.10.2017):
 
 Die Hinweise zu Schwangeren, Minderjährigen und Freiwilligen stehen im Tool beim jeweiligen Richtwert.
 
-## Offene Punkte
+## Grenzen
 
-- [x] Richtwerte für Sachwerte (20 mSv) und Übungen (1 mSv) aus der Praxis bestätigt. Der ursprünglich geplante Wert von 15 mSv war falsch.
-- [ ] Jahressumme je Person über mehrere Einsätze und Übungen: Das Tool rechnet bisher je Einsatz. Für den Übungswert (1 mSv je Kalenderjahr) müsste es die Dosen eines Jahres zusammenführen.
-- [ ] Warnschwelle der Ampel (80 %) mit einem ABC-Ausbilder abstimmen.
-- [ ] Prüfen, ob die Vorplanung einen Sicherheitszuschlag anbieten soll.
+- Das Tool rechnet je Einsatz. Eine Jahressumme je Person über mehrere Einsätze und Übungen (etwa für den Übungswert von 1 mSv je Kalenderjahr) bildet es nicht; sie ist gesondert zu führen.
+- Die Vorplanung rechnet ohne Sicherheitszuschlag.
 
 ## Quellen
 

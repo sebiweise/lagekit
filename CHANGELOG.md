@@ -13,12 +13,15 @@ Regeln für diese Datei:
 
 ### Neu
 
+- Einsätze lassen sich nachträglich bearbeiten: Stichwort, Ort (auch per Standort), eigene Einheit und Beginn. Der Knopf „Bearbeiten“ steht beim aktiven Einsatz auf der Startseite und bei jedem Einsatz in der Liste. Beim gemeinsamen Arbeiten sehen alle Geräte die Änderung sofort.
+- Jede Änderung der Einsatzdaten wird im Einsatztagebuch als Notiz mit altem und neuem Wert vermerkt, auch ein über die Karte gesetzter Einsatzort.
 - Links zu „Hilfe und Feedback“ (Fehler melden, Verbesserung vorschlagen) und zum Quellcode auf GitHub, in der Seitenleiste, unter „Mehr“ und bei den Hinweisen.
 - Kurzcode für „Gemeinsam arbeiten“ auch bei selbst gehosteten Installationen (Docker, ZIP): Sie nutzen den Vermittlungsdienst des Lagekit-Projekts. Abschaltbar mit `LAGEKIT_KURZCODE_DIENST=false`, im Docker-Image ohne neuen Build.
 - Datenschutzhinweis beim Kurzcode: welcher Dienst genutzt wird und welche Angaben darüber laufen.
 
 ### Behoben
 
+- Docker-Image: In der GitHub Container Registry erscheinen nur noch die Plattformen amd64 und arm64, kein Eintrag „unknown/unknown“ mehr.
 - Der Vermittlungsdienst auf Vercel startete nicht mehr, Kurzcodes schlugen fehl.
 
 ## [0.1.0] - 2026-11-15

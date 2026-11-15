@@ -89,3 +89,43 @@ test("lehnt eine fremde Datei beim Import ab", async ({ page }) => {
   await page.getByTestId("import-datei").setInputFiles(pfad);
   await expect(page.getByText(/keine Lagekit-Sicherung/)).toBeVisible();
 });
+
+test("laufenden Einsatz bearbeiten und Änderung im Tagebuch sehen", async ({ page }) => {
+  await page.goto(`${baseURL}/`);
+  await page.getByLabel("Stichwort", { exact: false }).fill("TH 1");
+  await page.getByLabel("Ort", { exact: true }).fill("Hauptstraße 1");
+  await page.getByRole("button", { name: "Einsatz anlegen" }).click();
+  await expect(page.getByTestId("kopf-einsatz")).toHaveText("TH 1");
+
+  // Von der Startseite aus: Stichwort und Ort ändern.
+  const karte = page.getByTestId("aktiver-einsatz");
+  await karte.getByRole("button", { name: "Bearbeiten" }).click();
+  await expect(karte.getByLabel("Stichwort", { exact: false })).toHaveValue("TH 1");
+  await karte.getByLabel("Stichwort", { exact: false }).fill("TH 2 VU eingeklemmt");
+  await karte.getByLabel("Ort", { exact: true }).fill("Hauptstraße 3");
+  await karte.getByRole("button", { name: "Änderungen speichern" }).click();
+  await expect(page.getByTestId("kopf-einsatz")).toHaveText("TH 2 VU eingeklemmt");
+  await expect(karte).toContainText("Hauptstraße 3");
+
+  // Abbrechen ändert nichts.
+  await karte.getByRole("button", { name: "Bearbeiten" }).click();
+  await karte.getByLabel("Stichwort", { exact: false }).fill("Verworfen");
+  await karte.getByRole("button", { name: "Abbrechen" }).click();
+  await expect(page.getByTestId("kopf-einsatz")).toHaveText("TH 2 VU eingeklemmt");
+
+  // In der Einsatzliste: Einheit nachtragen.
+  await page.goto(`${baseURL}/einsatz/`);
+  const eintrag = page.getByTestId("einsatz-eintrag").first();
+  await eintrag.getByRole("button", { name: "Bearbeiten" }).click();
+  await eintrag.getByLabel("Eigene Einheit").fill("ELW 1");
+  await eintrag.getByRole("button", { name: "Änderungen speichern" }).click();
+  await expect(eintrag.getByTestId("einsatz-bearbeiten")).toHaveCount(0);
+  await expect(eintrag).toContainText("ELW 1");
+
+  // Beide Änderungen stehen im Einsatztagebuch.
+  await page.goto(`${baseURL}/tools/einsatztagebuch/`);
+  const vermerke = page.getByTestId("tagebuch-eintrag");
+  await expect(vermerke).toHaveCount(2);
+  await expect(page.getByText("Stichwort: „TH 1“ → „TH 2 VU eingeklemmt“")).toBeVisible();
+  await expect(page.getByText("Eigene Einheit: (leer) → „ELW 1“")).toBeVisible();
+});

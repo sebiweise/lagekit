@@ -48,10 +48,10 @@ Im Vercel-Projekt Upstash Redis aus dem Marketplace verbinden. Die Funktion lies
 - **Vermittlungsdienst:** Höchstens 600 Aufrufe pro Minute und IP-Adresse (alle Geräte im ELW teilen sich meist eine), Beitrittsanfragen zusätzlich höchstens 30 pro Minute. Ein erratener Kurzcode erlaubt nur eine Anfrage, die der Host sieht und ablehnen kann.
 - **Konflikte:** Tools können im Manifest eine Konfliktlösung je Tabelle angeben (`abgleich`); der Host wendet sie auf alle eingehenden Zeilen an und verteilt das Ergebnis. Das Einsatztagebuch vergibt so bei doppelten Nummern die nächste freie.
 
-## Grenzen (Stand jetzt)
+## Grenzen
 
 - Auf dem QR-Weg ist nach einem Abriss erneutes Scannen nötig (es gibt keinen Kanal für den neuen Verbindungsaufbau). Der Host muss das Gerät aber nicht erneut zulassen.
 - iPhones trennen die Verbindung, wenn der Bildschirm gesperrt wird; auf dem Kurzcode-Weg verbinden sie sich danach selbst neu.
 - Zwei Geräte, die dieselbe Zeile (z. B. denselben Aufenthalt) gleichzeitig ändern: Es gilt die Änderung, die zuletzt beim Host ankommt. Das gilt auch für eine Änderung, die nach einem Abriss erneut geschickt wird.
 - Wer den Kurzcode kennt, kann Anfragen schicken; zugelassen wird aber nur, wen der Host freigibt. Der Vermittlungsdienst sieht die Verbindungsdaten (keine Einsatzdaten) und ist damit Vertrauensanker des Kurzcode-Wegs; wer das nicht möchte, nutzt den QR-Weg.
-- Ob ein Handy-Hotspot Geräte untereinander verbindet, hängt vom Gerät ab und ist im Praxistest zu prüfen.
+- Ob ein Handy-Hotspot Geräte untereinander verbindet, hängt vom Gerät ab und sollte vor dem Einsatz ausprobiert werden.

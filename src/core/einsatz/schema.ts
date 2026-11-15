@@ -35,3 +35,14 @@ export const neuerEinsatzSchema = einsatzSchema.pick({
 });
 
 export type NeuerEinsatz = z.input<typeof neuerEinsatzSchema>;
+
+/** Nachträglich änderbare Stammdaten; fehlende Felder bleiben unverändert. */
+export const einsatzAenderungSchema = z.object({
+  stichwort: einsatzSchema.shape.stichwort.optional(),
+  ort: z.string().trim().optional(),
+  einheit: z.string().trim().optional(),
+  koordinaten: koordinatenSchema.nullable().optional(),
+  beginn: einsatzSchema.shape.beginn.optional(),
+});
+
+export type EinsatzAenderung = z.input<typeof einsatzAenderungSchema>;
