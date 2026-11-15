@@ -17,6 +17,7 @@ export function EinsatzFormular({ onAngelegt }: { onAngelegt?: () => void }) {
   const [stichwort, setStichwort] = useState("");
   const [ort, setOrt] = useState("");
   const [koordinaten, setKoordinaten] = useState<Koordinaten | null>(null);
+  const [standortFehler, setStandortFehler] = useState<string | null>(null);
   const [einheit, setEinheit] = useState("");
   // Leer heißt: Beginn ist der Zeitpunkt des Anlegens.
   const [beginn, setBeginn] = useState("");
@@ -56,9 +57,9 @@ export function EinsatzFormular({ onAngelegt }: { onAngelegt?: () => void }) {
           onChange={(e) => setStichwort(e.target.value)}
         />
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 sm:col-span-2">
         <Label htmlFor="einsatz-ort">{t.einsatz.ort}</Label>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2">
           <Input
             id="einsatz-ort"
             className="min-w-0 flex-1"
@@ -71,8 +72,14 @@ export function EinsatzFormular({ onAngelegt }: { onAngelegt?: () => void }) {
               setOrt(e.ort);
               setKoordinaten(e.koordinaten);
             }}
+            onFehler={setStandortFehler}
           />
         </div>
+        {standortFehler && (
+          <p role="alert" className="text-sm text-destructive">
+            {standortFehler}
+          </p>
+        )}
         {koordinaten && (
           <p className="text-xs text-muted-foreground" data-testid="einsatz-koordinaten">
             UTMREF {utmref(koordinaten.lat, koordinaten.lon)}
@@ -102,7 +109,7 @@ export function EinsatzFormular({ onAngelegt }: { onAngelegt?: () => void }) {
         />
         <p className="text-xs text-muted-foreground">Leer lassen für „jetzt“.</p>
       </div>
-      <div className="flex items-end">
+      <div className="flex justify-end sm:col-span-2">
         <Button type="submit" className="w-full sm:w-auto">
           <Plus /> {t.einsatz.anlegen}
         </Button>
