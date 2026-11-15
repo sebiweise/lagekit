@@ -12,6 +12,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { ordnerDesEinsatzes } from "@/core/dateien/repository";
 import { dateienFiltern, verweisText, type DateiTreffer } from "@/core/dateien/verweis";
+import { useAnfrage } from "@/core/befehle/anfrage";
 import { getDb } from "@/core/db/db";
 import { fehlerText } from "@/lib/formular";
 import { useVonAnVorschlaege } from "../hooks";
@@ -53,6 +54,11 @@ export function Schnellerfassung({
   const inhalt = useWatch({ control: form.control, name: "inhalt" });
   const inhaltFeld = useRef<HTMLInputElement | null>(null);
   const vonAnVorschlaege = useVonAnVorschlaege(einsatzId);
+  // Befehlspalette „Tagebuch-Eintrag schreiben“: Cursor in die Eingabezeile.
+  useAnfrage("tagebuch-eintrag", () => {
+    inhaltFeld.current?.scrollIntoView({ block: "center" });
+    inhaltFeld.current?.focus();
+  });
 
   // „/“ im Inhalt: Datei aus einem verknüpften Ordner auswählen.
   const ordner = useLiveQuery(() => ordnerDesEinsatzes(getDb(), einsatzId), [einsatzId]);

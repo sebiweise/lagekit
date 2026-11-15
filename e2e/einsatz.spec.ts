@@ -77,7 +77,7 @@ test("Einsatz anlegen, wechseln, abschließen und auf ein anderes Gerät übertr
   // Löschen mit Rückfrage.
   const abc = seiteB.getByTestId("einsatz-eintrag").filter({ hasText: "ABC 2" });
   await abc.getByRole("button", { name: "Löschen" }).click();
-  await abc.getByRole("button", { name: "Endgültig löschen" }).click();
+  await seiteB.getByRole("alertdialog").getByRole("button", { name: "Endgültig löschen" }).click();
   await expect(seiteB.getByTestId("einsatz-eintrag")).toHaveCount(1);
   await geraetB.close();
 });

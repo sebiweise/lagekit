@@ -11,6 +11,8 @@ Lagekit wird im ELW oder an der Einsatzstelle unter Stress benutzt, oft mit Hand
 5. **Ein Tipper statt zwei.** Art im Tagebuch als Knöpfe; Von/An tauschen per Knopf (Rückmeldung); Von/An schlagen genutzte Angaben vor, Tab oder Antippen übernimmt; Enter-Taste der Bildschirmtastatur heißt „Senden“.
 6. **Große Flächen, keine seitliche Verschiebung.** Mindestens 44 px, meist 48 px; nichts läuft auf 390 px Breite über.
 7. **Farbe nie allein.** Ampeln haben immer Text oder einen Screenreader-Text.
+8. **Tastatur am PC.** Strg+K (Mac: ⌘K) öffnet die Befehlspalette: ein paar Buchstaben tippen, ↑↓ wählen, Enter. Damit erreicht man jedes Tool, schreibt einen Tagebuch-Eintrag, legt Einsätze an, bearbeitet oder wechselt sie, druckt den Bericht, sichert den Einsatz und sucht Begriffe in den externen Tools. Am Handy steht sie oben unter „Mehr“.
+9. **Löschen nur mit Rückfrage.** Was sich nicht rückgängig machen lässt, fragt in einem eigenen Fenster nach; „Abbrechen“ ist vorausgewählt.
 
 ## Arbeitsbereich selbst anordnen
 
