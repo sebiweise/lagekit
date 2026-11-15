@@ -1,0 +1,60 @@
+name: Release vorbereiten
+
+# Legt einen Pull Request „Release vX.Y.Z“ an: Abschnitt „Unveröffentlicht“ in
+# CHANGELOG.md wird zur neuen Version, package.json bekommt die Versionsnummer.
+# Nach dem Merge veröffentlicht der Workflow „Release“ Tag, GitHub-Release und
+# Docker-Image.
+
+on:
+  workflow_dispatch:
+    inputs:
+      art:
+        description: "Art der Änderung (SemVer): patch = nur Fehlerbehebungen, minor = neue Funktionen, major = inkompatibel"
+        required: true
+        type: choice
+        options: [patch, minor, major]
+        default: minor
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  vorbereiten:
+    name: Release-PR anlegen
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      - name: Version und CHANGELOG.md fortschreiben
+        id: version
+        run: echo "version=$(node scripts/release.mjs vorbereiten ${{ inputs.art }})" >> "$GITHUB_OUTPUT"
+
+      - name: Branch und Pull Request anlegen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          branch="release/v${VERSION}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git commit -am "Release v${VERSION}"
+          git push -u origin "$branch"
+          {
+            echo "Nach dem Merge entstehen automatisch Tag \`v${VERSION}\`, das GitHub-Release und das Docker-Image \`ghcr.io/${GITHUB_REPOSITORY,,}:${VERSION}\`."
+            echo
+            echo "## Änderungen"
+            echo
+            node scripts/release.mjs notizen "$VERSION"
+          } > body.md
+          gh pr create --base "${{ github.event.repository.default_branch }}" --head "$branch" \
+            --title "Release v${VERSION}" --body-file body.md
+          # Pull Requests von GitHub Actions starten keine CI; daher von Hand.
+          gh workflow run ci.yml --ref "$branch"

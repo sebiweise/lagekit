@@ -13,12 +13,10 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
   return navigator.serviceWorker.register(SW_URL, { scope: "/" });
 }
 
-/** Aktiviert eine wartende neue Version und lädt die Seite neu, sobald sie übernommen hat. */
+/**
+ * Aktiviert eine wartende neue Version. Das Neuladen übernimmt der
+ * `controllerchange`-Hörer aus `pwaStarten()` (update.ts) in allen Tabs.
+ */
 export function activateWaitingWorker(registration: ServiceWorkerRegistration): void {
-  const waiting = registration.waiting;
-  if (!waiting) return;
-  navigator.serviceWorker.addEventListener("controllerchange", () => window.location.reload(), {
-    once: true,
-  });
-  waiting.postMessage({ type: "SKIP_WAITING" });
+  registration.waiting?.postMessage({ type: "SKIP_WAITING" });
 }

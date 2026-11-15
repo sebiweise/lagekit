@@ -29,6 +29,7 @@ export const de = {
     updateVerfuegbar: "Neue Version verfügbar.",
     updateHinweis: "Erst nach dem Einsatz aktualisieren.",
     updateAktivieren: "Jetzt aktualisieren",
+    updateAnsehen: "Änderungen ansehen",
     geraetezeit: "Gerätezeit",
   },
   nav: {
@@ -84,6 +85,38 @@ export const de = {
     importUnbekannt: (tabellen: string) =>
       `Nicht übernommen, weil diese Version die Daten nicht kennt: ${tabellen}. Bitte Lagekit aktualisieren.`,
     importFehler: "Import fehlgeschlagen",
+  },
+  aenderungen: {
+    titel: "Änderungen",
+    link: "Was ist neu?",
+    installiert: "Installiert",
+    neueVersionTitel: (version: string) => `Neue Version ${version} bereit`,
+    neueVersionUnbekannt: "Neue Version bereit",
+    neueVersionLaedt: "Änderungen der neuen Version werden gelesen …",
+    keineAngaben:
+      "Die neue Version liefert keine Liste der Änderungen. Vor dem Aktualisieren eine Sicherung herunterladen.",
+    keineNeuenPunkte: "Die neue Version enthält nur kleinere Anpassungen ohne eigenen Eintrag.",
+    hinweisEinsatz: "Erst nach dem Einsatz aktualisieren. Alle offenen Tabs von Lagekit laden dabei neu.",
+    hinweisSitzung: "Geräte einer gemeinsamen Sitzung sollten dieselbe Version nutzen.",
+    datenTitel: "Gespeicherte Daten",
+    datenKeine: "Gespeicherte Daten bleiben unverändert.",
+    datenUmbau: (von: number, nach: number) =>
+      `Die Datenbank auf diesem Gerät wird beim ersten Start von Version ${von} auf ${nach} umgestellt:`,
+    datenSicherung:
+      "Vorher eine Sicherung herunterladen. Nach der Umstellung kann eine ältere Version von Lagekit die Daten nicht mehr öffnen.",
+    rueckschritt:
+      "Diese Version ist älter als die installierte und kennt die Datenbank auf diesem Gerät nicht. Daten vorher sichern; nach dem Update lassen sie sich unter Umständen nicht mehr öffnen.",
+    aelter: "Diese Version ist älter als die installierte.",
+    sichern: "Sicherung herunterladen",
+    wirdAktualisiert: "Wird aktualisiert …",
+    spaeter: "Später",
+    bannerText: (version: string | null) =>
+      version ? `Neue Version ${version} bereit.` : "Neue Version bereit.",
+    bannerDaten: "Mit Umstellung gespeicherter Daten.",
+    unveroeffentlicht: "Seit der letzten Version",
+    versionTitel: (version: string) => `Version ${version}`,
+    verlauf: "Bisherige Versionen",
+    leer: "Noch keine Einträge.",
   },
   hinweise: {
     link: "Hinweise, Haftung und Datenschutz",

@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Briefcase, Home, Info, LayoutPanelLeft, Search, Users } from "lucide-react";
+import { Briefcase, History, Home, Info, LayoutPanelLeft, Search, Users } from "lucide-react";
 import { t } from "@/i18n";
 import { toolHref, toolRegistry } from "@/tools/registry";
 
@@ -62,6 +62,12 @@ export function navigationsZiele(): NavZiel[] {
       icon: Users,
       beta: true,
       beschreibung: "Mehrere Geräte am selben Einsatz",
+    },
+    {
+      href: "/aenderungen/",
+      text: t.aenderungen.titel,
+      icon: History,
+      beschreibung: "Was ist neu, Updates und Datenumstellungen",
     },
     { href: "/hinweise/", text: "Hinweise", icon: Info, beschreibung: t.hinweise.link },
   ];
