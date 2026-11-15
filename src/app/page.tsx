@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FarbschemaUmschalter } from "@/core/darstellung/components/farbschema-umschalter";
 import { AktiverEinsatzKarte } from "@/core/einsatz/components/aktiver-einsatz-karte";
 import { DeviceClock } from "@/core/pwa/components/device-clock";
 import { PwaStatus } from "@/core/pwa/components/pwa-status";
@@ -48,10 +49,11 @@ export default function Home() {
         )}
       </section>
 
-      <footer className="mt-auto border-t pt-4 text-sm text-muted-foreground">
+      <footer className="mt-auto flex flex-wrap items-center justify-between gap-4 border-t pt-4 text-sm text-muted-foreground">
         <Link href="/hinweise/" className="underline underline-offset-4 hover:text-foreground">
           {t.hinweise.link}
         </Link>
+        <FarbschemaUmschalter />
       </footer>
     </main>
   );

@@ -39,6 +39,12 @@ export const de = {
     arbeitsbereich: "Arbeitsbereich",
     keinEinsatz: "Kein Einsatz aktiv",
   },
+  darstellung: {
+    titel: "Darstellung",
+    system: "System",
+    hell: "Hell",
+    dunkel: "Dunkel",
+  },
   einsatz: {
     titel: "Einsätze",
     aktiv: "Aktiver Einsatz",
