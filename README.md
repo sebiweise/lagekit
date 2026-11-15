@@ -21,6 +21,7 @@ Die App startet offline, Einsätze lassen sich verwalten und per JSON-Sicherung 
 - Anzeige "Offline bereit", installierte Version, Netzstatus, dauerhafter Speicher, Gerätezeit
 - Updates werden erst nach Klick auf "Jetzt aktualisieren" aktiv, nie mitten im Einsatz. Vorher zeigt `/app/aenderungen/`, was die neue Version ändert und ob gespeicherte Daten umgestellt werden ([CHANGELOG.md](CHANGELOG.md))
 - Lokale Datenbank (IndexedDB über Dexie) mit Einsatz-Tabelle und Migrationsgerüst
+- **Befehlspalette** mit Strg+K (Mac: ⌘K) oder dem Suchknopf in der Kopfzeile, am Handy unter „Mehr“: Tools und Seiten öffnen, Tagebuch-Eintrag schreiben, Einsatz anlegen, bearbeiten oder wechseln, Bericht drucken, Einsatz sichern, Darstellung umschalten und Begriffe direkt in den externen Tools suchen
 - Einsatz-Verwaltung unter `/app/einsatz/`: anlegen, aktiven Einsatz wechseln, abschließen (mit Erinnerung an die Sicherung), wieder öffnen, löschen mit Rückfrage
 - JSON-Sicherung je Einsatz oder für alles; der Import ergänzt vorhandene Daten, bei doppelten Einsätzen gewinnt die neuere Fassung
 - CSV-Hilfsfunktion (Semikolon, UTF-8 mit BOM) für die Tool-Exporte
