@@ -1,0 +1,16 @@
+.git
+.github
+.next
+.vercel
+.sw-build
+node_modules
+out
+test-results
+playwright-report
+coverage
+e2e
+docs
+*.md
+!CHANGELOG.md
+Dockerfile
+.dockerignore

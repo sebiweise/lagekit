@@ -4,6 +4,9 @@ on:
   push:
     branches: [master]
   pull_request:
+  # Der Workflow „Release vorbereiten“ startet die CI für seinen Pull Request
+  # selbst, weil Pull Requests von GitHub Actions keine CI auslösen.
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -51,3 +54,21 @@ jobs:
           name: lagekit-out
           path: out/
           retention-days: 7
+
+  docker:
+    name: Docker-Image bauen
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      # Nur bauen, nicht veröffentlichen; das macht der Release-Workflow.
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: false
+          build-args: LAGEKIT_COMMIT=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

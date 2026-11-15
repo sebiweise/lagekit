@@ -6,7 +6,8 @@
 
 - [ ] Läuft ohne Netz: keine Server-Aufrufe, keine extern geladenen Schriften oder Skripte
 - [ ] Daten bleiben lokal; neue Tabellen haben `id` und `einsatzId` und stehen im Tool-Manifest
-- [ ] Schema-Änderungen nur als neue Version in `src/core/db/migrations.ts`
+- [ ] Schema-Änderungen nur als neue Version in `src/core/db/migrations.ts`, mit `beschreibung`
+- [ ] `CHANGELOG.md` unter „Unveröffentlicht“ ergänzt; Umbauten gespeicherter Daten unter „Daten“
 - [ ] Rechenlogik steht in `logic.ts` und hat Tests; der Rechenweg ist in der Oberfläche sichtbar
 - [ ] Texte auf Deutsch, Bedienung mit Tastatur und Touch (große Flächen) möglich
 - [ ] `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build` und `pnpm test:e2e` laufen

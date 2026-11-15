@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { injectManifest } from "@serwist/build";
 import { build } from "esbuild";
+import { appChangelog, appCommit, appVersion } from "./build-info.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = path.join(root, "out");
@@ -19,6 +20,14 @@ await build({
   minify: true,
   outfile: tmpSw,
   logLevel: "warning",
+  // Dieselben Angaben wie in der App (next.config.ts), damit der wartende
+  // Worker vor dem Update sagen kann, was er mitbringt.
+  define: {
+    "process.env.NODE_ENV": JSON.stringify("production"),
+    "process.env.NEXT_PUBLIC_APP_VERSION": JSON.stringify(appVersion()),
+    "process.env.NEXT_PUBLIC_APP_COMMIT": JSON.stringify(appCommit()),
+    "process.env.NEXT_PUBLIC_APP_CHANGELOG": JSON.stringify(JSON.stringify(appChangelog())),
+  },
 });
 
 const { count, size, warnings } = await injectManifest({

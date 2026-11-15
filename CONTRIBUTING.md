@@ -22,7 +22,7 @@ Diese Regeln stammen aus dem [Projektplan](docs/PLAN.md) und gelten für jeden B
 ## Entwicklung
 
 ```bash
-corepack enable
+npm install -g pnpm@12   # Corepack fehlt ab Node.js 25
 pnpm install
 pnpm dev
 ```
@@ -47,6 +47,19 @@ pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e
 ## Pull Requests
 
 - Ein Thema je Pull Request, Beschreibung auf Deutsch.
+- Änderungen, die Nutzer merken, unter **Unveröffentlicht** in [CHANGELOG.md](CHANGELOG.md) eintragen. Die App zeigt diese Liste vor jedem Update. Alles, was gespeicherte Daten umbaut oder zurücksetzt (auch `localStorage`), gehört unter `### Daten`. Neue Datenbank-Versionen in `src/core/db/migrations.ts` brauchen eine `beschreibung`; die App zeigt sie vor dem Update von selbst an.
 - Die CI (Lint, Typen, Unit-Tests, Build, Offline-Test) muss grün sein.
 - Gemergt wird per Squash.
 - Mit dem Einreichen stimmen Sie zu, dass Ihr Beitrag unter der [AGPL-3.0](LICENSE) steht.
+
+## Releases
+
+Versionen folgen [Semantic Versioning](https://semver.org/lang/de/): `patch` nur für Fehlerbehebungen, `minor` für neue Funktionen, `major` für Änderungen, nach denen alte Sicherungen oder Abläufe nicht mehr passen.
+
+1. Unter **Actions → Release vorbereiten → Run workflow** die Art wählen. Der Workflow macht aus „Unveröffentlicht“ in `CHANGELOG.md` die neue Version, erhöht `version` in `package.json` und öffnet den Pull Request „Release vX.Y.Z“. Die CI für diesen Pull Request startet er selbst.
+2. Pull Request prüfen (Text der Änderungen ggf. nachschärfen) und mergen.
+3. Nach dem Merge legt der Workflow **Release** das Tag `vX.Y.Z` und das GitHub-Release mit dem Abschnitt aus `CHANGELOG.md` und `lagekit-X.Y.Z.zip` an und veröffentlicht das Docker-Image `ghcr.io/sebiweise/lagekit`.
+
+Lokal geht Schritt 1 auch mit `node scripts/release.mjs vorbereiten minor`.
+
+Einmalig in den Repository-Einstellungen: unter **Settings → Actions → General** „Allow GitHub Actions to create and approve pull requests“ einschalten. Das Paket `lagekit` ist nach dem ersten Release unter **Packages** zunächst privat und muss dort auf „Public“ gestellt werden, damit `docker pull` ohne Anmeldung geht.
