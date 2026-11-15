@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { AppHeader } from "@/components/layout/app-header";
+import { Seitenleiste } from "@/components/layout/seitenleiste";
 import { UntereLeiste } from "@/components/layout/untere-leiste";
 import { SitzungHinweis } from "@/core/sync/components/sitzung-hinweis";
 import { t } from "@/i18n";
@@ -27,8 +28,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       {/* Unten Platz für die feste Navigationsleiste auf Handy und Tablet. */}
       <body className="flex min-h-full touch-manipulation flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0 print:pb-0">
         <AppHeader />
-        <SitzungHinweis />
-        {children}
+        <div className="flex flex-1">
+          <Seitenleiste />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <SitzungHinweis />
+            {children}
+          </div>
+        </div>
         <UntereLeiste />
       </body>
     </html>

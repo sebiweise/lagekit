@@ -43,7 +43,7 @@ export function UntereLeiste() {
           );
         })}
         <li>
-          <MehrMenue ziele={mehr} variante="unten" />
+          <MehrMenue ziele={mehr} />
         </li>
       </ul>
     </nav>

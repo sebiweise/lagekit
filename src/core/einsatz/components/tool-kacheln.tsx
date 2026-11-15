@@ -11,7 +11,7 @@ export function ToolKacheln() {
   const einsatz = useAktiverEinsatz();
 
   return (
-    <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {toolRegistry.map((tool) => {
         const Status = einsatz ? kurzstatus[tool.id] : undefined;
         return (

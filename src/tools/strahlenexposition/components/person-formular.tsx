@@ -41,7 +41,7 @@ export function PersonFormular({
   }
 
   return (
-    <form onSubmit={absenden} className="grid grid-cols-1 gap-4 sm:grid-cols-[2fr_1.5fr_2fr_auto] sm:items-end" aria-label="Person anlegen">
+    <form onSubmit={absenden} className="grid grid-cols-1 gap-4 @xl:grid-cols-[2fr_1.5fr_2fr_auto] @xl:items-end" aria-label="Person anlegen">
       <div className="flex flex-col gap-2">
         <Label htmlFor="person-name">Name *</Label>
         <Input id="person-name" required autoComplete="off" value={name} onChange={(e) => setName(e.target.value)} />
@@ -76,7 +76,7 @@ export function PersonFormular({
         <UserPlus /> Person anlegen
       </Button>
       {fehler && (
-        <p role="alert" className="text-sm text-destructive sm:col-span-4">
+        <p role="alert" className="text-sm text-destructive @xl:col-span-4">
           {fehler}
         </p>
       )}

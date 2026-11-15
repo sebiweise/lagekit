@@ -4,9 +4,9 @@ import { t } from "@/i18n";
 import { toolHref, toolRegistry } from "@/tools/registry";
 
 /**
- * Alle Ziele der Navigation an einer Stelle. Handy und Tablet zeigen die
- * Ziele mit `unten` in der Leiste am unteren Rand, alles andere unter „Mehr“.
- * Am PC (ab `lg`) stehen die Ziele mit `oben` in der Kopfzeile, der Rest unter „Mehr“.
+ * Alle Ziele der Navigation an einer Stelle. Am PC (ab `lg`) stehen alle in der
+ * Seitenleiste links. Handy und Tablet zeigen die Ziele mit `unten` in der Leiste
+ * am unteren Rand, alles andere unter „Mehr“.
  */
 export interface NavZiel {
   href: string;
@@ -15,7 +15,6 @@ export interface NavZiel {
   kurz?: string;
   icon: LucideIcon;
   unten?: boolean;
-  oben?: boolean;
   beta?: boolean;
   beschreibung?: string;
 }
@@ -33,7 +32,6 @@ export function navigationsZiele(): NavZiel[] {
     kurz: TOOLS_UNTEN[tool.id],
     icon: tool.icon,
     unten: tool.id in TOOLS_UNTEN,
-    oben: true,
     beschreibung: tool.beschreibung,
   }));
   const unten = Object.keys(TOOLS_UNTEN)
@@ -42,14 +40,13 @@ export function navigationsZiele(): NavZiel[] {
   const sonstige = tools.filter((z) => !z.unten);
 
   return [
-    { href: "/", text: t.nav.start, icon: Home, unten: true, oben: true },
+    { href: "/", text: t.nav.start, icon: Home, unten: true },
     ...unten,
-    { href: "/suche/", text: t.nav.suche, icon: Search, unten: true, oben: true },
+    { href: "/suche/", text: t.nav.suche, icon: Search, unten: true },
     {
       href: "/einsatz/",
       text: t.nav.einsatz,
       icon: Briefcase,
-      oben: true,
       beschreibung: "Einsatz anlegen, wechseln, abschließen, sichern",
     },
     ...sonstige,
@@ -57,7 +54,6 @@ export function navigationsZiele(): NavZiel[] {
       href: "/sitzung/",
       text: t.nav.sitzung,
       icon: Users,
-      oben: true,
       beta: true,
       beschreibung: "Mehrere Geräte am selben Einsatz",
     },

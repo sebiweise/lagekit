@@ -11,10 +11,10 @@ import { istAktiv, type NavZiel } from "./navigation";
 
 /**
  * „Mehr“: alle Ziele, die nicht direkt in der Leiste stehen, als große Zeilen.
- * Auf dem Handy als Blatt von unten, am PC als Fenster. Natives <dialog>,
+ * Als Blatt von unten (nur Handy und Tablet). Natives <dialog>,
  * damit Fokus, Esc und Hintergrund ohne eigene Logik funktionieren.
  */
-export function MehrMenue({ ziele, variante }: { ziele: NavZiel[]; variante: "unten" | "oben" }) {
+export function MehrMenue({ ziele }: { ziele: NavZiel[] }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const pfad = usePathname();
   const aktiv = ziele.some((z) => istAktiv(pfad, z.href));
@@ -28,26 +28,20 @@ export function MehrMenue({ ziele, variante }: { ziele: NavZiel[]; variante: "un
 
   return (
     <>
-      {variante === "unten" ? (
-        <button
-          type="button"
-          onClick={oeffnen}
-          aria-haspopup="dialog"
-          className={cn(
-            "flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-lg text-xs font-medium text-muted-foreground",
-            aktiv && "text-foreground",
-          )}
-        >
-          <span className={cn("flex h-8 w-14 items-center justify-center rounded-full", aktiv && "bg-accent")}>
-            <Menu className="size-6" aria-hidden />
-          </span>
-          Mehr
-        </button>
-      ) : (
-        <Button variant="ghost" onClick={oeffnen} aria-haspopup="dialog" className={cn(aktiv && "bg-accent")}>
-          <Menu /> Mehr
-        </Button>
-      )}
+      <button
+        type="button"
+        onClick={oeffnen}
+        aria-haspopup="dialog"
+        className={cn(
+          "flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-lg text-xs font-medium text-muted-foreground",
+          aktiv && "text-foreground",
+        )}
+      >
+        <span className={cn("flex h-8 w-14 items-center justify-center rounded-full", aktiv && "bg-accent")}>
+          <Menu className="size-6" aria-hidden />
+        </span>
+        Mehr
+      </button>
       <dialog
         ref={dialog}
         aria-label="Weitere Bereiche"
@@ -55,12 +49,7 @@ export function MehrMenue({ ziele, variante }: { ziele: NavZiel[]; variante: "un
           // Klick auf den abgedunkelten Hintergrund schließt.
           if (e.target === dialog.current) schliessen();
         }}
-        className={cn(
-          "bg-card text-card-foreground backdrop:bg-black/50",
-          variante === "unten"
-            ? "fixed inset-x-0 top-auto bottom-0 m-0 w-full max-w-none rounded-t-2xl pb-[env(safe-area-inset-bottom)]"
-            : "m-auto w-full max-w-md rounded-2xl",
-        )}
+        className="fixed inset-x-0 top-auto bottom-0 m-0 w-full max-w-none rounded-t-2xl bg-card pb-[env(safe-area-inset-bottom)] text-card-foreground backdrop:bg-black/50"
       >
         <div className="flex items-center justify-between border-b px-4 py-2">
           <h2 className="text-lg font-semibold">Mehr</h2>
