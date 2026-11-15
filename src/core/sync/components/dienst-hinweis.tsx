@@ -17,7 +17,7 @@ export function DienstHinweis({ dienst }: { dienst: KurzcodeDienst }) {
       )}
       . Er sieht nur Ihre Angaben (Name, Funktion, Fahrzeug) und die Verbindungsdaten der Geräte, für höchstens 10
       Minuten. Einsatzdaten laufen nie darüber.{" "}
-      <Link href="/hinweise/#kurzcode" className="underline underline-offset-4">
+      <Link href="/app/hinweise/#kurzcode" className="underline underline-offset-4">
         Mehr zum Datenschutz
       </Link>
     </p>

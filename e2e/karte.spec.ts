@@ -42,7 +42,7 @@ test("Einsatzort per Standort übernehmen, auf der Karte sehen und neu setzen", 
   const kontext = await browser.newContext({ geolocation: KASSEL, permissions: ["geolocation"] });
   const anfragen = await osmNachbilden(kontext);
   const seite = await kontext.newPage();
-  await seite.goto(`${baseURL}/einsatz/`);
+  await seite.goto(`${baseURL}/app/einsatz/`);
 
   await seite.locator("#einsatz-stichwort").fill("Brand 3");
   await seite.getByTestId("standort-knopf").click();
@@ -54,7 +54,7 @@ test("Einsatzort per Standort übernehmen, auf der Karte sehen und neu setzen", 
   expect(anfragen.filter((u) => u.includes("/reverse"))).toHaveLength(1);
 
   // Karte zeigt den Einsatzort mit UTMREF.
-  await seite.goto(`${baseURL}/tools/karte/`);
+  await seite.goto(`${baseURL}/app/tools/karte/`);
   const einsatzort = seite.getByTestId("punkt-Einsatzort");
   await expect(einsatzort).toContainText("Obere Königsstraße 8, 34117 Kassel");
   await expect(einsatzort.getByTestId("utmref")).toHaveText("32U NB 33433 84708");
@@ -83,7 +83,7 @@ test("Ohne Netz: Standort wird als Koordinaten übernommen", async ({ browser })
   const kontext = await browser.newContext({ geolocation: KASSEL, permissions: ["geolocation"] });
   const anfragen = await osmNachbilden(kontext);
   const seite = await kontext.newPage();
-  await seite.goto(`${baseURL}/einsatz/`);
+  await seite.goto(`${baseURL}/app/einsatz/`);
   await kontext.setOffline(true);
   await seite.getByTestId("standort-knopf").click();
   await expect(seite.getByLabel("Ort", { exact: true })).toHaveValue("51.31270, 9.47970");
@@ -97,7 +97,7 @@ test("Arbeitsbereich: Tools als Tabs öffnen, Eingaben bleiben beim Wechseln, ne
   const kontext = await browser.newContext({ viewport: { width: 1400, height: 900 } });
   await osmNachbilden(kontext);
   const seite = await kontext.newPage();
-  await seite.goto(`${baseURL}/einsatz/`);
+  await seite.goto(`${baseURL}/app/einsatz/`);
   await seite.locator("#einsatz-stichwort").fill("Übung");
   await seite.getByRole("button", { name: "Einsatz anlegen" }).click();
 
@@ -137,7 +137,7 @@ test("Arbeitsbereich selbst anordnen: Raster, Feld wählen, Ziehen, Größe änd
   const kontext = await browser.newContext({ viewport: { width: 1600, height: 900 } });
   await osmNachbilden(kontext);
   const seite = await kontext.newPage();
-  await seite.goto(`${baseURL}/einsatz/`);
+  await seite.goto(`${baseURL}/app/einsatz/`);
   await seite.locator("#einsatz-stichwort").fill("Übung");
   await seite.getByRole("button", { name: "Einsatz anlegen" }).click();
   await seite.getByRole("link", { name: "Arbeitsbereich" }).click();

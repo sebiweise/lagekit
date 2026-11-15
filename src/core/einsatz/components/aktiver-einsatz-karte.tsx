@@ -34,7 +34,7 @@ export function AktiverEinsatzKarte() {
         <CardContent className="flex flex-col gap-4">
           <EinsatzFormular />
           {offene > 0 && (
-            <Link href="/einsatz/" className={buttonVariants({ variant: "outline" })}>
+            <Link href="/app/einsatz/" className={buttonVariants({ variant: "outline" })}>
               Laufenden Einsatz auswählen ({offene})
             </Link>
           )}
@@ -74,13 +74,13 @@ export function AktiverEinsatzKarte() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link href="/export/" className={buttonVariants({ variant: "outline" })}>
+          <Link href="/app/export/" className={buttonVariants({ variant: "outline" })}>
             <FileArchive /> Export, Druck, Mail
           </Link>
           <Button variant="outline" onClick={() => setBearbeiten(einsatz.id)}>
             <Pencil /> {t.einsatz.bearbeiten}
           </Button>
-          <Link href="/einsatz/" className={buttonVariants({ variant: "outline" })}>
+          <Link href="/app/einsatz/" className={buttonVariants({ variant: "outline" })}>
             <Settings2 /> {t.einsatz.zurVerwaltung}
           </Link>
         </div>

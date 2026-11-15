@@ -286,7 +286,7 @@ export function Karte({ className }: { className?: string }) {
         <PunktAngabe titel="Einsatzort" farbe={FARBE_EINSATZ} punkt={einsatzort} text={einsatz?.ort}>
           {!einsatz ? (
             <p className="text-muted-foreground">
-              Kein Einsatz aktiv. <Link href="/einsatz/" className="underline">Einsatz anlegen</Link>
+              Kein Einsatz aktiv. <Link href="/app/einsatz/" className="underline">Einsatz anlegen</Link>
             </p>
           ) : (
             !einsatzort && <p className="text-muted-foreground">Noch kein Punkt. Auf die Karte tippen und als Einsatzort setzen.</p>

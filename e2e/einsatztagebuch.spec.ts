@@ -13,13 +13,13 @@ test.afterEach(() => stoppeServer(server));
 
 test("Einsatztagebuch: Schnellerfassung, Tastenkürzel, Korrektur, Filter, Druck", async ({ page }) => {
   await page.clock.install({ time: new Date("2026-11-14T14:00:00") });
-  await page.goto(`${baseURL}/einsatz/`);
+  await page.goto(`${baseURL}/app/einsatz/`);
   await page.locator("#einsatz-stichwort").fill("Übungsabend");
   await page.locator("#einsatz-einheit").fill("ELW 1");
   await page.getByRole("button", { name: "Einsatz anlegen" }).click();
   await expect(page.getByTestId("kopf-einsatz")).toHaveText("Übungsabend");
 
-  await page.goto(`${baseURL}/tools/einsatztagebuch/`);
+  await page.goto(`${baseURL}/app/tools/einsatztagebuch/`);
   const inhalt = page.getByLabel("Inhalt");
   await expect(inhalt).toBeFocused();
 
@@ -82,7 +82,7 @@ test("Einsatztagebuch: Schnellerfassung, Tastenkürzel, Korrektur, Filter, Druck
   await expect(page.getByTestId("tagebuch-druck")).toContainText("ELW 1");
 
   // CSV.
-  await page.goto(`${baseURL}/tools/einsatztagebuch/`);
+  await page.goto(`${baseURL}/app/tools/einsatztagebuch/`);
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "Tagebuch als CSV" }).click();
   expect((await download).suggestedFilename()).toBe("lagekit-2026-11-14-uebungsabend-tagebuch.csv");

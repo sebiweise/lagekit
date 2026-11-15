@@ -1,0 +1,10 @@
+# Weiterleitungen für Cloudflare Pages und Netlify.
+# Bis Version 0.4 lag die App unter /, seitdem unter /app/ (src/core/pwa/adressen.ts).
+/einsatz/* /app/einsatz/:splat 301
+/tools/* /app/tools/:splat 301
+/arbeitsbereich/* /app/arbeitsbereich/:splat 301
+/export/* /app/export/:splat 301
+/hinweise/* /app/hinweise/:splat 301
+/sitzung/* /app/sitzung/:splat 301
+/suche/* /app/suche/:splat 301
+/aenderungen/* /app/aenderungen/:splat 301

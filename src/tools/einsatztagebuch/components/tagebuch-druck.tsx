@@ -22,7 +22,7 @@ export function TagebuchDruck() {
   if (einsatz === null) {
     return (
       <p>
-        Kein Einsatz aktiv. <Link href="/einsatz/">Einsatz auswählen</Link>
+        Kein Einsatz aktiv. <Link href="/app/einsatz/">Einsatz auswählen</Link>
       </p>
     );
   }
@@ -36,7 +36,7 @@ export function TagebuchDruck() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap gap-3 print:hidden">
         <DruckenKnopf />
-        <Link href="/tools/einsatztagebuch/" className={buttonVariants({ variant: "outline" })}>
+        <Link href="/app/tools/einsatztagebuch/" className={buttonVariants({ variant: "outline" })}>
           Zurück zum Tagebuch
         </Link>
       </div>

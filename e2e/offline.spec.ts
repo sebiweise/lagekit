@@ -12,7 +12,7 @@ test.beforeEach(async () => {
 test.afterEach(() => stoppeServer(server));
 
 test("startet nach dem ersten Laden ohne Netz", async ({ page, context }) => {
-  await page.goto(`${baseURL}/`);
+  await page.goto(`${baseURL}/app/`);
   await expect(page.getByRole("heading", { level: 1, name: "Lagekit" })).toBeVisible();
   await expect(page.getByTestId("offline-status")).toHaveAttribute("data-status", "bereit");
   await expect(page.getByTestId("app-version")).toContainText("Version");
@@ -30,13 +30,13 @@ test("startet nach dem ersten Laden ohne Netz", async ({ page, context }) => {
   await expect(page.getByRole("heading", { level: 1, name: "Hinweise" })).toBeVisible();
 
   // Direkter Aufruf einer Unterseite (harte Navigation), mit und ohne Schrägstrich.
-  await page.goto(`${baseURL}/hinweise/`);
+  await page.goto(`${baseURL}/app/hinweise/`);
   await expect(page.getByRole("heading", { name: "Haftungshinweis" })).toBeVisible();
-  await page.goto(`${baseURL}/hinweise`);
+  await page.goto(`${baseURL}/app/hinweise`);
   await expect(page.getByRole("heading", { name: "Haftungshinweis" })).toBeVisible();
 
   // Unbekannte Adresse zeigt die eigene 404-Seite statt eines Browserfehlers.
-  await page.goto(`${baseURL}/gibt-es-nicht/`);
+  await page.goto(`${baseURL}/app/gibt-es-nicht/`);
   await expect(page.getByRole("heading", { name: "Seite nicht gefunden" })).toBeVisible();
 });
 
@@ -47,8 +47,8 @@ test("lädt keine Ressourcen von fremden Servern", async ({ page }) => {
       fremd.push(request.url());
     }
   });
-  await page.goto(`${baseURL}/`);
+  await page.goto(`${baseURL}/app/`);
   await expect(page.getByTestId("offline-status")).toHaveAttribute("data-status", "bereit");
-  await page.goto(`${baseURL}/hinweise/`);
+  await page.goto(`${baseURL}/app/hinweise/`);
   expect(fremd).toEqual([]);
 });
