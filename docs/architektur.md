@@ -21,7 +21,7 @@ Lagekit ist eine statisch exportierte Next.js-PWA: Ein Service Worker hält alle
 | Offline | Service Worker mit Precache aller Routen (Serwist) und Web-App-Manifest | Läuft nach dem ersten Laden ohne Netz, als App installierbar |
 | Speicher | IndexedDB über Dexie | Große Datenmengen, Transaktionen, Schema-Migrationen |
 | Validierung | Zod-Schemas je Tool | Gleiche Schemas für Formular, Speicher und Import |
-| UI | Tailwind CSS und shadcn/ui | Zugänglich, Dunkelmodus |
+| UI | Tailwind CSS und shadcn/ui, für Einblendungen der Toast aus Base UI (`@base-ui/react`) | Zugänglich, Dunkelmodus; im eigenen Bundle und damit im Precache |
 | Export | JSON und CSV direkt im Browser, PDF über Druckansicht mit Print-CSS | Keine schwere PDF-Bibliothek nötig, funktioniert offline |
 | Tests | Vitest für Rechenlogik und Datenbank, Playwright mit abgeschaltetem Server | Rechenergebnisse und Offline-Fähigkeit sind die kritischen Punkte |
 | Auslieferung | Statisches Hosting (z. B. Vercel), Docker-Image und ZIP je Release | Kein laufender Anwendungsserver nötig, siehe [README](../README.md#selbst-hosten) |
@@ -31,7 +31,8 @@ Technische Regeln:
 
 1. Alles läuft clientseitig. Keine Server Actions, keine extern geladenen Schriften oder Skripte. Einzige Ausnahme ist der optionale Vermittlungsdienst für den Kurzcode-Beitritt beim gemeinsamen Arbeiten (`api/vermittlung.ts`); er sieht keine Einsatzdaten, und ohne ihn funktioniert der Beitritt per QR-Code oder Datei (siehe [Gemeinsam arbeiten](konzept/gemeinsam-arbeiten.md)).
 2. Die App fordert dauerhaften Speicher an (`navigator.storage.persist()`) und zeigt an, ob er gewährt wurde.
-3. Die App zeigt sichtbar den Status „Offline bereit“ und die installierte Version. Updates werden erst nach Bestätigung aktiv, nie mitten im Einsatz.
+3. Benachrichtigungen entstehen nur auf dem Gerät (`src/core/benachrichtigungen/`): aus Datenbank-Änderungen, dem Abgleich der Sitzung, der Ordner-Überwachung und dem Service Worker. Es gibt keine Push-Nachrichten über einen Server. Andere Teile melden über `benachrichtigen()`; Einblendung und Verlauf an der Glocke übernimmt das Modul.
+4. Die App zeigt sichtbar den Status „Offline bereit“ und die installierte Version. Updates werden erst nach Bestätigung aktiv, nie mitten im Einsatz.
 
 ## Tool-Module
 

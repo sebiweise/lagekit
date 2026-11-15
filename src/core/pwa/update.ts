@@ -139,6 +139,12 @@ function abonnieren(h: () => void) {
   };
 }
 
+/** Für Code außerhalb von React, z. B. Benachrichtigungen. */
+export const pwa = {
+  abonnieren,
+  zustand: () => zustand,
+};
+
 /** Zustand von Service Worker und Update; startet die Registrierung bei Bedarf. */
 export function usePwaZustand(): PwaZustand {
   useEffect(pwaStarten, []);
