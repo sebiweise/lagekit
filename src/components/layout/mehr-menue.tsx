@@ -7,7 +7,7 @@ import { ChevronRight, ExternalLink, Menu } from "lucide-react";
 import { BetaMarke } from "@/components/beta-marke";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { externeLinks, istAktiv, type NavZiel } from "./navigation";
+import { externeLinks, istAktiv, websiteLinks, type NavZiel } from "./navigation";
 
 /**
  * „Mehr“: alle Ziele, die nicht direkt in der Leiste stehen, als große Zeilen.
@@ -61,8 +61,21 @@ export function MehrMenue({ ziele }: { ziele: NavZiel[] }) {
             </li>
           ))}
         </ul>
-        {/* Nach außen (GitHub): kompakt nebeneinander, damit das Blatt auf das Handy passt. */}
+        {/* Website und GitHub: kompakt nebeneinander, damit das Blatt auf das Handy passt. */}
         <ul className="grid grid-cols-2 gap-2 border-t p-2">
+          {websiteLinks.map((ziel) => (
+            <li key={ziel.href}>
+              <Link
+                href={ziel.href}
+              prefetch={false}
+                onClick={schliessen}
+                className="flex min-h-12 items-center gap-2 rounded-lg px-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+              >
+                <ziel.icon className="size-5 shrink-0" aria-hidden />
+                <span className="min-w-0 flex-1">{ziel.text}</span>
+              </Link>
+            </li>
+          ))}
           {externeLinks.map((ziel) => (
             <li key={ziel.href}>
               <a

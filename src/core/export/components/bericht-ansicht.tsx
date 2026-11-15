@@ -36,7 +36,7 @@ export function BerichtAnsicht() {
   if (daten === null) {
     return (
       <p>
-        Kein Einsatz aktiv. <Link href="/einsatz/" className="underline">Einsatz auswählen</Link>
+        Kein Einsatz aktiv. <Link href="/app/einsatz/" className="underline">Einsatz auswählen</Link>
       </p>
     );
   }
@@ -45,7 +45,7 @@ export function BerichtAnsicht() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap gap-3 print:hidden">
         <DruckenKnopf />
-        <Link href={exportHref("/export/", daten.einsatz.id)} className={buttonVariants({ variant: "outline" })}>
+        <Link href={exportHref("/app/export/", daten.einsatz.id)} className={buttonVariants({ variant: "outline" })}>
           <ArrowLeft /> Zurück zu Export
         </Link>
       </div>

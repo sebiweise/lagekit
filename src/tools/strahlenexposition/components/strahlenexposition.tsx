@@ -39,7 +39,7 @@ export function Strahlenexposition() {
           <CardDescription>Die Dosisüberwachung speichert ihre Daten im aktiven Einsatz.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Link href="/einsatz/" className={buttonVariants()}>
+          <Link href="/app/einsatz/" className={buttonVariants()}>
             Einsatz anlegen oder auswählen
           </Link>
         </CardContent>
@@ -175,7 +175,7 @@ export function Strahlenexposition() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-3">
-            <Link href="/tools/strahlenexposition/nachweis/" className={buttonVariants({ variant: "outline" })}>
+            <Link href="/app/tools/strahlenexposition/nachweis/" className={buttonVariants({ variant: "outline" })}>
               <Printer /> Dosisnachweis (PDF)
             </Link>
             <Button

@@ -48,7 +48,7 @@ export function Einsatztagebuch() {
           <CardDescription>Das Tagebuch gehört immer zu einem Einsatz.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Link href="/einsatz/" className={buttonVariants()}>
+          <Link href="/app/einsatz/" className={buttonVariants()}>
             Einsatz anlegen oder auswählen
           </Link>
         </CardContent>
@@ -128,7 +128,7 @@ export function Einsatztagebuch() {
       )}
 
       <div className={cn("flex flex-wrap gap-3", eintraege.length === 0 && "hidden")}>
-        <Link href="/tools/einsatztagebuch/druck/" className={buttonVariants({ variant: "outline" })}>
+        <Link href="/app/tools/einsatztagebuch/druck/" className={buttonVariants({ variant: "outline" })}>
           <Printer /> Tagebuch drucken (PDF)
         </Link>
         <Button variant="outline" onClick={() => csvHerunterladen(tagebuchCsvDateiname(einsatz), tagebuchCsv(eintraege))}>

@@ -137,7 +137,7 @@ function EinsatzEintrag({
           <Button variant="outline" onClick={() => void einsaetzeSichern([einsatz.id])}>
             <Download /> {t.einsatz.exportieren}
           </Button>
-          <Link href={exportHref("/export/", einsatz.id)} className={buttonVariants({ variant: "outline" })}>
+          <Link href={exportHref("/app/export/", einsatz.id)} className={buttonVariants({ variant: "outline" })}>
             <FileArchive /> Druck, ZIP, Mail
           </Link>
           {!loeschenFragen && (

@@ -49,7 +49,7 @@ export function PwaStatus() {
               <WifiOff /> {t.status.netzOffline}
             </Badge>
           )}
-          <Link href="/aenderungen/" title={t.aenderungen.link}>
+          <Link href="/app/aenderungen/" title={t.aenderungen.link}>
             <Badge variant="outline" data-testid="app-version" className="hover:bg-accent">
               {t.status.version} {APP_VERSION} ({APP_COMMIT})
             </Badge>
@@ -80,7 +80,7 @@ export function PwaStatus() {
               </p>
               <p className="text-sm text-muted-foreground">{t.status.updateHinweis}</p>
             </div>
-            <Link href="/aenderungen/" className={buttonVariants({ variant: "outline" })}>
+            <Link href="/app/aenderungen/" className={buttonVariants({ variant: "outline" })}>
               <RefreshCw /> {t.status.updateAnsehen}
             </Link>
           </div>

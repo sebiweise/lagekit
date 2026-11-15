@@ -4,6 +4,8 @@
  * Alles bleibt auf dem Gerät; es gibt keine Push-Nachrichten über einen Server.
  */
 
+import { aktuellerPfad } from "@/core/pwa/adressen";
+
 export const ARTEN = ["tagebuch", "dateien", "update", "sitzung"] as const;
 export type BenachrichtigungArt = (typeof ARTEN)[number];
 
@@ -12,7 +14,7 @@ export interface Benachrichtigung {
   art: BenachrichtigungArt;
   titel: string;
   text?: string;
-  /** Ziel in der App, z. B. „/tools/dateien/“. */
+  /** Ziel in der App, z. B. „/app/tools/dateien/“. */
   href?: string;
   /** Beschriftung des Links, z. B. „Ansehen“. */
   linkText?: string;
@@ -62,7 +64,11 @@ function verlaufLaden(): Benachrichtigung[] {
   try {
     const roh = speicher("session")?.getItem(VERLAUF_SCHLUESSEL);
     const liste: unknown = roh ? JSON.parse(roh) : [];
-    return Array.isArray(liste) ? (liste as Benachrichtigung[]).slice(0, MAX_VERLAUF) : [];
+    if (!Array.isArray(liste)) return [];
+    // Links aus der Zeit vor `/app/` (z. B. „/app/tools/dateien/“) auf die neue Adresse.
+    return (liste as Benachrichtigung[])
+      .slice(0, MAX_VERLAUF)
+      .map((b) => (b.href ? { ...b, href: aktuellerPfad(b.href) } : b));
   } catch {
     return [];
   }

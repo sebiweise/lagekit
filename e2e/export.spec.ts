@@ -30,12 +30,12 @@ function zipNamen(daten: Buffer): string[] {
 }
 
 async function einsatzMitEintrag(page: Page) {
-  await page.goto(`${baseURL}/einsatz/`);
+  await page.goto(`${baseURL}/app/einsatz/`);
   await page.locator("#einsatz-stichwort").fill("ABC 2");
   await page.getByLabel("Ort", { exact: true }).fill("Werk Nord");
   await page.getByRole("button", { name: "Einsatz anlegen" }).click();
   await expect(page.getByTestId("kopf-einsatz")).toHaveText("ABC 2");
-  await page.goto(`${baseURL}/tools/einsatztagebuch/`);
+  await page.goto(`${baseURL}/app/tools/einsatztagebuch/`);
   const inhalt = page.getByLabel("Inhalt");
   await inhalt.fill("Austritt an Tank 3 <gemeldet>");
   await inhalt.press("Enter");
@@ -120,7 +120,7 @@ test("Export: ohne Ordner-Zugriff (Safari, Firefox) nur einmalige Dateien", asyn
     delete (window as unknown as { showDirectoryPicker?: unknown }).showDirectoryPicker;
   });
   await einsatzMitEintrag(page);
-  await page.goto(`${baseURL}/export/`);
+  await page.goto(`${baseURL}/app/export/`);
   await expect(page.getByTestId("ordner-nicht-moeglich")).toBeVisible();
   await expect(page.getByRole("button", { name: "Ordner verknüpfen" })).toHaveCount(0);
   await expect(page.getByText("Dateien hinzufügen")).toBeVisible();
@@ -145,6 +145,6 @@ test("Dateien: Verweis im Tagebuch öffnet die Vorschau, Dateibrowser ohne Ordne
   await inhalt.fill("/");
   await expect(page.getByRole("listbox", { name: "Datei verknüpfen" })).toHaveCount(0);
 
-  await page.goto(`${baseURL}/tools/dateien/`);
+  await page.goto(`${baseURL}/app/tools/dateien/`);
   await expect(page.getByTestId("dateien-leer")).toBeVisible();
 });

@@ -19,7 +19,7 @@ test("Einsatz anlegen, wechseln, abschließen und auf ein anderes Gerät übertr
 }) => {
   const geraetA = await browser.newContext();
   const seite = await geraetA.newPage();
-  await seite.goto(`${baseURL}/einsatz/`);
+  await seite.goto(`${baseURL}/app/einsatz/`);
 
   // Zwei Einsätze anlegen; der zuletzt angelegte ist aktiv.
   for (const [stichwort, ort] of [
@@ -48,7 +48,7 @@ test("Einsatz anlegen, wechseln, abschließen und auf ein anderes Gerät übertr
   await expect(seite.getByTestId("aktiver-einsatz")).toContainText("Übung ABC");
 
   // Alles sichern.
-  await seite.goto(`${baseURL}/einsatz/`);
+  await seite.goto(`${baseURL}/app/einsatz/`);
   const download = seite.waitForEvent("download");
   await seite.getByRole("button", { name: "Alles sichern (JSON)" }).click();
   // Eigener Temp-Ordner: setInputFiles scheitert still an Pfaden mit Umlauten
@@ -63,7 +63,7 @@ test("Einsatz anlegen, wechseln, abschließen und auf ein anderes Gerät übertr
   // Gerät B ist leer und übernimmt die Sicherung.
   const geraetB = await browser.newContext();
   const seiteB = await geraetB.newPage();
-  await seiteB.goto(`${baseURL}/einsatz/`);
+  await seiteB.goto(`${baseURL}/app/einsatz/`);
   await expect(seiteB.getByText("Noch keine Einsätze auf diesem Gerät.")).toBeVisible();
   await seiteB.getByTestId("import-datei").setInputFiles(datei);
   await expect(seiteB.getByText(/Import abgeschlossen: 2 neue/)).toBeVisible();
@@ -83,7 +83,7 @@ test("Einsatz anlegen, wechseln, abschließen und auf ein anderes Gerät übertr
 });
 
 test("lehnt eine fremde Datei beim Import ab", async ({ page }) => {
-  await page.goto(`${baseURL}/einsatz/`);
+  await page.goto(`${baseURL}/app/einsatz/`);
   const pfad = path.join(await mkdtemp(path.join(tmpdir(), "lagekit-")), "fremd.json");
   await writeFile(pfad, JSON.stringify({ hallo: "welt" }));
   await page.getByTestId("import-datei").setInputFiles(pfad);
@@ -91,7 +91,7 @@ test("lehnt eine fremde Datei beim Import ab", async ({ page }) => {
 });
 
 test("laufenden Einsatz bearbeiten und Änderung im Tagebuch sehen", async ({ page }) => {
-  await page.goto(`${baseURL}/`);
+  await page.goto(`${baseURL}/app/`);
   await page.getByLabel("Stichwort", { exact: false }).fill("TH 1");
   await page.getByLabel("Ort", { exact: true }).fill("Hauptstraße 1");
   await page.getByRole("button", { name: "Einsatz anlegen" }).click();
@@ -114,7 +114,7 @@ test("laufenden Einsatz bearbeiten und Änderung im Tagebuch sehen", async ({ pa
   await expect(page.getByTestId("kopf-einsatz")).toHaveText("TH 2 VU eingeklemmt");
 
   // In der Einsatzliste: Einheit nachtragen.
-  await page.goto(`${baseURL}/einsatz/`);
+  await page.goto(`${baseURL}/app/einsatz/`);
   const eintrag = page.getByTestId("einsatz-eintrag").first();
   await eintrag.getByRole("button", { name: "Bearbeiten" }).click();
   await eintrag.getByLabel("Eigene Einheit").fill("ELW 1");
@@ -123,7 +123,7 @@ test("laufenden Einsatz bearbeiten und Änderung im Tagebuch sehen", async ({ pa
   await expect(eintrag).toContainText("ELW 1");
 
   // Beide Änderungen stehen im Einsatztagebuch.
-  await page.goto(`${baseURL}/tools/einsatztagebuch/`);
+  await page.goto(`${baseURL}/app/tools/einsatztagebuch/`);
   const vermerke = page.getByTestId("tagebuch-eintrag");
   await expect(vermerke).toHaveCount(2);
   await expect(page.getByText("Stichwort: „TH 1“ → „TH 2 VU eingeklemmt“")).toBeVisible();
@@ -131,7 +131,7 @@ test("laufenden Einsatz bearbeiten und Änderung im Tagebuch sehen", async ({ pa
 });
 
 test("Formulare zeigen Fehler direkt am Feld", async ({ page }) => {
-  await page.goto(`${baseURL}/einsatz/`);
+  await page.goto(`${baseURL}/app/einsatz/`);
   await page.getByRole("button", { name: "Einsatz anlegen" }).click();
   await expect(page.getByText("Bitte ein Stichwort angeben.")).toBeVisible();
   await expect(page.getByLabel("Stichwort", { exact: false }).first()).toHaveAttribute("aria-invalid", "true");
@@ -141,7 +141,7 @@ test("Formulare zeigen Fehler direkt am Feld", async ({ page }) => {
   await page.getByRole("button", { name: "Einsatz anlegen" }).click();
   await expect(page.getByTestId("kopf-einsatz")).toHaveText("Übung");
 
-  await page.goto(`${baseURL}/tools/strahlenexposition/`);
+  await page.goto(`${baseURL}/app/tools/strahlenexposition/`);
   await page.getByLabel("Name *").fill("Anna");
   await page.getByRole("button", { name: "Person anlegen" }).click();
   const start = page.getByRole("form", { name: "Aufenthalt starten" }).first();

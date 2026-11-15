@@ -27,11 +27,20 @@ const serwist = new Serwist({
     cleanupOutdatedCaches: true,
     // Next.js hängt bei Client-Navigation `?_rsc=…` an die RSC-Payload-Anfragen.
     ignoreURLParametersMatching: [/^_rsc$/, /^utm_/],
-    // `/hinweise` (ohne Schrägstrich) auf `/hinweise/index.html` abbilden.
-    urlManipulation: ({ url }) =>
-      url.pathname.endsWith("/") || url.pathname.includes(".")
-        ? []
-        : [new URL(`${url.pathname}/index.html`, url.origin)],
+    urlManipulation: ({ url }) => {
+      const varianten: URL[] = [];
+      // Alle Seiten sind statisch: Suchparameter (`/?ueber`, Filter in Links) ändern
+      // nichts an der Datei. Ohne das landen solche Adressen offline auf der 404-Seite.
+      if (url.search) {
+        varianten.push(new URL(url.pathname, url.origin));
+        if (url.pathname.endsWith("/")) varianten.push(new URL(`${url.pathname}index.html`, url.origin));
+      }
+      // `/app/hinweise` (ohne Schrägstrich) auf `/app/hinweise/index.html` abbilden.
+      if (!url.pathname.endsWith("/") && !url.pathname.includes(".")) {
+        varianten.push(new URL(`${url.pathname}/index.html`, url.origin));
+      }
+      return varianten;
+    },
     // Unbekannte Adressen zeigen offline die 404-Seite statt eines Browserfehlers.
     navigateFallback: "/404.html",
   },

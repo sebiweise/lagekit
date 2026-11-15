@@ -15,16 +15,16 @@ test("Dosisüberwachung: Trupp, laufender Aufenthalt, Nachtrag, Ampel, Nachweis"
   // Feste Uhr, damit Dosiswerte exakt prüfbar sind.
   await page.clock.install({ time: new Date("2026-11-14T10:00:00") });
 
-  await page.goto(`${baseURL}/tools/strahlenexposition/`);
+  await page.goto(`${baseURL}/app/tools/strahlenexposition/`);
   await expect(page.getByText("Kein Einsatz aktiv").first()).toBeVisible();
 
-  await page.goto(`${baseURL}/einsatz/`);
+  await page.goto(`${baseURL}/app/einsatz/`);
   await page.locator("#einsatz-stichwort").fill("ABC 2");
   await page.getByRole("button", { name: "Einsatz anlegen" }).click();
   await expect(page.getByTestId("kopf-einsatz")).toHaveText("ABC 2");
 
   // Kachel auf der Startseite führt zum Tool.
-  await page.goto(`${baseURL}/`);
+  await page.goto(`${baseURL}/app/`);
   await page.getByRole("main").getByRole("link", { name: /Strahlenexposition/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Strahlenexposition" })).toBeVisible();
 
@@ -80,7 +80,7 @@ test("Dosisüberwachung: Trupp, laufender Aufenthalt, Nachtrag, Ampel, Nachweis"
   ).toHaveText("85,300 mSv");
 
   // CSV-Export.
-  await page.goto(`${baseURL}/tools/strahlenexposition/`);
+  await page.goto(`${baseURL}/app/tools/strahlenexposition/`);
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: "Gesamtübersicht (CSV)" }).click();
   expect((await download).suggestedFilename()).toMatch(/^lagekit-2026-11-14-abc-2-dosis\.csv$/);
@@ -88,12 +88,12 @@ test("Dosisüberwachung: Trupp, laufender Aufenthalt, Nachtrag, Ampel, Nachweis"
 
 test("Trupp: Messwert in Sv/h wechseln und Aufenthalt für den Trupp nachtragen", async ({ page }) => {
   await page.clock.install({ time: new Date("2026-11-14T10:00:00") });
-  await page.goto(`${baseURL}/einsatz/`);
+  await page.goto(`${baseURL}/app/einsatz/`);
   await page.locator("#einsatz-stichwort").fill("ABC 3");
   await page.getByRole("button", { name: "Einsatz anlegen" }).click();
   await expect(page.getByTestId("kopf-einsatz")).toHaveText("ABC 3");
 
-  await page.goto(`${baseURL}/tools/strahlenexposition/`);
+  await page.goto(`${baseURL}/app/tools/strahlenexposition/`);
   for (const name of ["Meier", "Schulz"]) {
     await page.getByLabel("Name *").fill(name);
     await page.getByLabel("Trupp", { exact: true }).fill("AT 1");

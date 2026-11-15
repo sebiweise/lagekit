@@ -40,7 +40,7 @@ test("Gemeinsam arbeiten offline: Beitritt per Code, Freigabe durch den Host, Ab
   const hostKontext = await browser.newContext();
   await ohneDienst(hostKontext);
   const host = await hostKontext.newPage();
-  await host.goto(`${baseURL}/einsatz/`);
+  await host.goto(`${baseURL}/app/einsatz/`);
   await host.locator("#einsatz-stichwort").fill("ABC 2");
   await host.getByRole("button", { name: "Einsatz anlegen" }).click();
   await expect(host.getByTestId("kopf-einsatz")).toHaveText("ABC 2");
@@ -53,7 +53,7 @@ test("Gemeinsam arbeiten offline: Beitritt per Code, Freigabe durch den Host, Ab
   // Gast: anderes Gerät, Beitritt offline.
   const gastKontext = await browser.newContext();
   const gast = await gastKontext.newPage();
-  await gast.goto(`${baseURL}/sitzung/`);
+  await gast.goto(`${baseURL}/app/sitzung/`);
   await gast.getByLabel("Name *").fill("Schmidt");
   await gast.getByLabel("Funktion").fill("Führungsassistent");
   await gast.getByLabel("Fahrzeug").fill("ELW 1");
@@ -106,7 +106,7 @@ test("Gemeinsam arbeiten offline: Beitritt per Code, Freigabe durch den Host, Ab
 
   // Ein zweiter Tab auf dem Host arbeitet mit: Seine Einträge erreichen den Gast.
   const hostTab2 = await hostKontext.newPage();
-  await hostTab2.goto(`${baseURL}/tools/einsatztagebuch/`);
+  await hostTab2.goto(`${baseURL}/app/tools/einsatztagebuch/`);
   await expect(hostTab2.getByTestId("sitzung-anderer-tab")).toBeVisible();
   await hostTab2.getByLabel("Inhalt").fill("Aus dem zweiten Tab des Hosts");
   await hostTab2.getByLabel("Inhalt").press("Enter");
@@ -136,7 +136,7 @@ test("Host kann eine Beitrittsanfrage ablehnen", async ({ browser }) => {
   const hostKontext = await browser.newContext();
   await ohneDienst(hostKontext);
   const host = await hostKontext.newPage();
-  await host.goto(`${baseURL}/einsatz/`);
+  await host.goto(`${baseURL}/app/einsatz/`);
   await host.locator("#einsatz-stichwort").fill("ABC 3");
   await host.getByRole("button", { name: "Einsatz anlegen" }).click();
   await host.getByRole("link", { name: "Gemeinsam" }).click();
@@ -144,7 +144,7 @@ test("Host kann eine Beitrittsanfrage ablehnen", async ({ browser }) => {
   await host.getByRole("button", { name: "Sitzung starten" }).click();
 
   const gast = await (await browser.newContext()).newPage();
-  await gast.goto(`${baseURL}/sitzung/`);
+  await gast.goto(`${baseURL}/app/sitzung/`);
   await gast.getByLabel("Name *").fill("Unbekannt");
   await gast.getByRole("button", { name: "Offline mit QR-Code" }).click();
   await gast.getByRole("button", { name: "Beitreten" }).click();
@@ -168,7 +168,7 @@ test("Gemeinsam arbeiten mit Kurzcode: Host sieht die Anfrage auf jeder Seite un
   const hostKontext = await browser.newContext();
   await dienst(hostKontext, "1");
   const host = await hostKontext.newPage();
-  await host.goto(`${baseURL}/einsatz/`);
+  await host.goto(`${baseURL}/app/einsatz/`);
   await host.locator("#einsatz-stichwort").fill("Hochwasser");
   await host.getByRole("button", { name: "Einsatz anlegen" }).click();
   await host.getByRole("link", { name: "Gemeinsam" }).click();
@@ -182,7 +182,7 @@ test("Gemeinsam arbeiten mit Kurzcode: Host sieht die Anfrage auf jeder Seite un
   const gastKontext = await browser.newContext();
   await dienst(gastKontext, "2");
   const gast = await gastKontext.newPage();
-  await gast.goto(`${baseURL}/sitzung/`);
+  await gast.goto(`${baseURL}/app/sitzung/`);
   await gast.getByLabel("Name *").fill("Schmidt");
   await gast.getByLabel("Fahrzeug").fill("ELW 2");
   await gast.getByLabel("Kurzcode vom Host").fill(`${kurzcode.slice(0, 3)} ${kurzcode.slice(3)}`);
@@ -199,7 +199,7 @@ test("Gemeinsam arbeiten mit Kurzcode: Host sieht die Anfrage auf jeder Seite un
   // Ein zweiter Tab auf dem Gast übernimmt die Sitzung nicht, arbeitet aber mit:
   // Seine Einträge gehen über den ersten Tab an den Host, Einträge des Hosts erscheinen auch hier.
   const zweiterTab = await gastKontext.newPage();
-  await zweiterTab.goto(`${baseURL}/tools/einsatztagebuch/`);
+  await zweiterTab.goto(`${baseURL}/app/tools/einsatztagebuch/`);
   await expect(zweiterTab.getByTestId("sitzung-anderer-tab")).toBeVisible();
   await zweiterTab.getByLabel("Inhalt").fill("Aus dem zweiten Tab");
   await zweiterTab.getByLabel("Inhalt").press("Enter");
@@ -235,7 +235,7 @@ test("Sitzung übersteht Neuladen: Gast verbindet sich selbst neu, Änderungen a
   const hostKontext = await browser.newContext();
   await dienst(hostKontext, "1");
   const host = await hostKontext.newPage();
-  await host.goto(`${baseURL}/einsatz/`);
+  await host.goto(`${baseURL}/app/einsatz/`);
   await host.locator("#einsatz-stichwort").fill("Sturm");
   await host.getByRole("button", { name: "Einsatz anlegen" }).click();
   await host.getByRole("link", { name: "Gemeinsam" }).click();
@@ -246,7 +246,7 @@ test("Sitzung übersteht Neuladen: Gast verbindet sich selbst neu, Änderungen a
   const gastKontext = await browser.newContext();
   await dienst(gastKontext, "2");
   const gast = await gastKontext.newPage();
-  await gast.goto(`${baseURL}/sitzung/`);
+  await gast.goto(`${baseURL}/app/sitzung/`);
   await gast.getByLabel("Name *").fill("Schmidt");
   await gast.getByLabel("Kurzcode vom Host").fill(kurzcode);
   await gast.getByRole("button", { name: "Beitreten" }).click();
@@ -274,7 +274,7 @@ test("Sitzung übersteht Neuladen: Gast verbindet sich selbst neu, Änderungen a
 
   // Host ist wieder da und schreibt selbst einen Eintrag mit derselben Nummer.
   const host2 = await hostKontext.newPage();
-  await host2.goto(`${baseURL}/`);
+  await host2.goto(`${baseURL}/app/`);
   await expect(host2.getByTestId("sitzung-status")).toContainText("Kurzcode");
   await tagebuch(host2);
   await host2.getByLabel("Inhalt").fill("Eintrag des Hosts");
@@ -301,10 +301,10 @@ test("Kurzcode zur Laufzeit ausgeschaltet (Docker): nur QR-Weg, Hinweise nennen 
   // So liefert das Docker-Image die Einstellung mit LAGEKIT_KURZCODE_DIENST=false aus.
   await kontext.route("**/konfiguration.json", (route) => route.fulfill({ json: { kurzcodeDienst: "false" } }));
   const seite = await kontext.newPage();
-  await seite.goto(`${baseURL}/einsatz/`);
+  await seite.goto(`${baseURL}/app/einsatz/`);
   await seite.locator("#einsatz-stichwort").fill("Brand");
   await seite.getByRole("button", { name: "Einsatz anlegen" }).click();
-  await seite.goto(`${baseURL}/sitzung/`);
+  await seite.goto(`${baseURL}/app/sitzung/`);
   await expect(seite.getByTestId("kurzcode-aus")).toBeVisible();
   await expect(seite.getByRole("button", { name: "Mit Kurzcode" })).toHaveCount(0);
   await expect(seite.getByLabel("Kurzcode vom Host")).toHaveCount(0);
@@ -314,7 +314,7 @@ test("Kurzcode zur Laufzeit ausgeschaltet (Docker): nur QR-Weg, Hinweise nennen 
   await expect(seite.getByTestId("kurzcode-aus")).toContainText("ausgeschaltet");
   await expect(seite.getByText("Kurzcode wird angefordert")).toHaveCount(0);
 
-  await seite.goto(`${baseURL}/hinweise/`);
+  await seite.goto(`${baseURL}/app/hinweise/`);
   await expect(seite.getByTestId("dienst-anzeige")).toContainText("ausgeschaltet");
   expect(aufgerufen).toBe(false);
   await kontext.close();
@@ -324,9 +324,9 @@ test("Gehosteter Dienst als Standard: Datenschutzhinweis nennt die Adresse", asy
   const kontext = await browser.newContext();
   await dienstImTest(kontext, speicherImArbeitsspeicher(), "1");
   const seite = await kontext.newPage();
-  await seite.goto(`${baseURL}/sitzung/`);
+  await seite.goto(`${baseURL}/app/sitzung/`);
   await expect(seite.getByTestId("dienst-hinweis")).toContainText("lagekit.vercel.app");
-  await seite.goto(`${baseURL}/hinweise/`);
+  await seite.goto(`${baseURL}/app/hinweise/`);
   await expect(seite.getByTestId("dienst-anzeige")).toContainText("lagekit.vercel.app");
   await expect(seite.getByRole("link", { name: /Fehler melden/ })).toHaveAttribute(
     "href",

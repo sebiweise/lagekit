@@ -29,7 +29,7 @@ export function Linksammlung() {
     <div className="flex flex-col gap-6">
       <OfflineHinweis />
 
-      <Link href="/suche/" className={buttonVariants({ size: "lg", className: "justify-start" })}>
+      <Link href="/app/suche/" className={buttonVariants({ size: "lg", className: "justify-start" })}>
         <Search aria-hidden />
         Etwas suchen? Zur Suche
       </Link>

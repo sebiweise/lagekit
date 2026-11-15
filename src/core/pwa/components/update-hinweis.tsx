@@ -28,7 +28,7 @@ export function UpdateHinweis() {
   const pwa = usePwaZustand();
   const pfad = usePathname();
   const [ausgeblendet, setAusgeblendet] = useState<string | null>(spaeterGewaehlt);
-  if (!pwa.updateWartet || pfad === "/aenderungen/") return null;
+  if (!pwa.updateWartet || pfad === "/app/aenderungen/") return null;
 
   const kennung = pwa.neueVersion ? `${pwa.neueVersion.version}+${pwa.neueVersion.commit}` : "unbekannt";
   if (ausgeblendet === kennung) return null;
@@ -48,7 +48,7 @@ export function UpdateHinweis() {
           </span>
         )}
         <Link
-          href="/aenderungen/"
+          href="/app/aenderungen/"
           className="font-medium underline underline-offset-4 hover:text-foreground"
           data-testid="update-hinweis-link"
         >

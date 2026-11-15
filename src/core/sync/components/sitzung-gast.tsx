@@ -77,7 +77,7 @@ export function SitzungGast({ sitzung }: { sitzung: GastSitzung }) {
                 ))}
               </ul>
             </section>
-            <Link href="/" className={buttonVariants({ variant: "outline", className: "self-start" })}>
+            <Link href="/app/" className={buttonVariants({ variant: "outline", className: "self-start" })}>
               Zu den Tools
             </Link>
           </>

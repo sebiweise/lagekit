@@ -83,7 +83,7 @@ export function EinsatzExport() {
   if (daten === null) {
     return (
       <p>
-        Kein Einsatz aktiv. <Link href="/einsatz/" className="underline">Einsatz auswählen</Link>
+        Kein Einsatz aktiv. <Link href="/app/einsatz/" className="underline">Einsatz auswählen</Link>
       </p>
     );
   }
@@ -276,19 +276,19 @@ function ExportInhalt({ daten }: { daten: EinsatzDaten }) {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-3">
-            <Link href={exportHref("/export/bericht/", einsatz.id)} className={buttonVariants()}>
+            <Link href={exportHref("/app/export/bericht/", einsatz.id)} className={buttonVariants()}>
               <Printer /> Einsatzbericht öffnen
             </Link>
             <Button variant="outline" disabled={arbeitet} onClick={() => void herunterladen("pdf")} data-testid="pdf-export">
               <Download /> PDF herunterladen
             </Button>
             {istAktiv && daten.eintraege.length > 0 && (
-              <Link href="/tools/einsatztagebuch/druck/" className={buttonVariants({ variant: "outline" })}>
+              <Link href="/app/tools/einsatztagebuch/druck/" className={buttonVariants({ variant: "outline" })}>
                 Nur Tagebuch
               </Link>
             )}
             {istAktiv && daten.personen.length > 0 && (
-              <Link href="/tools/strahlenexposition/nachweis/" className={buttonVariants({ variant: "outline" })}>
+              <Link href="/app/tools/strahlenexposition/nachweis/" className={buttonVariants({ variant: "outline" })}>
                 Dosisnachweise je Person
               </Link>
             )}
@@ -416,7 +416,7 @@ function ExportInhalt({ daten }: { daten: EinsatzDaten }) {
           </CardTitle>
           <CardDescription>
             Zum Beispiel Drohnenaufnahmen, Fotos oder Lagepläne für den ZIP-Export. Ansehen und öffnen im{" "}
-            <Link href="/tools/dateien/" className="underline">Dateibrowser</Link>.
+            <Link href="/app/tools/dateien/" className="underline">Dateibrowser</Link>.
           </CardDescription>
         </CardHeader>
         <CardContent>

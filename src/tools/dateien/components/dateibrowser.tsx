@@ -143,7 +143,7 @@ export function Dateibrowser() {
   if (einsatz === null) {
     return (
       <p>
-        Kein Einsatz aktiv. <Link href="/einsatz/" className="underline">Einsatz auswählen</Link>
+        Kein Einsatz aktiv. <Link href="/app/einsatz/" className="underline">Einsatz auswählen</Link>
       </p>
     );
   }
@@ -281,7 +281,7 @@ export function Dateibrowser() {
         {fehler && <p role="alert" className="text-destructive">{fehler}</p>}
         <p className="text-sm text-muted-foreground">
           Datei antippen öffnet die Vorschau. Im Einsatztagebuch „/“ tippen, um auf eine Datei zu verweisen. Ordner verwalten unter{" "}
-          <Link href="/export/#ordner" className="underline">Export, Druck, Mail</Link>.
+          <Link href="/app/export/#ordner" className="underline">Export, Druck, Mail</Link>.
         </p>
       </div>
     );

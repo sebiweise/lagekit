@@ -13,7 +13,7 @@ Lagekit ist eine Web-Toolbox, die Einsatzkräften im ELW Erfassung, Dokumentatio
 
 ## Technik
 
-Lagekit ist eine statisch exportierte Next.js-PWA: Ein Service Worker hält alle Dateien vor, die Daten liegen in IndexedDB.
+Lagekit ist eine statisch exportierte Next.js-PWA: Ein Service Worker hält alle Dateien vor, die Daten liegen in IndexedDB. Die Website besteht aus drei Teilen: der Startseite unter `/`, der Dokumentation unter `/docs/` (beim Build aus den Markdown-Dateien in `docs/` erzeugt) und der App unter `/app/`. Installierte Apps starten unter `/app/`; der Service Worker deckt die ganze Domain ab, damit auch die Dokumentation offline verfügbar ist.
 
 | Baustein | Wahl | Grund |
 | --- | --- | --- |
@@ -25,7 +25,7 @@ Lagekit ist eine statisch exportierte Next.js-PWA: Ein Service Worker hält alle
 | UI | Tailwind CSS und shadcn/ui in der Base-UI-Variante (`@base-ui/react`, Stil `base-vega` in `components.json`); Dialog, Sheet, Popover, Toggle Group, Collapsible, Toast u. a. bauen auf Base UI auf, Radix wird nicht verwendet | Zugänglich (Fokus, Tastatur, Screenreader), Dunkelmodus; nur eine Primitiv-Bibliothek, im eigenen Bundle und damit im Precache |
 | Export | JSON und CSV direkt im Browser, PDF über Druckansicht mit Print-CSS | Keine schwere PDF-Bibliothek nötig, funktioniert offline |
 | Tests | Vitest für Rechenlogik und Datenbank, Playwright mit abgeschaltetem Server | Rechenergebnisse und Offline-Fähigkeit sind die kritischen Punkte |
-| Auslieferung | Statisches Hosting (z. B. Vercel), Docker-Image und ZIP je Release | Kein laufender Anwendungsserver nötig, siehe [README](../README.md#selbst-hosten) |
+| Auslieferung | Statisches Hosting (z. B. Vercel), Docker-Image und ZIP je Release | Kein laufender Anwendungsserver nötig, siehe [Selbst betreiben](betrieb/selbst-betreiben.md) |
 | Paketmanager | pnpm, Version über `packageManager` in `package.json` | Gleiche Version lokal, in CI und beim Hoster |
 
 Technische Regeln:
