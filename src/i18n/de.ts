@@ -36,6 +36,7 @@ export const de = {
     einsatz: "Einsatz",
     sitzung: "Gemeinsam",
     suche: "Suche",
+    arbeitsbereich: "Arbeitsbereich",
     keinEinsatz: "Kein Einsatz aktiv",
   },
   darstellung: {
@@ -92,7 +93,7 @@ export const de = {
       "Lagekit ist ein Hilfsmittel zur Dokumentation und Berechnung. Es ersetzt weder Messgeräte wie Dosimeter noch die Verantwortung der Einsatzleitung. Alle Ergebnisse sind vor einer Entscheidung zu prüfen. Die Nutzung erfolgt ohne Gewähr.",
     datenTitel: "Daten und Datenschutz",
     daten:
-      "Alle Eingaben werden ausschließlich im Browser dieses Geräts gespeichert. Es gibt kein Konto, keinen Server und kein Tracking. Für Exporte und deren Weitergabe ist die nutzende Einheit verantwortlich.",
+      "Alle Eingaben werden ausschließlich im Browser dieses Geräts gespeichert. Es gibt kein Konto, keinen Server und kein Tracking. Für Exporte und deren Weitergabe ist die nutzende Einheit verantwortlich. Ausnahmen, nur bei Internet: Die Karte lädt Kartenbilder von OpenStreetMap, und wer „Standort“ oder die Adresssuche antippt, schickt Koordinaten bzw. Suchbegriff an den Adressdienst von OpenStreetMap (Nominatim). Für „Gemeinsam arbeiten“ per Kurzcode laufen nur Verbindungsdaten kurz über einen Vermittlungsdienst.",
     datenverlustTitel: "Datenverlust vermeiden",
     datenverlust:
       "Browser können lokale Daten löschen, etwa beim Leeren des Verlaufs. Installieren Sie Lagekit als App und exportieren Sie Einsätze regelmäßig.",

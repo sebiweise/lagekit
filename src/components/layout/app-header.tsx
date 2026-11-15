@@ -15,6 +15,7 @@ export function AppHeader() {
     { href: "/", text: t.nav.start },
     { href: "/einsatz/", text: t.nav.einsatz },
     { href: "/suche/", text: t.nav.suche },
+    { href: "/arbeitsbereich/", text: t.nav.arbeitsbereich },
     { href: "/sitzung/", text: t.nav.sitzung, beta: true },
   ];
 
