@@ -5,6 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { DruckenKnopf } from "@/core/export/components/drucken-knopf";
 import { useAktiverEinsatz } from "@/core/einsatz/hooks";
 import { APP_VERSION } from "@/core/version";
+import { cn } from "@/lib/utils";
 import { formatDatumZeit, formatZeit } from "@/lib/zeit";
 import { useEintraege } from "../hooks";
 import { chronologisch, korrekturen } from "../logic";
@@ -79,7 +80,7 @@ export function TagebuchDruck() {
                 <td className="py-1 pr-2">{e.art}</td>
                 <td className="py-1 pr-2">{e.von || e.an ? `${e.von || "?"} → ${e.an || "?"}` : ""}</td>
                 <td className="py-1 pr-2">
-                  <span className={ersetzt ? "line-through" : undefined}>{e.inhalt}</span>
+                  <span className={cn("whitespace-pre-wrap", ersetzt && "line-through")}>{e.inhalt}</span>
                   {korrigiert && <span className="block text-xs">(korrigiert Nr. {korrigiert.nr})</span>}
                   {ersetzt && <span className="block text-xs">(korrigiert durch Nr. {ersetzt.nr})</span>}
                 </td>
