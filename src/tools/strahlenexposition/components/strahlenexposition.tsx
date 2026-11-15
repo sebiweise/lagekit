@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { Download, Printer, Square, UserPlus, X } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleZeile } from "@/components/ui/collapsible";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDb } from "@/core/db/db";
@@ -95,26 +96,30 @@ export function Strahlenexposition() {
                       <Button variant="destructive" size="lg" className="w-full sm:w-auto" onClick={() => void aufenthaltBeenden(getDb(), laufendeIds)}>
                         <Square /> Trupp beenden ({laufendeIds.length})
                       </Button>
-                      <details className="rounded-md border p-3">
-                        <summary className="cursor-pointer font-medium">Neuer Messwert oder Ortswechsel für den Trupp</summary>
-                        <div className="mt-3">
-                          <AufenthaltStart
-                            idPrefix={`trupp-${index}-wechsel`}
-                            personIds={laufendeIds}
-                            beschriftung="Neuen Wert für den Trupp übernehmen"
-                            wechseln
-                            ortVorgabe={aufenthaltOrt(jePerson, laufendeIds[0])}
-                          />
-                        </div>
-                      </details>
+                      <Collapsible className="rounded-md border px-3 py-1">
+                        <CollapsibleZeile className="font-medium">Neuer Messwert oder Ortswechsel für den Trupp</CollapsibleZeile>
+                        <CollapsibleContent className="pb-2">
+                          <div className="mt-3">
+                            <AufenthaltStart
+                              idPrefix={`trupp-${index}-wechsel`}
+                              personIds={laufendeIds}
+                              beschriftung="Neuen Wert für den Trupp übernehmen"
+                              wechseln
+                              ortVorgabe={aufenthaltOrt(jePerson, laufendeIds[0])}
+                            />
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
                     </>
                   )}
-                  <details className="rounded-md border p-3">
-                    <summary className="cursor-pointer font-medium">Aufenthalt für den Trupp nachtragen</summary>
-                    <div className="mt-3">
-                      <AufenthaltNachtragen idPrefix={`trupp-${index}-nachtrag`} personIds={mitglieder.map((p) => p.id)} />
-                    </div>
-                  </details>
+                  <Collapsible className="rounded-md border px-3 py-1">
+                    <CollapsibleZeile className="font-medium">Aufenthalt für den Trupp nachtragen</CollapsibleZeile>
+                    <CollapsibleContent className="pb-2">
+                      <div className="mt-3">
+                        <AufenthaltNachtragen idPrefix={`trupp-${index}-nachtrag`} personIds={mitglieder.map((p) => p.id)} />
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
                 </CardContent>
               </Card>
             );
@@ -187,12 +192,14 @@ export function Strahlenexposition() {
           setzt eine gleichbleibende Ortsdosisleistung je Aufenthalt voraus.
         </p>
 
-        <details className="rounded-xl border p-5">
-          <summary className="cursor-pointer text-lg font-semibold">Richtwerte einstellen</summary>
-          <div className="mt-4">
-            <RichtwerteEditor key={richtwerte.map((r) => r.grenzeMsv).join("|")} richtwerte={richtwerte} />
-          </div>
-        </details>
+        <Collapsible className="rounded-xl border p-5">
+          <CollapsibleZeile className="text-lg font-semibold">Richtwerte einstellen</CollapsibleZeile>
+          <CollapsibleContent>
+            <div className="mt-4">
+              <RichtwerteEditor key={richtwerte.map((r) => r.grenzeMsv).join("|")} richtwerte={richtwerte} />
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </div>
     </div>

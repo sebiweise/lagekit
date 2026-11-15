@@ -31,9 +31,9 @@ test("eigene Wahl bleibt nach dem Neuladen, ohne Aufblitzen", async ({ page }) =
   const hintergrund = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
   const hell = await hintergrund();
 
-  await page.getByRole("radio", { name: "Hell" }).click();
+  await page.getByRole("button", { name: "Hell" }).click();
   await expect(wahl).toHaveAttribute("data-farbschema", "hell");
-  await page.getByRole("radio", { name: "Dunkel" }).click();
+  await page.getByRole("button", { name: "Dunkel" }).click();
   await expect(wahl).toHaveAttribute("data-farbschema", "dunkel");
   await expect(html(page)).toHaveClass(/\bdark\b/);
 

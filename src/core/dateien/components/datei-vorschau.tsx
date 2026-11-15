@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { ChevronLeft, ChevronRight, Download, ExternalLink, X } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { getDb } from "@/core/db/db";
 import { dateiHerunterladen } from "@/core/export/download";
 import { formatDatumZeit } from "@/lib/zeit";
@@ -59,16 +60,8 @@ export function DateiVorschau() {
     () => anzeige,
     () => null,
   );
-  const dialog = useRef<HTMLDialogElement>(null);
   const [geladen, setGeladen] = useState<Geladen | null>(null);
   const ziel = aktuell ? aktuell.liste[aktuell.index] : null;
-
-  useEffect(() => {
-    const d = dialog.current;
-    if (!d) return;
-    if (aktuell && !d.open) d.showModal();
-    if (!aktuell && d.open) d.close();
-  }, [aktuell]);
 
   useEffect(() => {
     if (!aktuell || !ziel) return;
@@ -103,29 +96,28 @@ export function DateiVorschau() {
   const mehrere = (aktuell?.liste.length ?? 0) > 1;
 
   return (
-    <dialog
-      ref={dialog}
-      aria-label={`Datei ${name}`}
-      data-testid="datei-vorschau"
-      className="m-auto h-[min(92dvh,60rem)] w-[min(96vw,80rem)] max-w-none rounded-xl border bg-card p-0 text-card-foreground backdrop:bg-black/70 print:hidden"
-      onClose={() => setzen(null)}
-      onKeyDown={(e) => {
-        if (e.key === "ArrowLeft") blaettern(-1);
-        if (e.key === "ArrowRight") blaettern(1);
-      }}
-    >
+    <Dialog open={!!aktuell} onOpenChange={(offen) => !offen && setzen(null)}>
+      <DialogContent
+        showCloseButton={false}
+        data-testid="datei-vorschau"
+        className="h-[min(92dvh,60rem)] w-[min(96vw,80rem)] max-w-none gap-0 p-0"
+        onKeyDown={(e) => {
+          if (e.key === "ArrowLeft") blaettern(-1);
+          if (e.key === "ArrowRight") blaettern(1);
+        }}
+      >
       {aktuell && ziel && (
         <div className="flex h-full flex-col">
           <div className="flex flex-wrap items-center gap-2 border-b px-4 py-2">
             <div className="min-w-0 flex-1">
-              <p className="truncate font-semibold" title={ziel.pfad}>
+              <DialogTitle className="truncate text-base" title={ziel.pfad}>
                 {name}
-              </p>
-              <p className="truncate text-sm text-muted-foreground">
+              </DialogTitle>
+              <DialogDescription className="truncate">
                 {ziel.ordner}/{ziel.pfad}
                 {passt && "datei" in passt && ` · ${groesseText(passt.datei.size)} · ${formatDatumZeit(new Date(passt.datei.lastModified))}`}
                 {mehrere && ` · ${aktuell.index + 1} von ${aktuell.liste.length}`}
-              </p>
+              </DialogDescription>
             </div>
             {mehrere && (
               <>
@@ -153,9 +145,9 @@ export function DateiVorschau() {
                 </Button>
               </>
             )}
-            <Button size="icon" variant="ghost" aria-label="Vorschau schließen" onClick={() => dialog.current?.close()}>
+            <DialogClose render={<Button size="icon" variant="ghost" />} aria-label="Vorschau schließen">
               <X />
-            </Button>
+            </DialogClose>
           </div>
           <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto bg-muted/40 p-2">
             {!passt && <p className="text-muted-foreground">Wird geladen …</p>}
@@ -184,6 +176,7 @@ export function DateiVorschau() {
           </div>
         </div>
       )}
-    </dialog>
+      </DialogContent>
+    </Dialog>
   );
 }
