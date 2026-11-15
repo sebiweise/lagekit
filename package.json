@@ -30,7 +30,7 @@
     "@playwright/test": "1.65.0",
     "@serwist/build": "^9.5.13",
     "@tailwindcss/turbopack": "4.3.5",
-    "@types/node": "^20",
+    "@types/node": "^26",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -45,5 +45,8 @@
     "typescript": "^6",
     "vitest": "^5.1.0"
   },
-  "packageManager": "pnpm@12.18.0"
+  "packageManager": "pnpm@12.18.0",
+  "engines": {
+    "node": "26.x"
+  }
 }
