@@ -31,6 +31,7 @@ Regeln für diese Datei:
 ### Behoben
 
 - Link zu den Giftinformationszentren zeigt auf die neue Adresse beim BfR.
+- Kopfzeile am Handy (auch als installierte App auf dem iPhone): „Kein Einsatz aktiv“ wurde auf „K…“ gekürzt. Der Knopf zum Anlegen zeigt am Handy nur noch das Plus, die Uhr ist etwas kleiner und Stichwort, Ort und Laufzeit des Einsatzes haben mehr Platz. Am PC bleibt die Kopfzeile wie bisher.
 
 ## [0.4.0] - 2026-11-15
 
