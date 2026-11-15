@@ -1,16 +1,5 @@
-import { execSync } from "node:child_process";
 import type { NextConfig } from "next";
-import packageJson from "./package.json" with { type: "json" };
-
-function gitCommit(): string {
-  try {
-    return execSync("git rev-parse --short HEAD", { stdio: ["ignore", "pipe", "ignore"] })
-      .toString()
-      .trim();
-  } catch {
-    return "unbekannt";
-  }
-}
+import { appChangelog, appCommit, appVersion } from "./scripts/build-info.mjs";
 
 const nextConfig: NextConfig = {
   // Reine statische Dateien in `out/`: kein Server, überall hostbar.
@@ -20,8 +9,10 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   images: { unoptimized: true },
   env: {
-    NEXT_PUBLIC_APP_VERSION: packageJson.version,
-    NEXT_PUBLIC_APP_COMMIT: gitCommit(),
+    NEXT_PUBLIC_APP_VERSION: appVersion(),
+    NEXT_PUBLIC_APP_COMMIT: appCommit(),
+    // Wird in der App als „Was ist neu“ angezeigt und mit dem Update verglichen.
+    NEXT_PUBLIC_APP_CHANGELOG: JSON.stringify(appChangelog()),
   },
   // Cache Components und Partial Prefetching setzen Partial Prerendering voraus,
   // das mit `output: "export"` nicht läuft. Für eine reine Client-App unnötig.

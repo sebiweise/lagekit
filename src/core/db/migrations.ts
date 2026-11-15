@@ -9,9 +9,12 @@ import type { Transaction } from "dexie";
  *   (Dexie übernimmt nicht genannte Tabellen unverändert).
  * - Datenumbauten gehören in `upgrade` und müssen ohne Netz laufen.
  * - Tool-Module bringen ihre Tabellen über eine eigene Version hier ein.
+ * - `beschreibung` sagt in einem Satz für Einsatzkräfte, was beim Update mit
+ *   den gespeicherten Daten passiert. Die App zeigt ihn vor dem Update an.
  */
 export interface Migration {
   version: number;
+  beschreibung: string;
   stores: Record<string, string | null>;
   upgrade?: (tx: Transaction) => Promise<void> | void;
 }
@@ -19,6 +22,7 @@ export interface Migration {
 export const migrations: Migration[] = [
   {
     version: 1,
+    beschreibung: "Neue Tabelle für Einsätze. Vorhandene Daten bleiben unverändert.",
     stores: {
       // Primärschlüssel `id` (UUID), Indizes für Liste und Filter.
       einsaetze: "id, status, beginn",
@@ -26,6 +30,7 @@ export const migrations: Migration[] = [
   },
   {
     version: 2,
+    beschreibung: "Neue Tabelle für Geräteeinstellungen, z. B. den aktiven Einsatz. Vorhandene Daten bleiben unverändert.",
     stores: {
       // Geräteeinstellungen als Schlüssel-Wert-Paare, z. B. der aktive Einsatz.
       einstellungen: "schluessel",
@@ -33,6 +38,7 @@ export const migrations: Migration[] = [
   },
   {
     version: 3,
+    beschreibung: "Neue Tabellen für das Tool Strahlenexposition. Vorhandene Daten bleiben unverändert.",
     stores: {
       // Tool Strahlenexposition (src/tools/strahlenexposition).
       dosisPersonen: "id, einsatzId",
@@ -41,6 +47,7 @@ export const migrations: Migration[] = [
   },
   {
     version: 4,
+    beschreibung: "Neue Tabelle für das Einsatztagebuch. Vorhandene Daten bleiben unverändert.",
     stores: {
       // Tool Einsatztagebuch (src/tools/einsatztagebuch). Einträge werden nie geändert.
       tagebuchEintraege: "id, einsatzId, [einsatzId+nr]",
@@ -48,9 +55,13 @@ export const migrations: Migration[] = [
   },
   {
     version: 5,
+    beschreibung: "Neue Tabelle für den Suchverlauf der externen Tools. Vorhandene Daten bleiben unverändert.",
     stores: {
       // Tool Externe Tools (src/tools/recherche): Suchverlauf je Einsatz.
       rechercheSuchen: "id, einsatzId",
     },
   },
 ];
+
+/** Neueste Schema-Version, die dieser Build mitbringt. */
+export const SCHEMA_VERSION = Math.max(...migrations.map((m) => m.version));

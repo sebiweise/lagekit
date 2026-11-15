@@ -13,7 +13,7 @@ Meilensteine **M0** bis **M3**: Die App startet offline, Einsätze lassen sich v
 - Statischer Export mit Next.js (`out/`), kein Server, keine extern geladenen Schriften oder Skripte
 - Service Worker (Serwist) mit Precache aller Dateien, Web-App-Manifest, installierbar
 - Anzeige "Offline bereit", installierte Version, Netzstatus, dauerhafter Speicher, Gerätezeit
-- Updates werden erst nach Klick auf "Jetzt aktualisieren" aktiv, nie mitten im Einsatz
+- Updates werden erst nach Klick auf "Jetzt aktualisieren" aktiv, nie mitten im Einsatz. Vorher zeigt `/aenderungen/`, was die neue Version ändert und ob gespeicherte Daten umgestellt werden ([CHANGELOG.md](CHANGELOG.md))
 - Lokale Datenbank (IndexedDB über Dexie) mit Einsatz-Tabelle und Migrationsgerüst
 - Einsatz-Verwaltung unter `/einsatz/`: anlegen, aktiven Einsatz wechseln, abschließen (mit Erinnerung an die Sicherung), wieder öffnen, löschen mit Rückfrage
 - JSON-Sicherung je Einsatz oder für alles; der Import ergänzt vorhandene Daten, bei doppelten Einsätzen gewinnt die neuere Fassung
@@ -30,7 +30,7 @@ Alle Eingaben werden nur in IndexedDB im Browser des Geräts gespeichert. Es gib
 
 ## Entwicklung
 
-Voraussetzungen: Node.js 26 LTS (siehe `.nvmrc`) und pnpm (Version über `packageManager` in `package.json`, z. B. mit `corepack enable`).
+Voraussetzungen: Node.js 26 LTS (siehe `.nvmrc`) und pnpm (Version über `packageManager` in `package.json`, z. B. mit `npm install -g pnpm@12`; Corepack fehlt ab Node.js 25).
 
 ```bash
 pnpm install
@@ -49,6 +49,7 @@ pnpm test:e2e     # Playwright, braucht vorher pnpm build
 src/
   app/                 Routen (Startseite, Hinweise)
   core/
+    aenderungen/       CHANGELOG lesen, Update-Vergleich, Seite „Änderungen“
     db/                Dexie-Instanz und Migrationen
     einsatz/           Einsatz-Schema (Zod), Datenzugriff, Verwaltung
     export/            JSON-Sicherung, CSV, Datei-Download
@@ -56,7 +57,8 @@ src/
   tools/               Tool-Module; Anmeldung über registry.ts
   components/ui/       Bedienelemente (shadcn/ui)
   i18n/                Oberflächentexte
-scripts/               Service-Worker-Build, lokaler Server
+scripts/               Service-Worker-Build, Versionsangaben, Release-Hilfe, lokaler Server
+docker/                nginx-Konfiguration für das Docker-Image
 e2e/                   Playwright-Tests
 ```
 
@@ -65,6 +67,22 @@ Neue Tools bekommen einen eigenen Ordner unter `src/tools/<tool>/` mit `manifest
 ## Selbst hosten
 
 `pnpm build` erzeugt in `out/` reine statische Dateien, die jeder Webserver ausliefern kann. Wichtig: `out/sw.js` entsteht erst nach `next build`. Hoster müssen deshalb den Ordner `out/` als statische Seite ausliefern und dürfen nicht die eigene Next.js-Laufzeit verwenden. Für Vercel legt `vercel.json` das fest (Framework "Other", Ausgabeordner `out`). Der Service Worker funktioniert nur über HTTPS oder auf `localhost`. Die App muss im Wurzelverzeichnis der Domain liegen (`/`), nicht in einem Unterordner.
+
+### Docker
+
+Zu jedem [Release](https://github.com/sebiweise/lagekit/releases) gibt es ein fertiges Image (amd64 und arm64) in der GitHub Container Registry:
+
+```bash
+docker run -d --name lagekit -p 8080:8080 --restart unless-stopped ghcr.io/sebiweise/lagekit:latest
+```
+
+Tags: `latest`, die genaue Version (z. B. `0.1.0`) und `Major.Minor` (z. B. `0.1`). Das Image liefert den statischen Export über nginx ohne Root-Rechte auf Port 8080 aus; die Konfiguration steht in `docker/nginx.conf`. Für den Offline-Modus braucht der Browser HTTPS, also einen Reverse-Proxy mit Zertifikat davor (z. B. Caddy oder Traefik). Nur auf demselben Rechner reicht `http://localhost:8080`. „Gemeinsam arbeiten“ per Kurzcode braucht den Vermittlungsdienst auf Vercel und geht im Container nicht; QR-Code und Datei funktionieren.
+
+Selbst bauen: `docker build -t lagekit .`
+
+### ZIP
+
+Jedes Release hat außerdem `lagekit-<version>.zip` mit dem Inhalt von `out/` für einen beliebigen Webserver.
 
 ## Mitmachen
 

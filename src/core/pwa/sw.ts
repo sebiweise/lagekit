@@ -9,8 +9,13 @@
  * Updates: Ein neuer Service Worker bleibt im Zustand "waiting", bis die App
  * nach Bestätigung durch den Nutzer die Nachricht `SKIP_WAITING` schickt.
  * So wechselt die Version nie mitten im Einsatz.
+ *
+ * Vorher fragt die laufende App per `VERSION_INFO` nach Version, Änderungen
+ * und Datenbank-Umbauten dieses Workers, um sie vor dem Update anzuzeigen.
  */
 import { Serwist, type PrecacheEntry } from "serwist";
+import { AKTUELLE_VERSION } from "@/core/aenderungen/aktuell";
+import { VERSION_INFO_ANFRAGE } from "@/core/aenderungen/version-info";
 
 declare const self: ServiceWorkerGlobalScope & {
   __SW_MANIFEST: (PrecacheEntry | string)[] | undefined;
@@ -39,6 +44,8 @@ const serwist = new Serwist({
 self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") {
     void self.skipWaiting();
+  } else if (event.data?.type === VERSION_INFO_ANFRAGE) {
+    event.ports[0]?.postMessage(AKTUELLE_VERSION);
   }
 });
 
