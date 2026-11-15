@@ -139,7 +139,7 @@ function liesMich(daten: EinsatzDaten, anhaenge: AnhangDatei[], jetzt: Date, dat
     ...dateien.map((d) => `- ${d}`),
     anhaenge.length > 0 ? `- dateien/: ${anhaenge.length} Dateien aus verknüpften Ordnern und Anhängen` : null,
     "",
-    "einsatzbericht.html lässt sich in jedem Browser öffnen und als PDF drucken.",
+    "einsatzbericht.pdf ist der Bericht zum Drucken und Weitergeben; einsatzbericht.html zeigt denselben Inhalt im Browser.",
     "Die CSV-Dateien öffnen Excel und LibreOffice (Trennzeichen Semikolon).",
     "sicherung.json kann in Lagekit unter Einsätze > Importieren wieder eingelesen werden.",
     "",
@@ -154,8 +154,10 @@ export function paketInhalt(
   sicherung: ExportDatei,
   anhaenge: AnhangDatei[],
   jetzt: Date = new Date(),
+  pdf?: Blob,
 ): ZipEintrag[] {
   const eintraege: ZipEintrag[] = [
+    ...(pdf ? [{ pfad: "einsatzbericht.pdf", inhalt: pdf }] : []),
     { pfad: "einsatzbericht.html", inhalt: berichtHtml(daten, { anhaenge, jetzt }) },
     { pfad: "sicherung.json", inhalt: JSON.stringify(sicherung, null, 2) },
   ];

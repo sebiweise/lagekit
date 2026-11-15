@@ -24,6 +24,7 @@ Inhalt (`paketInhalt` in `einsatz-paket.ts`):
 
 `mail.ts`, zwei Wege:
 
+- Format des Anhangs wählbar, Standard ist der Einsatzbericht als PDF (`bericht-pdf.ts`, pdf-lib mit Standardschrift Helvetica, nur bei Bedarf geladen; Zeichen außerhalb von WinAnsi werden ersetzt). Das PDF liegt auch im ZIP.
 - **Im Mailprogramm öffnen** (überall): `mailto:` mit Empfänger, Betreff und Kurzbericht. Ein mailto-Link kann keine Datei anhängen; die gewählte Datei wird vorher gespeichert und muss angehängt werden. Der Link bleibt unter 1900 Zeichen (Grenze unter Windows), längere Texte werden zeilenweise gekürzt.
 - **Mit Anhang teilen** (nur wenn `navigator.canShare({ files })`, also iPhone/iPad, Android, Chrome/Edge unter Windows): Web Share API übergibt die Datei direkt an Mail oder Outlook. Empfänger lassen sich dabei nicht vorgeben.
 
