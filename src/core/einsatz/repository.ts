@@ -125,8 +125,8 @@ export function einsatzWiederOeffnen(
 /** Löscht einen Einsatz mitsamt allen Tool-Daten dazu. */
 export async function einsatzLoeschen(db: LagekitDB, id: string): Promise<void> {
   const tabellen = toolTabellen().map((t) => db.table(t.name));
-  await db.transaction("rw", [db.einsaetze, db.einstellungen, ...tabellen], async () => {
-    for (const tabelle of tabellen) await tabelle.where("einsatzId").equals(id).delete();
+  await db.transaction("rw", [db.einsaetze, db.einstellungen, db.ordner, ...tabellen], async () => {
+    for (const tabelle of [...tabellen, db.ordner]) await tabelle.where("einsatzId").equals(id).delete();
     await db.einsaetze.delete(id);
     if ((await aktiverEinsatzId(db)) === id) await db.einstellungen.delete(AKTIVER_EINSATZ);
   });

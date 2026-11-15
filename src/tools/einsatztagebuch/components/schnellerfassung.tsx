@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { ArrowLeftRight, CornerDownLeft, X } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
+import { ArrowLeftRight, CornerDownLeft, Paperclip, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ordnerDesEinsatzes } from "@/core/dateien/repository";
+import { dateienFiltern, verweisText, type DateiTreffer } from "@/core/dateien/verweis";
 import { getDb } from "@/core/db/db";
 import { uhrzeitAnwenden } from "../logic";
 import { eintragHinzufuegen, verfasserSpeichern } from "../repository";
 import { EINTRAG_ARTEN, type Eintrag, type EintragArt } from "../schema";
+import { ausloeserFinden, DateiAuswahl, type Ausloeser } from "./datei-auswahl";
 
 /**
  * Eine Eingabezeile: Inhalt tippen, Enter speichert, die Zeit wird automatisch gesetzt.
@@ -34,6 +38,62 @@ export function Schnellerfassung({
   const [verfasser, setVerfasser] = useState(verfasserGespeichert);
   const [fehler, setFehler] = useState<string | null>(null);
   const inhaltFeld = useRef<HTMLInputElement>(null);
+
+  // „/“ im Inhalt: Datei aus einem verknüpften Ordner auswählen.
+  const ordner = useLiveQuery(() => ordnerDesEinsatzes(getDb(), einsatzId), [einsatzId]);
+  const [ausloeser, setAusloeser] = useState<Ausloeser | null>(null);
+  const [aktiveDatei, setAktiveDatei] = useState(0);
+  const hatDateien = (ordner ?? []).some((o) => o.dateien.length > 0);
+  const treffer = ausloeser && hatDateien ? dateienFiltern(ordner ?? [], ausloeser.suche) : [];
+  const auswahlOffen = treffer.length > 0;
+
+  function inhaltGeaendert(wert: string, marke: number | null) {
+    setInhalt(wert);
+    setAusloeser(marke === null ? null : ausloeserFinden(wert, marke));
+    setAktiveDatei(0);
+  }
+
+  function dateiWaehlen(t: DateiTreffer) {
+    if (!ausloeser) return;
+    const verweis = verweisText(t.ordner, t.pfad) + " ";
+    const neu = inhalt.slice(0, ausloeser.start) + verweis + inhalt.slice(ausloeser.ende);
+    const marke = ausloeser.start + verweis.length;
+    setInhalt(neu);
+    setAusloeser(null);
+    markeNachher.current = marke;
+  }
+
+  function dateiTasten(event: KeyboardEvent<HTMLInputElement>) {
+    if (!auswahlOffen) return;
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      const schritt = event.key === "ArrowDown" ? 1 : -1;
+      setAktiveDatei((aktiveDatei + schritt + treffer.length) % treffer.length);
+    } else if (event.key === "Enter" || event.key === "Tab") {
+      event.preventDefault();
+      dateiWaehlen(treffer[Math.min(aktiveDatei, treffer.length - 1)]);
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      setAusloeser(null);
+    }
+  }
+
+  function dateiKnopf() {
+    const davor = inhalt && !/\s$/.test(inhalt) ? `${inhalt} /` : `${inhalt}/`;
+    inhaltGeaendert(davor, davor.length);
+    markeNachher.current = davor.length;
+  }
+
+  // Schreibmarke direkt nach dem Übernehmen setzen, bevor weitergetippt wird.
+  const markeNachher = useRef<number | null>(null);
+  useLayoutEffect(() => {
+    const marke = markeNachher.current;
+    if (marke === null) return;
+    markeNachher.current = null;
+    inhaltFeld.current?.focus();
+    inhaltFeld.current?.setSelectionRange(marke, marke);
+  }, [inhalt]);
 
   // Korrekturmodus: Felder mit dem alten Eintrag vorbelegen.
   const [korrekturId, setKorrekturId] = useState<string | null>(null);
@@ -89,7 +149,7 @@ export function Schnellerfassung({
     if (event.altKey && /^[1-5]$/.test(event.key)) {
       event.preventDefault();
       setArt(EINTRAG_ARTEN[Number(event.key) - 1]);
-    } else if (event.key === "Escape") {
+    } else if (event.key === "Escape" && !event.defaultPrevented) {
       event.preventDefault();
       if (korrektur) onKorrekturEnde();
       setInhalt("");
@@ -137,18 +197,40 @@ export function Schnellerfassung({
       </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="tb-inhalt">Inhalt</Label>
-        <div className="flex gap-2">
+        <div className="relative flex gap-2">
           <Input
             id="tb-inhalt"
+            role="combobox"
+            aria-expanded={auswahlOffen}
+            aria-controls={auswahlOffen ? "tb-dateien" : undefined}
+            aria-activedescendant={auswahlOffen ? `tb-datei-${aktiveDatei}` : undefined}
+            aria-autocomplete="list"
             ref={inhaltFeld}
             autoComplete="off"
             enterKeyHint="send"
             required
             className="h-14 flex-1 text-lg"
-            placeholder="Text eingeben, Enter speichert"
+            placeholder={hatDateien ? "Text eingeben, / verknüpft eine Datei, Enter speichert" : "Text eingeben, Enter speichert"}
             value={inhalt}
-            onChange={(e) => setInhalt(e.target.value)}
+            onChange={(e) => inhaltGeaendert(e.target.value, e.target.selectionStart)}
+            onKeyDown={dateiTasten}
+            onBlur={() => setAusloeser(null)}
           />
+          {hatDateien && (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-14 w-14"
+              aria-label="Datei verknüpfen"
+              title="Datei verknüpfen (/ im Text)"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={dateiKnopf}
+            >
+              <Paperclip />
+            </Button>
+          )}
+          {auswahlOffen && <DateiAuswahl treffer={treffer} aktiv={aktiveDatei} onWaehlen={dateiWaehlen} />}
           <Button type="submit" size="lg" className="h-14 px-5" aria-label="Eintrag speichern">
             <CornerDownLeft /> <span className="hidden sm:inline">Speichern</span>
           </Button>
@@ -193,7 +275,7 @@ export function Schnellerfassung({
         </div>
       </div>
       <p className="hidden text-xs text-muted-foreground lg:block">
-        Enter speichert · Alt+1 bis Alt+5 wählt die Art · Esc leert · / springt zur Suche · Uhrzeit leer = jetzt
+        Enter speichert · Alt+1 bis Alt+5 wählt die Art · Esc leert · / außerhalb des Textfelds springt zur Suche, im Textfeld verknüpft es eine Datei · Uhrzeit leer = jetzt
       </p>
       {fehler && (
         <p role="alert" className="text-sm text-destructive">
