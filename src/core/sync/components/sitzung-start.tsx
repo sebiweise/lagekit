@@ -80,7 +80,7 @@ export function SitzungStart() {
         </p>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2 [&>*]:min-w-0">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 [&>*]:min-w-0">
         <Card>
           <CardHeader>
             <CardTitle>Sitzung leiten</CardTitle>

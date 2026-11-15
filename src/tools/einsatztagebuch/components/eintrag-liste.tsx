@@ -26,27 +26,34 @@ export function EintragListe({
         const korrigiert = e.korrigiertEintragId ? alle.get(e.korrigiertEintragId) : undefined;
         const nachgetragen = Math.abs(new Date(e.erfasstAm).getTime() - new Date(e.zeitpunkt).getTime()) > 60_000;
         return (
-          <li key={e.id} data-testid="tagebuch-eintrag" data-nr={e.nr} className="grid gap-x-4 gap-y-1 p-4 sm:grid-cols-[4rem_5rem_1fr_auto]">
-            <span className="font-mono text-sm text-muted-foreground">Nr. {e.nr}</span>
-            <time dateTime={e.zeitpunkt} className="font-mono font-semibold tabular-nums" title={formatDatumZeit(e.zeitpunkt)}>
-              {formatZeit(e.zeitpunkt)}
-            </time>
+          <li
+            key={e.id}
+            data-testid="tagebuch-eintrag"
+            data-nr={e.nr}
+            className="grid grid-cols-[3.5rem_1fr_auto] gap-x-3 gap-y-1 px-3 py-3 sm:grid-cols-[4.5rem_1fr_auto] sm:px-4"
+          >
+            <div className="flex flex-col">
+              <time dateTime={e.zeitpunkt} className="font-mono text-lg leading-tight font-semibold tabular-nums" title={formatDatumZeit(e.zeitpunkt)}>
+                {formatZeit(e.zeitpunkt)}
+              </time>
+              <span className="font-mono text-xs text-muted-foreground">Nr. {e.nr}</span>
+            </div>
             <div className="flex min-w-0 flex-col gap-1">
-              <div className="flex flex-wrap items-center gap-2 text-sm">
-                <Badge variant="secondary">{e.art}</Badge>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                <Badge variant="secondary" className="px-2 py-0.5">{e.art}</Badge>
                 {(e.von || e.an) && (
                   <span className="text-muted-foreground">
                     {e.von || "?"} → {e.an || "?"}
                   </span>
                 )}
-                {korrigiert && <Badge variant="outline">korrigiert Nr. {korrigiert.nr}</Badge>}
+                {korrigiert && <Badge variant="outline" className="px-2 py-0.5">korrigiert Nr. {korrigiert.nr}</Badge>}
                 {ersetzt && (
-                  <Badge variant="warn" data-testid="korrigiert-marker">
+                  <Badge variant="warn" className="px-2 py-0.5" data-testid="korrigiert-marker">
                     korrigiert durch Nr. {ersetzt.nr}
                   </Badge>
                 )}
               </div>
-              <p className={cn("whitespace-pre-wrap break-words text-lg", ersetzt && "text-muted-foreground line-through")}>
+              <p className={cn("whitespace-pre-wrap break-words text-lg leading-snug", ersetzt && "text-muted-foreground line-through")}>
                 {e.inhalt}
               </p>
               <p className="text-xs text-muted-foreground">
@@ -54,9 +61,18 @@ export function EintragListe({
                 {nachgetragen ? `nachgetragen um ${formatZeit(e.erfasstAm)}` : `erfasst ${formatZeit(e.erfasstAm, true)}`}
               </p>
             </div>
-            {!ersetzt && (
-              <Button size="sm" variant="ghost" onClick={() => onKorrigieren(e)} aria-label={`Eintrag Nr. ${e.nr} korrigieren`}>
-                <Pencil /> Korrigieren
+            {ersetzt ? (
+              <span />
+            ) : (
+              <Button
+                size="icon"
+                variant="ghost"
+                className="lg:w-auto lg:px-3"
+                onClick={() => onKorrigieren(e)}
+                aria-label={`Eintrag Nr. ${e.nr} korrigieren`}
+                title="Korrigieren"
+              >
+                <Pencil /> <span className="hidden lg:inline">Korrigieren</span>
               </Button>
             )}
           </li>

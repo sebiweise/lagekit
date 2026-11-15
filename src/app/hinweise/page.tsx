@@ -13,8 +13,8 @@ const abschnitte = [
 
 export default function HinweisePage() {
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
-      <h1 className="text-3xl font-bold tracking-tight">{t.hinweise.titel}</h1>
+    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-4 sm:px-6 sm:py-6">
+      <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{t.hinweise.titel}</h1>
       {abschnitte.map(([titel, text]) => (
         <section key={titel} className="flex flex-col gap-2">
           <h2 className="text-xl font-semibold">{titel}</h2>

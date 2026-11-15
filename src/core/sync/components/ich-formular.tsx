@@ -25,7 +25,7 @@ export function IchFormular({ ich, onAendern }: { ich: Teilnehmer; onAendern: (i
     </div>
   );
   return (
-    <div className="grid gap-3 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
       {feld("name", "Name", true)}
       {feld("funktion", "Funktion")}
       {feld("fahrzeug", "Fahrzeug")}

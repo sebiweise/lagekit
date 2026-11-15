@@ -36,7 +36,7 @@ export function Vorplanung({
   const stunden = odlMsvH === null ? null : maxAufenthaltStunden(restdosis(bisherMsv, richtwert.grenzeMsv), odlMsvH);
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 @xl:grid-cols-2">
       <OdlEingabe id="vorplanung-odl" wert={odl} einheit={einheit} onWert={setOdl} onEinheit={setEinheit} />
       <div className="flex flex-col gap-2">
         <Label htmlFor="vorplanung-person">Bisherige Dosis</Label>
@@ -67,7 +67,7 @@ export function Vorplanung({
           </div>
         </>
       )}
-      <div className="rounded-md bg-muted p-4 sm:col-span-2" data-testid="vorplanung-ergebnis" aria-live="polite">
+      <div className="rounded-md bg-muted p-4 @xl:col-span-2" data-testid="vorplanung-ergebnis" aria-live="polite">
         {stunden === null || odlMsvH === null ? (
           <p className="text-muted-foreground">ODL eingeben, um die zulässige Aufenthaltsdauer zu berechnen.</p>
         ) : (

@@ -25,7 +25,7 @@ test("Dosisüberwachung: Trupp, laufender Aufenthalt, Nachtrag, Ampel, Nachweis"
 
   // Kachel auf der Startseite führt zum Tool.
   await page.goto(`${baseURL}/`);
-  await page.getByRole("link", { name: /Strahlenexposition/ }).click();
+  await page.getByRole("main").getByRole("link", { name: /Strahlenexposition/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Strahlenexposition" })).toBeVisible();
 
   for (const name of ["Meier", "Schulz"]) {
@@ -52,7 +52,7 @@ test("Dosisüberwachung: Trupp, laufender Aufenthalt, Nachtrag, Ampel, Nachweis"
   await trupp.getByRole("button", { name: /Trupp beenden/ }).click();
   await expect(page.getByTestId("laufender-aufenthalt")).toHaveCount(0);
   await expect(meier.getByTestId("gesamtdosis")).toHaveText("0,300 mSv");
-  await expect(meier.getByText("D = 0,600 mSv/h × 0,5000 h = 0,300 mSv")).toBeVisible();
+  await expect(meier.getByText("D = 0,600 mSv/h × 0,5000 h = 0,300 mSv").filter({ visible: true })).toBeVisible();
 
   // Nachtrag mit hoher Dosis treibt Schulz über 80 % des Richtwerts (100 mSv).
   const schulz = page.locator('[data-person="Schulz"]');

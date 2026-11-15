@@ -30,7 +30,8 @@ export function EinsatzListe() {
 
   return (
     <ul className="flex flex-col gap-4">
-      {einsaetze.map((einsatz) => (
+      {/* Der ausgewählte Einsatz steht immer oben. */}
+      {[...einsaetze].sort((a, b) => Number(b.id === aktiver?.id) - Number(a.id === aktiver?.id)).map((einsatz) => (
         <li key={einsatz.id}>
           <EinsatzEintrag
             einsatz={einsatz}
@@ -72,7 +73,7 @@ function EinsatzEintrag({
             {abgeschlossen ? t.einsatz.statusAbgeschlossen : t.einsatz.statusAktiv}
           </Badge>
         </div>
-        <dl className="grid gap-x-6 gap-y-1 text-sm text-muted-foreground sm:grid-cols-[auto_1fr]">
+        <dl className="grid grid-cols-1 gap-x-6 gap-y-1 text-sm text-muted-foreground sm:grid-cols-[auto_1fr]">
           {einsatz.ort && (
             <>
               <dt>{t.einsatz.ort}</dt>
@@ -96,7 +97,7 @@ function EinsatzEintrag({
         </dl>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           {!ausgewaehlt && (
             <Button variant="secondary" onClick={() => void aktivenEinsatzSetzen(db, einsatz.id)}>
               <CheckCircle2 /> {t.einsatz.auswaehlen}

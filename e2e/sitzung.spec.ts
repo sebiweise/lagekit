@@ -58,7 +58,7 @@ test("Gemeinsam arbeiten offline: Beitritt per Code, Freigabe durch den Host, Ab
   // Navigation innerhalb der App (ein volles Neuladen würde die Sitzung beenden).
   async function tagebuch(seite: typeof host) {
     await seite.getByRole("link", { name: "Start", exact: true }).click();
-    await seite.getByRole("link", { name: /Einsatztagebuch/ }).click();
+    await seite.getByRole("main").getByRole("link", { name: /Einsatztagebuch/ }).click();
     await expect(seite.getByLabel("Inhalt")).toBeVisible();
   }
   await tagebuch(gast);
@@ -169,7 +169,7 @@ test("Gemeinsam arbeiten mit Kurzcode: Host sieht die Anfrage auf jeder Seite un
   await expect(zweiterTab.getByTestId("sitzung-anderer-tab")).toBeVisible();
   await zweiterTab.getByLabel("Inhalt").fill("Aus dem zweiten Tab");
   await zweiterTab.getByLabel("Inhalt").press("Enter");
-  await host.getByRole("link", { name: /Einsatztagebuch/ }).click();
+  await host.getByRole("main").getByRole("link", { name: /Einsatztagebuch/ }).click();
   await expect(host.getByTestId("tagebuch-eintrag").filter({ hasText: "Aus dem zweiten Tab" })).toBeVisible();
   await host.getByLabel("Inhalt").fill("Vom Host an alle Tabs");
   await host.getByLabel("Inhalt").press("Enter");
@@ -232,7 +232,7 @@ test("Sitzung übersteht Neuladen: Gast verbindet sich selbst neu, Änderungen a
   // Beide öffnen das Tagebuch.
   async function tagebuch(seite: typeof host) {
     await seite.getByRole("link", { name: "Start", exact: true }).click();
-    await seite.getByRole("link", { name: /Einsatztagebuch/ }).click();
+    await seite.getByRole("main").getByRole("link", { name: /Einsatztagebuch/ }).click();
     await expect(seite.getByLabel("Inhalt")).toBeVisible();
   }
   await tagebuch(gast);

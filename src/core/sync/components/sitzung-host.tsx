@@ -33,7 +33,7 @@ export function SitzungHost({ sitzung }: { sitzung: HostSitzung }) {
             Freigabe Zugriff auf den Einsatz.
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-6 md:grid-cols-2">
+        <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <section className="flex flex-col gap-2" aria-labelledby="kurzcode-titel">
             <h3 id="kurzcode-titel" className="font-semibold">
               Beitreten mit Kurzcode (Internet)

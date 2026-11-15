@@ -55,7 +55,7 @@ export function AufenthaltStart({
   }
 
   return (
-    <form onSubmit={absenden} className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end" aria-label={beschriftung}>
+    <form onSubmit={absenden} className="grid grid-cols-1 gap-3 @xl:grid-cols-[1fr_1fr_auto] @xl:items-end" aria-label={beschriftung}>
       <div className="flex flex-col gap-2">
         <Label htmlFor={`${idPrefix}-ort`}>Ort</Label>
         <Input id={`${idPrefix}-ort`} required autoComplete="off" value={ort} onChange={(e) => setOrt(e.target.value)} />
@@ -65,7 +65,7 @@ export function AufenthaltStart({
         {wechseln ? <RefreshCw /> : <Play />} {beschriftung}
       </Button>
       {fehler && (
-        <p role="alert" className="text-sm text-destructive sm:col-span-3">
+        <p role="alert" className="text-sm text-destructive @xl:col-span-3">
           {fehler}
         </p>
       )}

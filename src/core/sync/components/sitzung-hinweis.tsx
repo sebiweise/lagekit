@@ -29,7 +29,7 @@ export function SitzungHinweis() {
     if (!sitzungen.andererTab()) return null;
     return (
       <div className="border-b bg-muted/50 print:hidden" role="status" data-testid="sitzung-anderer-tab">
-        <p className="mx-auto flex w-full max-w-5xl items-center gap-2 px-4 py-2 text-sm sm:px-6">
+        <p className="mx-auto flex w-full max-w-6xl items-center gap-2 px-4 py-2 text-sm sm:px-6">
           <Users className="size-4 shrink-0" />
           Sitzung läuft in einem anderen Tab. Änderungen hier werden mit abgeglichen.
         </p>
@@ -41,7 +41,7 @@ export function SitzungHinweis() {
     const offen = pfad === "/sitzung/" ? [] : sitzung.offeneAnfragen;
     return (
       <div className="border-b bg-muted/50 print:hidden">
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-4 py-2 sm:px-6">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 py-2 sm:px-6">
           <Link href="/sitzung/" className="flex items-center gap-2 text-sm" data-testid="sitzung-status">
             <Users className="size-4" /> Sitzung aktiv: {sitzung.verbunden.length} Gerät
             {sitzung.verbunden.length === 1 ? "" : "e"} verbunden
@@ -69,7 +69,7 @@ export function SitzungHinweis() {
   const getrennt = sitzung.status !== "verbunden" && sitzung.meldung !== null;
   return (
     <div className={getrennt ? "border-b border-warn bg-warn/10 print:hidden" : "border-b bg-muted/50 print:hidden"}>
-      <div className="mx-auto w-full max-w-5xl px-4 py-2 sm:px-6">
+      <div className="mx-auto w-full max-w-6xl px-4 py-2 sm:px-6">
         <Link href="/sitzung/" className="flex items-center gap-2 text-sm" data-testid="sitzung-status">
           <Users className="size-4" />
           {verbunden

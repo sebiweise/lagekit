@@ -6,9 +6,9 @@ export const metadata: Metadata = { title: "Gemeinsam arbeiten" };
 
 export default function SitzungPage() {
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6 sm:px-6 sm:py-10">
+    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-5 px-4 py-4 sm:px-6 sm:py-6">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
           Gemeinsam arbeiten <BetaMarke className="ml-1 align-middle" />
         </h1>
         <p className="text-muted-foreground">
