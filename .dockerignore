@@ -9,8 +9,7 @@ test-results
 playwright-report
 coverage
 e2e
-docs
-*.md
+/*.md
 !CHANGELOG.md
 Dockerfile
 .dockerignore

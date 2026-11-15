@@ -33,7 +33,7 @@ Neue Tools nehmen automatisch teil: Abgeglichen werden alle Tabellen aus dem Too
 
 ## Einrichtung des Kurzcode-Wegs
 
-Im Vercel-Projekt Upstash Redis aus dem Marketplace verbinden. Die Funktion liest `KV_REST_API_URL` und `KV_REST_API_TOKEN` (oder `UPSTASH_REDIS_REST_URL` und `UPSTASH_REDIS_REST_TOKEN`). Ohne diese Variablen meldet der Host „Kein Kurzcode“, der QR-Weg funktioniert weiter.
+Im Vercel-Projekt Upstash Redis aus dem Marketplace verbinden. Die Funktion liest `KV_REST_API_URL` und `KV_REST_API_TOKEN` (oder `UPSTASH_REDIS_REST_URL` und `UPSTASH_REDIS_REST_TOKEN`). Ohne diese Variablen meldet der Host „Kein Kurzcode“, der QR-Weg funktioniert weiter. Wie eigene Installationen den Dienst nutzen oder abschalten, steht unter [Kurzcode-Dienst](../betrieb/kurzcode.md).
 
 ## Robustheit
 

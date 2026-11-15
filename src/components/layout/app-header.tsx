@@ -21,7 +21,7 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-40 border-b bg-card/95 pt-[env(safe-area-inset-top)] backdrop-blur print:hidden">
       <div className="flex h-15 w-full items-center gap-3 px-4 sm:px-6 lg:h-16 lg:pl-0">
-        <Link href="/" className="hidden w-60 shrink-0 px-6 text-xl font-bold lg:block">
+        <Link href="/app/" className="hidden w-60 shrink-0 px-6 text-xl font-bold lg:block">
           {t.app.name}
         </Link>
         <EinsatzAnzeige />
@@ -45,7 +45,7 @@ function EinsatzAnzeige() {
         <span className="truncate font-semibold" data-testid="kopf-einsatz">
           {t.nav.keinEinsatz}
         </span>
-        <Link href="/einsatz/" className={cn(buttonVariants({ size: "sm" }), "ml-auto")} aria-label="Einsatz anlegen">
+        <Link href="/app/einsatz/" className={cn(buttonVariants({ size: "sm" }), "ml-auto")} aria-label="Einsatz anlegen">
           <Plus /> Anlegen
         </Link>
       </div>
@@ -54,7 +54,7 @@ function EinsatzAnzeige() {
 
   const minuten = jetzt ? (jetzt.getTime() - new Date(einsatz.beginn).getTime()) / 60_000 : null;
   return (
-    <Link href="/einsatz/" className="group flex min-w-0 flex-1 flex-col rounded-md py-0.5" title="Einsatz verwalten">
+    <Link href="/app/einsatz/" className="group flex min-w-0 flex-1 flex-col rounded-md py-0.5" title="Einsatz verwalten">
       <span className="truncate text-lg leading-tight font-bold group-hover:underline" data-testid="kopf-einsatz">
         {einsatz.stichwort}
       </span>

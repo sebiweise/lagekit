@@ -7,7 +7,7 @@ import type { LagekitDB } from "@/core/db/db";
  * Kacheln aus `toolRegistry`, ohne die Tools selbst zu kennen.
  */
 export interface ToolManifest {
-  /** Ordnername unter `src/tools/` und Pfadsegment unter `/tools/`. */
+  /** Ordnername unter `src/tools/` und Pfadsegment unter `/app/tools/`. */
   id: string;
   name: string;
   beschreibung: string;

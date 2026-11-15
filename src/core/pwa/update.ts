@@ -29,6 +29,8 @@ const START: PwaZustand = {
 /** Wie oft eine offene App nach einer neuen Version fragt. */
 const PRUEF_INTERVALL_MS = 60 * 60 * 1000;
 const INFO_TIMEOUT_MS = 3000;
+/** Wie lange „Jetzt aktualisieren“ auf die neue Version wartet, bevor die Seite neu lädt. */
+const NEULADEN_NACH_MS = 3000;
 
 let zustand = START;
 let registration: ServiceWorkerRegistration | null = null;
@@ -127,9 +129,16 @@ export function pwaStarten(): void {
 
 /** Aktiviert die wartende Version; alle offenen Tabs laden danach neu. */
 export function updateAktivieren(): void {
-  if (!registration?.waiting) return;
+  const reg = registration;
+  if (!reg?.waiting) return;
   setzen({ wirdAktualisiert: true });
-  activateWaitingWorker(registration);
+  activateWaitingWorker(reg);
+  // Der Browser aktiviert die neue Version erst, wenn die alte nichts mehr ausliefert.
+  // Hält die Seite noch eine Antwort offen (z. B. einen abgebrochenen Prefetch), wartet
+  // er darauf. Neuladen beendet das; danach übernimmt die neue Version.
+  setTimeout(() => {
+    if (reg.waiting) window.location.reload();
+  }, NEULADEN_NACH_MS);
 }
 
 function abonnieren(h: () => void) {

@@ -11,6 +11,27 @@ Regeln für diese Datei:
 
 ## [Unveröffentlicht]
 
+## [0.6.0] - 2026-11-15
+
+### Neu
+
+- Startseite unter der Hauptadresse mit Überblick über alle Funktionen und Links zu GitHub, Releases, Docker-Image und Hilfe.
+- Dokumentation unter `/docs/`, auch offline lesbar: Bedienung, fachliche Grundlagen und Anleitungen zum Selbstbetrieb mit Docker, auf einem eigenen Webserver, bei Vercel und bei Cloudflare Pages. In der App erreichbar über „Dokumentation“ in der Seitenleiste und unter „Mehr“.
+
+### Geändert
+
+- Die App liegt jetzt unter `/app/`. Als App installierte Fassungen starten direkt dort, ebenso Geräte, auf denen Lagekit schon genutzt wird, wenn sie die Hauptadresse öffnen. Die Startseite ist in der App über „Über Lagekit“ erreichbar.
+- Alte Adressen wie `/einsatz/` oder `/tools/einsatztagebuch/` führen automatisch an die neue Stelle, auch offline. Lesezeichen und Verknüpfungen funktionieren weiter.
+
+### Behoben
+
+- Offline öffneten Adressen mit Zusatz nach einem Fragezeichen (z. B. aus einem Link) die Seite „nicht gefunden“ statt der App.
+- „Jetzt aktualisieren“ blieb manchmal bei „Wird aktualisiert …“ stehen. Übernimmt die neue Version nicht innerhalb weniger Sekunden, lädt Lagekit jetzt selbst neu.
+
+### Daten
+
+- Umzug der App nach `/app/`: Einsätze, Tagebuch, Strahlenexposition, verknüpfte Ordner und Einstellungen bleiben unverändert erhalten, weil sie an die Domain gebunden sind, nicht an die Adresse der Seite. Nach dem Update lädt die App an der neuen Adresse neu. Benachrichtigungen im Verlauf verweisen auf die neuen Adressen.
+
 ## [0.4.0] - 2026-11-15
 
 ### Neu

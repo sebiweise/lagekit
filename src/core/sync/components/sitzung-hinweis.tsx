@@ -39,11 +39,11 @@ export function SitzungHinweis() {
   }
 
   if (sitzung.rolle === "host") {
-    const offen = pfad === "/sitzung/" ? [] : sitzung.offeneAnfragen;
+    const offen = pfad === "/app/sitzung/" ? [] : sitzung.offeneAnfragen;
     return (
       <div className="border-b bg-muted/50 print:hidden">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-4 py-2 sm:px-6">
-          <Link href="/sitzung/" className="flex items-center gap-2 text-sm" data-testid="sitzung-status">
+          <Link href="/app/sitzung/" className="flex items-center gap-2 text-sm" data-testid="sitzung-status">
             <Users className="size-4" /> Sitzung aktiv: {sitzung.verbunden.length} Gerät
             {sitzung.verbunden.length === 1 ? "" : "e"} verbunden
             {sitzung.kurzcode && ` · Kurzcode ${sitzung.kurzcode}`}
@@ -71,7 +71,7 @@ export function SitzungHinweis() {
   return (
     <div className={getrennt ? "border-b border-warn bg-warn/10 print:hidden" : "border-b bg-muted/50 print:hidden"}>
       <div className="mx-auto w-full max-w-6xl px-4 py-2 sm:px-6">
-        <Link href="/sitzung/" className="flex items-center gap-2 text-sm" data-testid="sitzung-status">
+        <Link href="/app/sitzung/" className="flex items-center gap-2 text-sm" data-testid="sitzung-status">
           <Users className="size-4" />
           {verbunden
             ? `Verbunden mit ${sitzung.teilnehmer[0]?.name ?? "Host"} · ${sitzung.teilnehmer.length} Geräte`

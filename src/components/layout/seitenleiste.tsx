@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { BetaMarke } from "@/components/beta-marke";
 import { cn } from "@/lib/utils";
 import { ExternalLink } from "lucide-react";
-import { externeLinks, istAktiv, navigationsZiele } from "./navigation";
+import { externeLinks, istAktiv, navigationsZiele, websiteLinks } from "./navigation";
 
 /**
  * Navigation am PC im ELW (ab `lg`): feste Spalte links mit allen Zielen,
@@ -14,8 +14,8 @@ import { externeLinks, istAktiv, navigationsZiele } from "./navigation";
 export function Seitenleiste() {
   const pfad = usePathname();
   const ziele = navigationsZiele();
-  const haupt = ziele.filter((z) => z.href !== "/hinweise/");
-  const hinweise = ziele.find((z) => z.href === "/hinweise/");
+  const haupt = ziele.filter((z) => z.href !== "/app/hinweise/");
+  const hinweise = ziele.find((z) => z.href === "/app/hinweise/");
 
   return (
     <nav
@@ -56,6 +56,19 @@ export function Seitenleiste() {
             </Link>
           </li>
         )}
+        {websiteLinks.map((ziel) => (
+          <li key={ziel.href}>
+            <Link
+              href={ziel.href}
+              prefetch={false}
+              title={ziel.beschreibung}
+              className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+            >
+              <ziel.icon className="size-4 shrink-0" aria-hidden />
+              {ziel.text}
+            </Link>
+          </li>
+        ))}
         {externeLinks.map((ziel) => (
           <li key={ziel.href}>
             <a

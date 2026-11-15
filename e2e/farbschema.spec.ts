@@ -15,7 +15,7 @@ const html = (page: import("@playwright/test").Page) => page.locator("html");
 
 test("folgt ohne eigene Wahl der Systemeinstellung", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "dark" });
-  await page.goto(`${baseURL}/`);
+  await page.goto(`${baseURL}/app/`);
   await expect(html(page)).toHaveClass(/\bdark\b/);
   await expect(page.getByTestId("farbschema")).toHaveAttribute("data-farbschema", "system");
 
@@ -26,7 +26,7 @@ test("folgt ohne eigene Wahl der Systemeinstellung", async ({ page }) => {
 
 test("eigene Wahl bleibt nach dem Neuladen, ohne Aufblitzen", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
-  await page.goto(`${baseURL}/`);
+  await page.goto(`${baseURL}/app/`);
   const wahl = page.getByTestId("farbschema");
   const hintergrund = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
   const hell = await hintergrund();

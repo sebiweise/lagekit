@@ -70,7 +70,7 @@ describe("Texte", () => {
     const m = tagebuchMeldung([eintrag(7, { von: "ELW", an: "HLF", inhalt: "x".repeat(300) })])!;
     expect(m.titel).toBe("Tagebuch Nr. 7: Meldung von ELW an HLF");
     expect(m.text!.length).toBeLessThanOrEqual(140);
-    expect(m.href).toBe("/tools/einsatztagebuch/");
+    expect(m.href).toBe("/app/tools/einsatztagebuch/");
   });
 
   it("viele Einträge auf einmal als Sammelmeldung", () => {

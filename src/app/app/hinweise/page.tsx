@@ -36,6 +36,11 @@ export default function HinweisePage() {
         <p className="text-lg leading-relaxed">{t.hinweise.hilfe}</p>
         <ul className="flex flex-col">
           <li>
+            <Link href="/docs/" className={linkKlasse}>
+              Dokumentation: Betrieb, Bedienung, fachliche Grundlagen
+            </Link>
+          </li>
+          <li>
             <a href={HILFE_URL} target="_blank" rel="noopener noreferrer" className={linkKlasse}>
               Fehler melden oder Verbesserung vorschlagen <ExternalLink className="size-4" aria-label="öffnet in neuem Tab" />
             </a>
@@ -47,7 +52,7 @@ export default function HinweisePage() {
           </li>
         </ul>
       </section>
-      <Link href="/" className="mt-4 underline underline-offset-4">
+      <Link href="/app/" className="mt-4 underline underline-offset-4">
         {t.hinweise.zurueck}
       </Link>
     </main>
