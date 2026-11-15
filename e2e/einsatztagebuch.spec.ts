@@ -89,10 +89,10 @@ test("Einsatztagebuch: Schnellerfassung, Tastenkürzel, Korrektur, Filter, Druck
 });
 
 test("Einsatztagebuch: Von/An schlagen genutzte Angaben vor, Tab ergänzt", async ({ page }) => {
-  await page.goto(`${baseURL}/einsatz/`);
+  await page.goto(`${baseURL}/app/einsatz/`);
   await page.locator("#einsatz-stichwort").fill("Übungsabend");
   await page.getByRole("button", { name: "Einsatz anlegen" }).click();
-  await page.goto(`${baseURL}/tools/einsatztagebuch/`);
+  await page.goto(`${baseURL}/app/tools/einsatztagebuch/`);
 
   const inhalt = page.getByLabel("Inhalt");
   const von = page.getByLabel("Von", { exact: true });
