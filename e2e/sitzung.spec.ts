@@ -1,5 +1,5 @@
 import type { Server } from "node:http";
-import { expect, test } from "@playwright/test";
+import { expect, test, type BrowserContext } from "@playwright/test";
 import { speicherImArbeitsspeicher, vermitteln } from "../src/core/sync/vermittlung-dienst";
 import { starteServer, stoppeServer } from "./server";
 
@@ -12,11 +12,33 @@ test.beforeEach(async () => {
 
 test.afterEach(() => stoppeServer(server));
 
+/** Alle Wege zu einem Vermittlungsdienst, auch zum gehosteten (Standard im Build). */
+const DIENST = "**/api/vermittlung/";
+const CORS = { "access-control-allow-origin": "*" };
+
+/** Vermittlungsdienst im Testprozess statt der Vercel-Funktion; der echte Dienst wird nie angesprochen. */
+async function dienstImTest(kontext: BrowserContext, speicher: ReturnType<typeof speicherImArbeitsspeicher>, ip: string) {
+  await kontext.route(DIENST, async (route) => {
+    if (route.request().method() === "OPTIONS") {
+      await route.fulfill({ status: 204, headers: { ...CORS, "access-control-allow-headers": "content-type" } });
+      return;
+    }
+    const { status, inhalt } = await vermitteln(speicher, route.request().postDataJSON(), ip);
+    await route.fulfill({ status, json: inhalt, headers: CORS });
+  });
+}
+
+/** Kein Dienst erreichbar (wie ohne Internet). */
+async function ohneDienst(kontext: BrowserContext) {
+  await kontext.route(DIENST, (route) => route.abort("internetdisconnected"));
+}
+
 test("Gemeinsam arbeiten offline: Beitritt per Code, Freigabe durch den Host, Abgleich in beide Richtungen", async ({
   browser,
 }) => {
-  // Host: Einsatz anlegen und Sitzung starten. Der Kurzcode-Dienst fehlt hier (statischer Server).
+  // Host: Einsatz anlegen und Sitzung starten. Der Kurzcode-Dienst ist nicht erreichbar.
   const hostKontext = await browser.newContext();
+  await ohneDienst(hostKontext);
   const host = await hostKontext.newPage();
   await host.goto(`${baseURL}/einsatz/`);
   await host.locator("#einsatz-stichwort").fill("ABC 2");
@@ -95,6 +117,7 @@ test("Gemeinsam arbeiten offline: Beitritt per Code, Freigabe durch den Host, Ab
 
 test("Host kann eine Beitrittsanfrage ablehnen", async ({ browser }) => {
   const hostKontext = await browser.newContext();
+  await ohneDienst(hostKontext);
   const host = await hostKontext.newPage();
   await host.goto(`${baseURL}/einsatz/`);
   await host.locator("#einsatz-stichwort").fill("ABC 3");
@@ -122,14 +145,8 @@ test("Host kann eine Beitrittsanfrage ablehnen", async ({ browser }) => {
 });
 
 test("Gemeinsam arbeiten mit Kurzcode: Host sieht die Anfrage auf jeder Seite und lässt zu", async ({ browser }) => {
-  // Vermittlungsdienst im Testprozess statt der Vercel-Funktion.
   const speicher = speicherImArbeitsspeicher();
-  async function dienst(kontext: Awaited<ReturnType<typeof browser.newContext>>, ip: string) {
-    await kontext.route("**/api/vermittlung", async (route) => {
-      const { status, inhalt } = await vermitteln(speicher, route.request().postDataJSON(), ip);
-      await route.fulfill({ status, json: inhalt });
-    });
-  }
+  const dienst = (kontext: BrowserContext, ip: string) => dienstImTest(kontext, speicher, ip);
 
   const hostKontext = await browser.newContext();
   await dienst(hostKontext, "1");
@@ -196,12 +213,7 @@ test("Sitzung übersteht Neuladen: Gast verbindet sich selbst neu, Änderungen a
   browser,
 }) => {
   const speicher = speicherImArbeitsspeicher();
-  async function dienst(kontext: Awaited<ReturnType<typeof browser.newContext>>, ip: string) {
-    await kontext.route("**/api/vermittlung", async (route) => {
-      const { status, inhalt } = await vermitteln(speicher, route.request().postDataJSON(), ip);
-      await route.fulfill({ status, json: inhalt });
-    });
-  }
+  const dienst = (kontext: BrowserContext, ip: string) => dienstImTest(kontext, speicher, ip);
 
   const hostKontext = await browser.newContext();
   await dienst(hostKontext, "1");
@@ -260,4 +272,48 @@ test("Sitzung übersteht Neuladen: Gast verbindet sich selbst neu, Änderungen a
 
   await hostKontext.close();
   await gastKontext.close();
+});
+
+test("Kurzcode zur Laufzeit ausgeschaltet (Docker): nur QR-Weg, Hinweise nennen es", async ({ browser }) => {
+  const kontext = await browser.newContext();
+  let aufgerufen = false;
+  await kontext.route(DIENST, (route) => {
+    aufgerufen = true;
+    return route.abort();
+  });
+  // So liefert das Docker-Image die Einstellung mit LAGEKIT_KURZCODE_DIENST=false aus.
+  await kontext.route("**/konfiguration.json", (route) => route.fulfill({ json: { kurzcodeDienst: "false" } }));
+  const seite = await kontext.newPage();
+  await seite.goto(`${baseURL}/einsatz/`);
+  await seite.locator("#einsatz-stichwort").fill("Brand");
+  await seite.getByRole("button", { name: "Einsatz anlegen" }).click();
+  await seite.goto(`${baseURL}/sitzung/`);
+  await expect(seite.getByTestId("kurzcode-aus")).toBeVisible();
+  await expect(seite.getByRole("radio", { name: "Mit Kurzcode" })).toHaveCount(0);
+  await expect(seite.getByLabel("Kurzcode vom Host")).toHaveCount(0);
+
+  await seite.getByLabel("Name *").fill("Müller");
+  await seite.getByRole("button", { name: "Sitzung starten" }).click();
+  await expect(seite.getByTestId("kurzcode-aus")).toContainText("ausgeschaltet");
+  await expect(seite.getByText("Kurzcode wird angefordert")).toHaveCount(0);
+
+  await seite.goto(`${baseURL}/hinweise/`);
+  await expect(seite.getByTestId("dienst-anzeige")).toContainText("ausgeschaltet");
+  expect(aufgerufen).toBe(false);
+  await kontext.close();
+});
+
+test("Gehosteter Dienst als Standard: Datenschutzhinweis nennt die Adresse", async ({ browser }) => {
+  const kontext = await browser.newContext();
+  await dienstImTest(kontext, speicherImArbeitsspeicher(), "1");
+  const seite = await kontext.newPage();
+  await seite.goto(`${baseURL}/sitzung/`);
+  await expect(seite.getByTestId("dienst-hinweis")).toContainText("lagekit.vercel.app");
+  await seite.goto(`${baseURL}/hinweise/`);
+  await expect(seite.getByTestId("dienst-anzeige")).toContainText("lagekit.vercel.app");
+  await expect(seite.getByRole("link", { name: /Fehler melden/ })).toHaveAttribute(
+    "href",
+    "https://github.com/sebiweise/lagekit/issues/new/choose",
+  );
+  await kontext.close();
 });

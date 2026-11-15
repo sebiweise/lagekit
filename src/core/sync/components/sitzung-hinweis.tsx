@@ -10,6 +10,7 @@ import { usePathname } from "next/navigation";
 import { Users } from "lucide-react";
 import { useSitzung } from "../hooks";
 import { sitzungen } from "../sitzung";
+import { kurzcodeDienst } from "../dienst-konfiguration";
 import { vermittlung } from "../vermittlung";
 import { Freigabe } from "./sitzung-host";
 import { TeilnehmerAngaben } from "./teilnehmer-zeile";
@@ -23,7 +24,7 @@ export function SitzungHinweis() {
   const pfad = usePathname();
   // Eine Sitzung übersteht das Neuladen der Seite.
   useEffect(() => {
-    void sitzungen.wiederherstellen(getDb(), vermittlung);
+    void kurzcodeDienst().then((dienst) => sitzungen.wiederherstellen(getDb(), dienst ? vermittlung : undefined));
   }, []);
   if (!sitzung) {
     if (!sitzungen.andererTab()) return null;

@@ -1,8 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { FileArchive, Plus, Settings2, Siren } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { FileArchive, Pencil, Plus, Settings2, Siren } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { t } from "@/i18n";
 import { formatDatumZeit } from "@/lib/zeit";
@@ -16,6 +17,7 @@ import { EinsatzFormular } from "./einsatz-formular";
 export function AktiverEinsatzKarte() {
   const einsatz = useAktiverEinsatz();
   const einsaetze = useEinsaetze();
+  const [bearbeiten, setBearbeiten] = useState<string | null>(null);
 
   if (einsatz === undefined) return <Card data-testid="aktiver-einsatz" className="min-h-32" aria-busy />;
 
@@ -41,6 +43,23 @@ export function AktiverEinsatzKarte() {
     );
   }
 
+  if (bearbeiten === einsatz.id) {
+    return (
+      <Card data-testid="aktiver-einsatz">
+        <CardHeader>
+          <CardTitle>{t.einsatz.bearbeitenTitel}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <EinsatzFormular
+            einsatz={einsatz}
+            onGespeichert={() => setBearbeiten(null)}
+            onAbbrechen={() => setBearbeiten(null)}
+          />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card data-testid="aktiver-einsatz">
       <CardContent className="flex flex-wrap items-center justify-between gap-4">
@@ -58,6 +77,9 @@ export function AktiverEinsatzKarte() {
           <Link href="/export/" className={buttonVariants({ variant: "outline" })}>
             <FileArchive /> Export, Druck, Mail
           </Link>
+          <Button variant="outline" onClick={() => setBearbeiten(einsatz.id)}>
+            <Pencil /> {t.einsatz.bearbeiten}
+          </Button>
           <Link href="/einsatz/" className={buttonVariants({ variant: "outline" })}>
             <Settings2 /> {t.einsatz.zurVerwaltung}
           </Link>

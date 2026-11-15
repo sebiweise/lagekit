@@ -16,7 +16,9 @@ import { cn } from "@/lib/utils";
 import { ichLesen, ichSpeichern } from "../ich";
 import type { Teilnehmer } from "../protokoll";
 import { sitzungen } from "../sitzung";
+import { useKurzcodeDienst } from "../dienst-konfiguration";
 import { vermittlung } from "../vermittlung";
+import { DienstHinweis } from "./dienst-hinweis";
 import { IchFormular } from "./ich-formular";
 
 type Weg = "kurzcode" | "qr";
@@ -25,7 +27,10 @@ type Weg = "kurzcode" | "qr";
 export function SitzungStart() {
   const einsatz = useAktiverEinsatz();
   const [ich, setIch] = useState<Teilnehmer | null>(null);
-  const [weg, setWeg] = useState<Weg>("kurzcode");
+  const dienst = useKurzcodeDienst();
+  const [gewaehlt, setWeg] = useState<Weg>("kurzcode");
+  // Ist der Kurzcode in dieser Installation aus, bleibt nur der QR-Weg.
+  const weg: Weg = dienst === null ? "qr" : gewaehlt;
   const [kurzcode, setKurzcode] = useState("");
   const [fehler, setFehler] = useState<string | null>(null);
   const [laeuft, setLaeuft] = useState(false);
@@ -34,7 +39,8 @@ export function SitzungStart() {
     void ichLesen(getDb()).then(setIch);
   }, []);
 
-  if (!ich || einsatz === undefined) return null;
+  if (!ich || einsatz === undefined || dienst === undefined) return null;
+  const dienstFuerSitzung = dienst ? vermittlung : undefined;
 
   async function ausfuehren(aktion: (ich: Teilnehmer) => Promise<void>) {
     setFehler(null);
@@ -51,14 +57,14 @@ export function SitzungStart() {
   function leiten() {
     void ausfuehren(async (ich) => {
       if (!einsatz) return;
-      await sitzungen.leiten(getDb(), einsatz, ich, vermittlung);
+      await sitzungen.leiten(getDb(), einsatz, ich, dienstFuerSitzung);
     });
   }
 
   function beitreten(e: FormEvent) {
     e.preventDefault();
     void ausfuehren(async (ich) => {
-      await sitzungen.beitreten(getDb(), ich, weg, kurzcode, vermittlung);
+      await sitzungen.beitreten(getDb(), ich, weg, kurzcode, dienstFuerSitzung);
     });
   }
 
@@ -113,29 +119,35 @@ export function SitzungStart() {
           </CardHeader>
           <CardContent>
             <form onSubmit={beitreten} className="flex flex-col gap-4">
-              <div role="radiogroup" aria-label="Weg" className="grid grid-cols-2 gap-1 rounded-md bg-muted p-1">
-                {(
-                  [
-                    ["kurzcode", "Mit Kurzcode"],
-                    ["qr", "Offline mit QR-Code"],
-                  ] as const
-                ).map(([wert, text]) => (
-                  <button
-                    key={wert}
-                    type="button"
-                    role="radio"
-                    aria-checked={weg === wert}
-                    onClick={() => setWeg(wert)}
-                    className={cn(
-                      "h-11 rounded-md px-2 text-sm font-medium",
-                      weg === wert ? "bg-background shadow-sm" : "text-muted-foreground",
-                    )}
-                  >
-                    {text}
-                  </button>
-                ))}
-              </div>
-              {weg === "kurzcode" ? (
+              {dienst ? (
+                <div role="radiogroup" aria-label="Weg" className="grid grid-cols-2 gap-1 rounded-md bg-muted p-1">
+                  {(
+                    [
+                      ["kurzcode", "Mit Kurzcode"],
+                      ["qr", "Offline mit QR-Code"],
+                    ] as const
+                  ).map(([wert, text]) => (
+                    <button
+                      key={wert}
+                      type="button"
+                      role="radio"
+                      aria-checked={weg === wert}
+                      onClick={() => setWeg(wert)}
+                      className={cn(
+                        "h-11 rounded-md px-2 text-sm font-medium",
+                        weg === wert ? "bg-background shadow-sm" : "text-muted-foreground",
+                      )}
+                    >
+                      {text}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground" data-testid="kurzcode-aus">
+                  Beitritt per Kurzcode ist in dieser Installation ausgeschaltet.
+                </p>
+              )}
+              {weg === "kurzcode" && dienst ? (
                 <div className="flex flex-col gap-2">
                   <Label htmlFor="kurzcode">Kurzcode vom Host</Label>
                   <Input
@@ -151,6 +163,7 @@ export function SitzungStart() {
                   <p className="text-sm text-muted-foreground">
                     Braucht kurz Internet für den Verbindungsaufbau. Beide Geräte müssen im selben WLAN sein.
                   </p>
+                  <DienstHinweis dienst={dienst} />
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">

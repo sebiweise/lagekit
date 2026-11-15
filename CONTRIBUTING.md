@@ -4,9 +4,9 @@ Danke, dass Sie Lagekit verbessern wollen. Lagekit ist ein Werkzeug für Einsatz
 
 ## Grundregeln
 
-Diese Regeln stammen aus dem [Projektplan](docs/PLAN.md) und gelten für jeden Beitrag:
+Diese Regeln gelten für jeden Beitrag; Hintergrund steht in [Architektur und Grundsätze](docs/architektur.md):
 
-1. **Offline-first:** Alles läuft im Browser. Keine Server Actions, keine API-Routen, keine extern geladenen Schriften oder Skripte.
+1. **Offline-first:** Alles läuft im Browser. Keine Server Actions, keine extern geladenen Schriften oder Skripte, keine neuen Server-Abhängigkeiten.
 2. **Nur lokal speichern:** Kein Konto, kein Backend, kein Tracking.
 3. **Nachvollziehbar rechnen:** Rechenlogik steht in reinen Funktionen (`logic.ts`) mit Tests. Die Oberfläche zeigt Formel und Eingangswerte.
 4. **Einsatztauglich:** Große Bedienflächen, Tastaturbedienung, Dunkelmodus, automatisches Speichern.
@@ -47,7 +47,7 @@ pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e
 ## Pull Requests
 
 - Ein Thema je Pull Request, Beschreibung auf Deutsch.
-- Änderungen, die Nutzer merken, unter **Unveröffentlicht** in [CHANGELOG.md](CHANGELOG.md) eintragen. Die App zeigt diese Liste vor jedem Update. Alles, was gespeicherte Daten umbaut oder zurücksetzt (auch `localStorage`), gehört unter `### Daten`. Neue Datenbank-Versionen in `src/core/db/migrations.ts` brauchen eine `beschreibung`; die App zeigt sie vor dem Update von selbst an.
+- Änderungen, die Nutzer merken, unter **Unveröffentlicht** in [CHANGELOG.md](CHANGELOG.md) eintragen. Die App zeigt diese Liste vor jedem Update. Alles, was gespeicherte Daten umbaut oder zurücksetzt (auch `localStorage`), gehört unter `### Daten`. Neue Datenbank-Versionen in `src/core/db/migrations.ts` brauchen eine `beschreibung`; die App zeigt sie vor dem Update von selbst an. Der CI-Job „Changelog-Eintrag“ meldet einen Pull Request, der App-Code ändert, aber `CHANGELOG.md` nicht; bei Änderungen ohne Auswirkung für Nutzer (z. B. reines Refactoring) das Label `kein-changelog` setzen. Dependabot- und Release-PRs sind ausgenommen.
 - Die CI (Lint, Typen, Unit-Tests, Build, Offline-Test) muss grün sein.
 - Gemergt wird per Squash.
 - Mit dem Einreichen stimmen Sie zu, dass Ihr Beitrag unter der [AGPL-3.0](LICENSE) steht.

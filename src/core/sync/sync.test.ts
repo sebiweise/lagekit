@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { LagekitDB } from "@/core/db/db";
-import { einsatzAbschliessen, einsatzAnlegen, einsatzLoeschen } from "@/core/einsatz/repository";
+import { einsatzAbschliessen, einsatzAnlegen, einsatzBearbeiten, einsatzLoeschen } from "@/core/einsatz/repository";
 import { eintragHinzufuegen } from "@/tools/einsatztagebuch/repository";
 import { personAnlegen, personLoeschen } from "@/tools/strahlenexposition/repository";
 import { aenderungenAnwenden, AbgleichFehler, standAnwenden, standErstellen } from "./daten";
@@ -162,6 +162,28 @@ describe("Abgleich", () => {
     abmelden();
     expect(gemeldet).toEqual([]);
     expect(geloescht).toBe(1);
+  });
+
+  it("überträgt geänderte Einsatzdaten samt Tagebuchvermerk vom Gast zum Host", async () => {
+    const host = testDb();
+    const gast = testDb();
+    const einsatz = await einsatzAnlegen(host, { stichwort: "B 1", ort: "Hof" });
+    await standAnwenden(gast, await standErstellen(host, einsatz.id));
+
+    const meldungen: Aenderung[][] = [];
+    const ab = aenderungenBeobachten(gast, einsatz.id, (l) => meldungen.push(l));
+    await einsatzBearbeiten(gast, einsatz.id, { stichwort: "B 3", ort: "Scheune" });
+    await new Promise((r) => setTimeout(r, 10));
+    ab();
+
+    // Einsatz und Vermerk gehen in einer Meldung, also ganz oder gar nicht.
+    expect(meldungen).toHaveLength(1);
+    expect(meldungen[0]!.map((a) => a.tabelle).sort()).toEqual(["einsaetze", "tagebuchEintraege"]);
+
+    await aenderungenAnwenden(host, einsatz.id, meldungen[0]!, { konflikteLoesen: true });
+    expect(await host.einsaetze.get(einsatz.id)).toMatchObject({ stichwort: "B 3", ort: "Scheune" });
+    const [vermerk] = await host.table("tagebuchEintraege").toArray();
+    expect(vermerk.inhalt).toContain("Stichwort: „B 1“ → „B 3“");
   });
 
   it("vergibt beim Host eindeutige Tagebuchnummern", async () => {

@@ -1,5 +1,5 @@
 {
-  "//": "Vercel übersetzt die Funktionen mit dieser Datei. Ohne \"type\": \"module\" im Projekt ergibt nodenext CommonJS; das läuft mit TypeScript 5 und 6.",
+  "//": "Vercel übersetzt die Funktionen mit dieser Datei. Mit \"type\": \"module\" ergibt nodenext ES-Module: relative Imports brauchen die Endung .js, sonst findet Node die Datei nicht.",
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "module": "nodenext",

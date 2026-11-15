@@ -74,6 +74,10 @@ export const de = {
     abbrechen: "Abbrechen",
     abgeschlossenHinweis: "Einsatz abgeschlossen. Sichern Sie die Daten jetzt als Datei, bevor das Gerät wieder in den Alltag geht.",
     jetztSichern: "Jetzt sichern",
+    bearbeiten: "Bearbeiten",
+    bearbeitenTitel: "Einsatz bearbeiten",
+    bearbeitenHinweis: "Änderungen werden im Einsatztagebuch vermerkt.",
+    speichern: "Änderungen speichern",
   },
   sicherung: {
     titel: "Sicherung und Gerätewechsel",
@@ -126,7 +130,13 @@ export const de = {
       "Lagekit ist ein Hilfsmittel zur Dokumentation und Berechnung. Es ersetzt weder Messgeräte wie Dosimeter noch die Verantwortung der Einsatzleitung. Alle Ergebnisse sind vor einer Entscheidung zu prüfen. Die Nutzung erfolgt ohne Gewähr.",
     datenTitel: "Daten und Datenschutz",
     daten:
-      "Alle Eingaben werden ausschließlich im Browser dieses Geräts gespeichert. Es gibt kein Konto, keinen Server und kein Tracking. Für Exporte und deren Weitergabe ist die nutzende Einheit verantwortlich. Ausnahmen, nur bei Internet: Die Karte lädt Kartenbilder von OpenStreetMap, und wer „Standort“ oder die Adresssuche antippt, schickt Koordinaten bzw. Suchbegriff an den Adressdienst von OpenStreetMap (Nominatim). Für „Gemeinsam arbeiten“ per Kurzcode laufen nur Verbindungsdaten kurz über einen Vermittlungsdienst.",
+      "Alle Eingaben werden ausschließlich im Browser dieses Geräts gespeichert. Es gibt kein Konto, keinen Server und kein Tracking. Für Exporte und deren Weitergabe ist die nutzende Einheit verantwortlich. Ausnahmen, nur bei Internet: Die Karte lädt Kartenbilder von OpenStreetMap, und wer „Standort“ oder die Adresssuche antippt, schickt Koordinaten bzw. Suchbegriff an den Adressdienst von OpenStreetMap (Nominatim). Für „Gemeinsam arbeiten“ per Kurzcode laufen Verbindungsdaten kurz über einen Vermittlungsdienst (siehe unten).",
+    kurzcodeTitel: "Kurzcode und Vermittlungsdienst",
+    kurzcode:
+      "Beim Beitritt per Kurzcode schicken Host und Gerät die Beitrittsanfrage und die Antwort über einen Vermittlungsdienst. Darin stehen die Angaben aus „Ihre Angaben“ (Name, Funktion, Fahrzeug) und die Verbindungsdaten der Geräte, darunter Netzwerkadressen. Der Dienst hält sie höchstens 10 Minuten vor; der Kurzcode selbst gilt bis zu 12 Stunden. Die IP-Adresse wird eine Minute lang gezählt, um zu viele Anfragen abzuwehren. Einsatzdaten laufen nie über den Dienst. Wer das nicht möchte, nutzt den Weg mit QR-Code, der ganz ohne Internet auskommt.",
+    hilfeTitel: "Hilfe und Quellcode",
+    hilfe:
+      "Fehler, Wünsche und fachliche Hinweise nehmen wir über die Formulare im GitHub-Projekt an. Dort liegt auch der vollständige Quellcode.",
     datenverlustTitel: "Datenverlust vermeiden",
     datenverlust:
       "Browser können lokale Daten löschen, etwa beim Leeren des Verlaufs. Installieren Sie Lagekit als App und exportieren Sie Einsätze regelmäßig.",

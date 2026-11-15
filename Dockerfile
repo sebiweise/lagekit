@@ -16,7 +16,12 @@ ENV LAGEKIT_COMMIT=$LAGEKIT_COMMIT NEXT_TELEMETRY_DISABLED=1
 RUN pnpm build
 
 FROM nginxinc/nginx-unprivileged:stable-alpine
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+# Kurzcode für „Gemeinsam arbeiten“: true = gehosteter Dienst des Lagekit-Projekts,
+# false = aus (nur QR-Code und Datei), oder Adresse einer eigenen Installation mit Dienst.
+# Wird beim Start gelesen, ein neuer Build ist nicht nötig.
+ENV LAGEKIT_KURZCODE_DIENST=true \
+    NGINX_ENVSUBST_FILTER=^LAGEKIT_
+COPY docker/nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=build /app/out /usr/share/nginx/html
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s CMD wget -q --spider http://127.0.0.1:8080/ || exit 1

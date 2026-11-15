@@ -37,3 +37,9 @@ Der zuletzt eingegebene Empfänger bleibt je Gerät in `localStorage` (`lagekit.
 - `OrdnerHinweis` im Layout prüft die Ordner des aktiven Einsatzes alle 15 Sekunden, solange die App sichtbar ist, und beim Zurückkehren in die App. Neue oder geänderte Dateien landen in `neu` und erscheinen als Leiste auf allen Seiten, bis sie als gesehen markiert sind. Die erste Prüfung nach dem Verknüpfen meldet nichts als neu.
 - Nach einem Browser-Neustart fragt Chrome je nach Einstellung erneut nach der Erlaubnis. Die Leiste zeigt dann „wieder überwachen“; die Erlaubnis gibt es nur aus einem Klick heraus.
 - Grenzen je Ordner: 5000 Dateien, 6 Ebenen Unterordner. Systemdateien (`.DS_Store`, `Thumbs.db`, versteckte Dateien) werden übersprungen.
+
+## Dateibrowser und Verweise
+
+- Tool **Dateien** (`/tools/dateien/`, auch im Arbeitsbereich): verknüpfte Ordner des aktiven Einsatzes mit Unterordnern, Suche über alle Ordner und Sortierung. Grundlage ist die gespeicherte Dateiliste der letzten Prüfung; gelesen wird eine Datei erst beim Öffnen.
+- **Vorschau** (`DateiVorschau` im Layout, aufgerufen mit `dateiZeigen`): Bilder, Videos, Ton, PDF und Text (erste 200 KB), sonst „Neuer Tab“ oder „Speichern“. Pfeiltasten blättern durch die Dateien der Ansicht.
+- **Verweise** im Einsatztagebuch: `[[Ordner/Pfad]]` als reiner Text, damit Druck, CSV und Sicherung lesbar bleiben. In der Liste erscheint er als antippbarer Link. „/“ am Wortanfang im Textfeld (oder die Büroklammer) öffnet die Auswahl; „1/2“ oder „A/B“ lösen nichts aus. Auf einem Gerät ohne den Ordner meldet die Vorschau, dass der Ordner hier nicht verknüpft ist.

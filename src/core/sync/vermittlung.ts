@@ -3,9 +3,10 @@
  *
  * Über den Dienst laufen nur Beitrittsanfrage und Antwort, also die
  * Verbindungsdaten. Die Einsatzdaten gehen danach direkt von Gerät zu Gerät.
+ * Welcher Dienst das ist, legt die Installation fest (siehe dienst-adresse.ts).
  */
 
-const ENDPUNKT = "/api/vermittlung";
+import { kurzcodeDienst } from "./dienst-konfiguration";
 
 export class VermittlungFehler extends Error {
   constructor(
@@ -18,9 +19,13 @@ export class VermittlungFehler extends Error {
 }
 
 async function aufrufen<T>(daten: Record<string, unknown>): Promise<T> {
+  const dienst = await kurzcodeDienst();
+  if (!dienst) {
+    throw new VermittlungFehler("Kurzcode ist in dieser Installation ausgeschaltet. Nutzen Sie den Weg mit QR-Code.");
+  }
   let antwort: Response;
   try {
-    antwort = await fetch(ENDPUNKT, {
+    antwort = await fetch(dienst.endpunkt, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(daten),

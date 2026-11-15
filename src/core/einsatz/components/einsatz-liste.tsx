@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, Download, FileArchive, Lock, RotateCcw, Trash2 } from "lucide-react";
+import { CheckCircle2, Download, FileArchive, Lock, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,7 @@ import {
   einsatzWiederOeffnen,
 } from "../repository";
 import type { Einsatz } from "../schema";
+import { EinsatzFormular } from "./einsatz-formular";
 import { einsaetzeSichern } from "./sicherung";
 
 export function EinsatzListe() {
@@ -59,6 +60,7 @@ function EinsatzEintrag({
   onAbgeschlossen: () => void;
 }) {
   const [loeschenFragen, setLoeschenFragen] = useState(false);
+  const [bearbeiten, setBearbeiten] = useState(false);
   const db = getDb();
   const abgeschlossen = einsatz.status === "abgeschlossen";
 
@@ -99,6 +101,16 @@ function EinsatzEintrag({
         </dl>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
+        {bearbeiten && (
+          <div className="rounded-md border p-3 sm:p-4" data-testid="einsatz-bearbeiten">
+            <h3 className="mb-3 font-semibold">{t.einsatz.bearbeitenTitel}</h3>
+            <EinsatzFormular
+              einsatz={einsatz}
+              onGespeichert={() => setBearbeiten(false)}
+              onAbbrechen={() => setBearbeiten(false)}
+            />
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           {!ausgewaehlt && (
             <Button variant="secondary" onClick={() => void aktivenEinsatzSetzen(db, einsatz.id)}>
@@ -115,6 +127,11 @@ function EinsatzEintrag({
               onClick={() => void einsatzAbschliessen(db, einsatz.id).then(onAbgeschlossen)}
             >
               <Lock /> {t.einsatz.abschliessen}
+            </Button>
+          )}
+          {!bearbeiten && (
+            <Button variant="outline" onClick={() => setBearbeiten(true)}>
+              <Pencil /> {t.einsatz.bearbeiten}
             </Button>
           )}
           <Button variant="outline" onClick={() => void einsaetzeSichern([einsatz.id])}>
