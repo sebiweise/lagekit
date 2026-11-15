@@ -129,3 +129,24 @@ test("laufenden Einsatz bearbeiten und Änderung im Tagebuch sehen", async ({ pa
   await expect(page.getByText("Stichwort: „TH 1“ → „TH 2 VU eingeklemmt“")).toBeVisible();
   await expect(page.getByText("Eigene Einheit: (leer) → „ELW 1“")).toBeVisible();
 });
+
+test("Formulare zeigen Fehler direkt am Feld", async ({ page }) => {
+  await page.goto(`${baseURL}/einsatz/`);
+  await page.getByRole("button", { name: "Einsatz anlegen" }).click();
+  await expect(page.getByText("Bitte ein Stichwort angeben.")).toBeVisible();
+  await expect(page.getByLabel("Stichwort", { exact: false }).first()).toHaveAttribute("aria-invalid", "true");
+
+  await page.getByLabel("Stichwort", { exact: false }).first().fill("Übung");
+  await expect(page.getByText("Bitte ein Stichwort angeben.")).toBeHidden();
+  await page.getByRole("button", { name: "Einsatz anlegen" }).click();
+  await expect(page.getByTestId("kopf-einsatz")).toHaveText("Übung");
+
+  await page.goto(`${baseURL}/tools/strahlenexposition/`);
+  await page.getByLabel("Name *").fill("Anna");
+  await page.getByRole("button", { name: "Person anlegen" }).click();
+  const start = page.getByRole("form", { name: "Aufenthalt starten" }).first();
+  await start.getByLabel("Ort", { exact: true }).fill("Tank 3");
+  await start.getByLabel("Ortsdosisleistung (ODL)").fill("viel");
+  await start.getByRole("button", { name: "Aufenthalt starten" }).click();
+  await expect(start.getByText("Bitte die ODL als Zahl eingeben, z. B. 0,5.")).toBeVisible();
+});
