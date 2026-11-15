@@ -11,8 +11,11 @@ Regeln für diese Datei:
 
 ## [Unveröffentlicht]
 
+## [0.2.0] - 2026-11-15
+
 ### Neu
 
+- Einsatzbericht als PDF-Datei, direkt im Browser erzeugt: zum Herunterladen, im ZIP-Export und als Anhang beim Senden per E-Mail. Das Format des Mail-Anhangs ist wählbar, voreingestellt ist PDF.
 - Einsätze lassen sich nachträglich bearbeiten: Stichwort, Ort (auch per Standort), eigene Einheit und Beginn. Der Knopf „Bearbeiten“ steht beim aktiven Einsatz auf der Startseite und bei jedem Einsatz in der Liste. Beim gemeinsamen Arbeiten sehen alle Geräte die Änderung sofort.
 - Jede Änderung der Einsatzdaten wird im Einsatztagebuch als Notiz mit altem und neuem Wert vermerkt, auch ein über die Karte gesetzter Einsatzort.
 - Links zu „Hilfe und Feedback“ (Fehler melden, Verbesserung vorschlagen) und zum Quellcode auf GitHub, in der Seitenleiste, unter „Mehr“ und bei den Hinweisen.

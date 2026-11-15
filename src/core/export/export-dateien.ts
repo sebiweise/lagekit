@@ -9,9 +9,10 @@ import { einsatzSicherung, paketDateiname, paketInhalt, type AnhangDatei, type E
 import { zipErstellen } from "./zip";
 
 /** Was sich einzeln herunterladen, mailen oder teilen lässt. */
-export type ExportArt = "zip" | "bericht" | "sicherung" | "tagebuch" | "strahlen" | "suchverlauf";
+export type ExportArt = "pdf" | "zip" | "bericht" | "sicherung" | "tagebuch" | "strahlen" | "suchverlauf";
 
 export const EXPORT_ARTEN: { art: ExportArt; titel: string; kurz: string }[] = [
+  { art: "pdf", titel: "Einsatzbericht (PDF)", kurz: "Bericht (PDF)" },
   { art: "zip", titel: "Alles als ZIP", kurz: "ZIP" },
   { art: "bericht", titel: "Einsatzbericht (HTML, druckbar)", kurz: "Bericht (HTML)" },
   { art: "tagebuch", titel: "Einsatztagebuch (CSV)", kurz: "Tagebuch (CSV)" },
@@ -78,10 +79,16 @@ export async function exportDateiErstellen(
     paketDateiname(daten.einsatz, jetzt, endung).replace(/\.[a-z]+$/, `${zusatz}.${endung}`);
   const text = (inhalt: string, dateiname: string, typ: string) => new File([inhalt], dateiname, { type: typ, lastModified: jetzt.getTime() });
 
+  // pdf-lib erst bei Bedarf laden: hält den Start der App schlank.
+  const pdf = async () => (await import("./bericht-pdf")).berichtPdf(daten, { anhaenge, jetzt });
+
   switch (art) {
+    case "pdf":
+      return new File([(await pdf()) as Uint8Array<ArrayBuffer>], name("pdf", "-bericht"), { type: "application/pdf", lastModified: jetzt.getTime() });
     case "zip": {
       const sicherung = await einsatzSicherung(db, daten.einsatz.id, jetzt);
-      const blob = await zipErstellen(paketInhalt(daten, sicherung, anhaenge, jetzt), { fortschritt, jetzt });
+      const inhalt = paketInhalt(daten, sicherung, anhaenge, jetzt, new Blob([(await pdf()) as Uint8Array<ArrayBuffer>], { type: "application/pdf" }));
+      const blob = await zipErstellen(inhalt, { fortschritt, jetzt });
       return new File([blob], name("zip"), { type: "application/zip", lastModified: jetzt.getTime() });
     }
     case "bericht":

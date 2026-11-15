@@ -72,6 +72,7 @@ test("Export: ZIP mit Anhang, Einsatzbericht und Mail über das Mailprogramm", a
   await zip.saveAs(zipPfad);
   expect(zipNamen(await readFile(zipPfad))).toEqual([
     "LIESMICH.txt",
+    "einsatzbericht.pdf",
     "einsatzbericht.html",
     "sicherung.json",
     "einsatztagebuch.csv",
@@ -79,11 +80,16 @@ test("Export: ZIP mit Anhang, Einsatzbericht und Mail über das Mailprogramm", a
   ]);
   await expect(page.getByText(/export\.zip|\.zip gespeichert/)).toBeVisible();
 
-  // Mail: Bericht wird gespeichert, das Mailprogramm bekommt Betreff und Kurzbericht.
+  // Mail: Standard ist der Bericht als PDF; er wird gespeichert, das Mailprogramm bekommt Betreff und Kurzbericht.
   await page.getByLabel("Empfänger").fill("leitstelle@example.org");
+  await expect(page.getByLabel("Anhang (Format)")).toHaveValue("pdf");
   const bericht = page.waitForEvent("download");
   await page.getByTestId("mail-oeffnen").click();
-  expect((await bericht).suggestedFilename()).toMatch(/-bericht\.html$/);
+  const pdf = await bericht;
+  expect(pdf.suggestedFilename()).toMatch(/-bericht\.pdf$/);
+  const pdfPfad = path.join(ordner, "bericht.pdf");
+  await pdf.saveAs(pdfPfad);
+  expect((await readFile(pdfPfad)).subarray(0, 5).toString()).toBe("%PDF-");
   await expect(page.getByText("bitte in der Mail anhängen")).toBeVisible();
   const mailtos = await page.evaluate(() => (window as unknown as { mailtos: string[] }).mailtos);
   expect(mailtos).toHaveLength(1);

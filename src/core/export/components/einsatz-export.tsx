@@ -90,7 +90,7 @@ function ExportInhalt({ daten }: { daten: EinsatzDaten }) {
   const [zipMeldung, setZipMeldung] = useState<Meldung>(null);
 
   const [empfaenger, setEmpfaenger] = useState(gespeicherterEmpfaenger);
-  const [mailArt, setMailArt] = useState<ExportArt | "keiner">("bericht");
+  const [mailArt, setMailArt] = useState<ExportArt | "keiner">("pdf");
   const [mailMeldung, setMailMeldung] = useState<Meldung>(null);
   const [teilenMoeglich] = useState(dateienTeilenMoeglich);
   const [arbeitet, setArbeitet] = useState(false);
@@ -106,7 +106,7 @@ function ExportInhalt({ daten }: { daten: EinsatzDaten }) {
   async function erstellen(art: ExportArt, setMeldung: (m: Meldung) => void): Promise<File | null> {
     const jetzt = new Date();
     let sammlung: AnhangSammlung = { anhaenge: [], fehlend: [], abgeschnitten: [] };
-    if (art === "zip" || art === "bericht") {
+    if (art === "zip" || art === "bericht" || art === "pdf") {
       sammlung = await anhaengeSammeln(db, einsatz.id, { ordner: mitOrdnern, zusaetzlich });
     }
     try {
@@ -218,7 +218,7 @@ function ExportInhalt({ daten }: { daten: EinsatzDaten }) {
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <ul className="list-disc pl-5 text-sm">
-              <li>Einsatzbericht zum Öffnen im Browser und Drucken</li>
+              <li>Einsatzbericht als PDF und zum Öffnen im Browser</li>
               <li>Einsatztagebuch ({daten.eintraege.length} Einträge) als CSV</li>
               <li>Strahlenexposition ({daten.personen.length} Personen, {daten.aufenthalte.length} Aufenthalte) als CSV</li>
               <li>Suchverlauf externe Tools ({daten.suchen.length}) als CSV</li>
@@ -272,6 +272,9 @@ function ExportInhalt({ daten }: { daten: EinsatzDaten }) {
             <Link href={exportHref("/export/bericht/", einsatz.id)} className={buttonVariants()}>
               <Printer /> Einsatzbericht öffnen
             </Link>
+            <Button variant="outline" disabled={arbeitet} onClick={() => void herunterladen("pdf")} data-testid="pdf-export">
+              <Download /> PDF herunterladen
+            </Button>
             {istAktiv && daten.eintraege.length > 0 && (
               <Link href="/tools/einsatztagebuch/druck/" className={buttonVariants({ variant: "outline" })}>
                 Nur Tagebuch
@@ -308,7 +311,7 @@ function ExportInhalt({ daten }: { daten: EinsatzDaten }) {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="mail-anhang">Anhang</Label>
+              <Label htmlFor="mail-anhang">Anhang (Format)</Label>
               <Select id="mail-anhang" value={mailArt} onChange={(e) => setMailArt(e.target.value as ExportArt | "keiner")}>
                 {EXPORT_ARTEN.filter((a) => exportArtVorhanden(a.art, daten)).map((a) => (
                   <option key={a.art} value={a.art}>
