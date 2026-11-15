@@ -30,7 +30,7 @@ Alle Eingaben werden nur in IndexedDB im Browser des Geräts gespeichert. Es gib
 
 ## Entwicklung
 
-Voraussetzungen: Node.js 22 und pnpm (Version über `packageManager` in `package.json`, z. B. mit `corepack enable`).
+Voraussetzungen: Node.js 26 LTS (siehe `.nvmrc`) und pnpm (Version über `packageManager` in `package.json`, z. B. mit `corepack enable`).
 
 ```bash
 pnpm install
