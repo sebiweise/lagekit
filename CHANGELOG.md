@@ -11,6 +11,10 @@ Regeln für diese Datei:
 
 ## [Unveröffentlicht]
 
+### Behoben
+
+- Docker-Image: In der GitHub Container Registry erscheinen nur noch die Plattformen amd64 und arm64, kein Eintrag „unknown/unknown“ mehr.
+
 ## [0.1.0] - 2026-11-15
 
 Erste Version für den Praxistest.
