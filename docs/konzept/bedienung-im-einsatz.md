@@ -8,7 +8,7 @@ Lagekit wird im ELW oder an der Einsatzstelle unter Stress benutzt, oft mit Hand
 2. **Daumenzone.** Auf Handy und Tablet liegt die Navigation unten (Start, Tagebuch, Strahlen, Suche, Mehr), mit Symbol und Text, 64 px hoch. Am PC im ELW (ab 1024 px) steht sie als feste Seitenleiste links mit allen Bereichen, ohne „Mehr“; neue Tools wachsen nach unten statt zur Seite. Die Strahlenexposition nutzt ab 1536 px zwei Spalten (Personen links, Übersicht und Steuerung rechts).
 3. **Lage zuerst.** Die Startseite zeigt je Tool den Stand (Einträge, letzter Eintrag; Personen im Bereich, schlechteste Ampel). Ohne Einsatz beginnt sie mit dem Formular: ein Schritt bis zum Einsatz.
 4. **Häufiges oben, Seltenes eingeklappt.** Formulare zum Anlegen klappen ein, sobald es Daten gibt. Richtwert ändern, Person löschen, Nachtragen liegen hinter einer Zeile.
-5. **Ein Tipper statt zwei.** Art im Tagebuch als Knöpfe; Von/An tauschen per Knopf (Rückmeldung); Enter-Taste der Bildschirmtastatur heißt „Senden“.
+5. **Ein Tipper statt zwei.** Art im Tagebuch als Knöpfe; Von/An tauschen per Knopf (Rückmeldung); Von/An schlagen genutzte Angaben vor, Tab oder Antippen übernimmt; Enter-Taste der Bildschirmtastatur heißt „Senden“.
 6. **Große Flächen, keine seitliche Verschiebung.** Mindestens 44 px, meist 48 px; nichts läuft auf 390 px Breite über.
 7. **Farbe nie allein.** Ampeln haben immer Text oder einen Screenreader-Text.
 

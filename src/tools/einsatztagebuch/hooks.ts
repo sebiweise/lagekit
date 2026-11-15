@@ -2,6 +2,7 @@
 
 import { useLiveQuery } from "dexie-react-hooks";
 import { getDb } from "@/core/db/db";
+import { vonAnVorschlaege } from "./logic";
 import { eintraege, verfasserLesen } from "./repository";
 
 /** Alle Einträge des Einsatzes, nach Nummer aufsteigend. */
@@ -17,4 +18,9 @@ export function useEintraege(einsatzId: string | undefined) {
 
 export function useVerfasser() {
   return useLiveQuery(() => verfasserLesen(getDb()), []);
+}
+
+/** Bereits genutzte Angaben aus „von“ und „an“, der aktuelle Einsatz zuerst. */
+export function useVonAnVorschlaege(einsatzId: string) {
+  return useLiveQuery(async () => vonAnVorschlaege(await eintraege(getDb()).toArray(), einsatzId), [einsatzId]) ?? [];
 }
