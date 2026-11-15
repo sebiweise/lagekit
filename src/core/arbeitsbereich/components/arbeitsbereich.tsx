@@ -75,7 +75,7 @@ export function Arbeitsbereich() {
 
   return (
     <div className="flex flex-1 flex-col gap-3" data-testid="arbeitsbereich">
-      <div className="sticky top-0 z-[600] -mx-4 flex items-center gap-2 border-b bg-background/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 print:hidden">
+      <div className="sticky top-[calc(3.75rem+1px+env(safe-area-inset-top))] z-30 -mx-4 lg:top-[calc(4rem+1px)] flex items-center gap-2 border-b bg-background/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 print:hidden">
         <div role="tablist" aria-label="Offene Tools" className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
           {z.offen.map((id) => {
             const a = ansichtVon(id);

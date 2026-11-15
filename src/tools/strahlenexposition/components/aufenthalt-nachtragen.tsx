@@ -56,8 +56,8 @@ export function AufenthaltNachtragen({ idPrefix, personIds }: { idPrefix: string
   }
 
   return (
-    <form onSubmit={absenden} className="grid gap-3 sm:grid-cols-2" aria-label="Aufenthalt nachtragen">
-      <div className="flex flex-col gap-2 sm:col-span-2">
+    <form onSubmit={absenden} className="grid grid-cols-1 gap-3 @xl:grid-cols-2" aria-label="Aufenthalt nachtragen">
+      <div className="flex flex-col gap-2 @xl:col-span-2">
         <Label htmlFor={`${p}-ort`}>Ort</Label>
         <Input id={`${p}-ort`} required autoComplete="off" value={ort} onChange={(e) => setOrt(e.target.value)} />
       </div>
@@ -76,13 +76,13 @@ export function AufenthaltNachtragen({ idPrefix, personIds }: { idPrefix: string
           <Input id={`${p}-dosimeter`} inputMode="decimal" autoComplete="off" value={dosimeter} onChange={(e) => setDosimeter(e.target.value)} />
         </div>
       )}
-      <div className="sm:col-span-2">
+      <div className="@xl:col-span-2">
         <Button type="submit" variant="secondary">
           <Plus /> {einzeln ? "Aufenthalt nachtragen" : "Für den Trupp nachtragen"}
         </Button>
       </div>
       {fehler && (
-        <p role="alert" className="text-sm text-destructive sm:col-span-2">
+        <p role="alert" className="text-sm text-destructive @xl:col-span-2">
           {fehler}
         </p>
       )}

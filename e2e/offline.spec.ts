@@ -26,7 +26,7 @@ test("startet nach dem ersten Laden ohne Netz", async ({ page, context }) => {
   await expect(page.getByTestId("offline-status")).toHaveAttribute("data-status", "bereit");
 
   // Client-Navigation zu einer anderen Route.
-  await page.getByRole("link", { name: /Hinweise/ }).click();
+  await page.getByRole("main").getByRole("link", { name: /Hinweise/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Hinweise" })).toBeVisible();
 
   // Direkter Aufruf einer Unterseite (harte Navigation), mit und ohne Schrägstrich.
