@@ -80,7 +80,7 @@ export function Universalsuche() {
         {!einsatz && (
           <p className="text-sm text-muted-foreground">
             Kein Einsatz aktiv: Suchen landen in keinem Verlauf.{" "}
-            <Link href="/einsatz/" className="underline underline-offset-4">
+            <Link href="/app/einsatz/" className="underline underline-offset-4">
               Einsatz wählen
             </Link>
           </p>
@@ -150,7 +150,7 @@ export function Universalsuche() {
 
       <p className="text-sm text-muted-foreground">
         Alle verlinkten Dienste nach Thema:{" "}
-        <Link href="/tools/recherche/" className="underline underline-offset-4">
+        <Link href="/app/tools/recherche/" className="underline underline-offset-4">
           Externe Tools
         </Link>
       </p>

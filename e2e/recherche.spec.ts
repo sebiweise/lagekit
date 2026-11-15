@@ -16,7 +16,7 @@ test("Suche: Direktsuche, UN-Nummer, Kopieren, Verlauf; Linksammlung mit Vorschl
   // Externe Ziele nicht wirklich aufrufen.
   await context.route(/^https:\/\/(?!127\.0\.0\.1)/, (route) => route.fulfill({ status: 200, body: "extern" }));
 
-  await page.goto(`${baseURL}/einsatz/`);
+  await page.goto(`${baseURL}/app/einsatz/`);
   await page.locator("#einsatz-stichwort").fill("TH VU Pkw");
   await page.locator("#einsatz-ort").fill("Kassel");
   await page.getByRole("button", { name: "Einsatz anlegen" }).click();
@@ -59,7 +59,7 @@ test("Suche: Direktsuche, UN-Nummer, Kopieren, Verlauf; Linksammlung mit Vorschl
   await expect(page.getByTestId("verlauf-eintrag")).toHaveCount(3);
 
   // Linksammlung: passende Tools oben, alle anderen erreichbar.
-  await page.goto(`${baseURL}/tools/recherche/`);
+  await page.goto(`${baseURL}/app/tools/recherche/`);
   await expect(page.getByTestId("vorschlaege").locator("a").first()).toHaveAttribute("data-tool", "adac-rettungskarten");
   await expect(page.locator('[data-tool="gestis"]')).toBeVisible();
 });

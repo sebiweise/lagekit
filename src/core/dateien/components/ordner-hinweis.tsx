@@ -12,7 +12,7 @@ import { ordnerAuswahlMoeglich } from "../ordner";
 import { neueGesehen, ordnerDesEinsatzes } from "../repository";
 import { ueberwachungStarten, useZugriffe, zugriffErlauben } from "../ueberwachung";
 
-export const EXPORT_PFAD = "/export/";
+export const EXPORT_PFAD = "/app/export/";
 
 /**
  * Auf allen Seiten: prüft die verknüpften Ordner des aktiven Einsatzes und
@@ -33,7 +33,7 @@ export function OrdnerHinweis() {
     return ueberwachungStarten(getDb());
   }, [vorhanden]);
 
-  if (!ordner || !vorhanden || pfad === EXPORT_PFAD || pfad === "/tools/dateien/") return null;
+  if (!ordner || !vorhanden || pfad === EXPORT_PFAD || pfad === "/app/tools/dateien/") return null;
 
   const mitNeuen = ordner.filter((o) => o.neu.length > 0);
   const ohneZugriff = ordner.filter((o) => zugriffe.get(o.id) === "fragen");
@@ -60,7 +60,7 @@ export function OrdnerHinweis() {
             „{o.name}“ wieder überwachen
           </Button>
         ))}
-        <Link href="/tools/dateien/" className="font-medium underline underline-offset-4 hover:text-foreground">
+        <Link href="/app/tools/dateien/" className="font-medium underline underline-offset-4 hover:text-foreground">
           Ansehen
         </Link>
         {mitNeuen.length > 0 && (

@@ -1,8 +1,8 @@
 import type { Eintrag } from "@/tools/einsatztagebuch/schema";
 import type { BenachrichtigungEingabe } from "./verlauf";
 
-export const TAGEBUCH_PFAD = "/tools/einsatztagebuch/";
-export const DATEIEN_PFAD = "/tools/dateien/";
+export const TAGEBUCH_PFAD = "/app/tools/einsatztagebuch/";
+export const DATEIEN_PFAD = "/app/tools/dateien/";
 
 /** Ab so vielen Einträgen auf einmal (z. B. beim Beitritt) nur noch eine Sammelmeldung. */
 export const SAMMEL_AB = 4;
@@ -62,7 +62,7 @@ export function updateMeldung(version: string | null, datenUmbau: boolean): Bena
     text: datenUmbau
       ? "Gespeicherte Daten werden beim Update umgebaut. Vorher die Änderungen lesen."
       : "Aktualisiert wird erst nach Bestätigung, am besten nach dem Einsatz.",
-    href: "/aenderungen/",
+    href: "/app/aenderungen/",
     linkText: "Änderungen ansehen",
   };
 }

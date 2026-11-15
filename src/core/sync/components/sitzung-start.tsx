@@ -132,7 +132,7 @@ function SitzungStartFormular({
                 </Button>
               </>
             ) : (
-              <Link href="/einsatz/" className={cn(buttonVariants(), "h-auto min-h-11 max-w-full self-start whitespace-normal py-2 text-left")}>
+              <Link href="/app/einsatz/" className={cn(buttonVariants(), "h-auto min-h-11 max-w-full self-start whitespace-normal py-2 text-left")}>
                 Zuerst einen Einsatz anlegen oder auswählen
               </Link>
             )}

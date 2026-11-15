@@ -124,6 +124,10 @@
   body {
     @apply bg-background text-foreground font-sans;
   }
+  /* Während einer Weiterleitung in die App (src/core/pwa/adressen.ts) nichts aufblitzen lassen. */
+  html[data-weiterleitung] body {
+    visibility: hidden;
+  }
 }
 
 /*
@@ -241,5 +245,78 @@
   }
   body {
     print-color-adjust: exact;
+  }
+}
+
+/*
+ * Text der Dokumentation (/docs/), erzeugt aus Markdown (src/site/doku.ts).
+ */
+@layer components {
+  .doku {
+    @apply flex flex-col gap-4 text-lg leading-relaxed;
+  }
+  .doku h1 {
+    @apply text-3xl font-bold tracking-tight sm:text-4xl;
+  }
+  .doku h2 {
+    @apply mt-6 scroll-mt-24 border-b pb-2 text-2xl font-semibold tracking-tight;
+  }
+  .doku h3 {
+    @apply mt-4 scroll-mt-24 text-xl font-semibold;
+  }
+  .doku h4 {
+    @apply mt-2 scroll-mt-24 font-semibold;
+  }
+  .doku .doku-anker {
+    @apply no-underline hover:underline;
+  }
+  .doku a {
+    @apply underline underline-offset-4 hover:text-red-700 dark:hover:text-red-400;
+  }
+  .doku > div {
+    @apply flex flex-col gap-4;
+  }
+  .doku ul {
+    @apply flex list-disc flex-col gap-1.5 pl-6;
+  }
+  .doku ol {
+    @apply flex list-decimal flex-col gap-1.5 pl-6;
+  }
+  .doku li > ul,
+  .doku li > ol,
+  .doku li > p,
+  .doku li > pre,
+  .doku li > .doku-tabelle {
+    @apply mt-2;
+  }
+  .doku blockquote {
+    @apply border-l-4 border-red-700/60 pl-4 text-muted-foreground;
+  }
+  .doku code {
+    @apply rounded bg-muted px-1.5 py-0.5 font-mono text-[0.85em];
+  }
+  .doku pre {
+    @apply overflow-x-auto rounded-lg border bg-muted p-4 text-sm leading-normal;
+  }
+  .doku pre code {
+    @apply bg-transparent p-0 text-[inherit];
+  }
+  .doku .doku-tabelle {
+    @apply overflow-x-auto rounded-lg border;
+  }
+  .doku table {
+    @apply w-full border-collapse text-base;
+  }
+  .doku th {
+    @apply border-b bg-muted px-3 py-2 text-left font-semibold;
+  }
+  .doku td {
+    @apply border-b px-3 py-2 align-top;
+  }
+  .doku tr:last-child td {
+    @apply border-b-0;
+  }
+  .doku hr {
+    @apply my-4;
   }
 }

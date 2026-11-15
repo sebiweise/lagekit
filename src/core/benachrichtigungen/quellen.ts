@@ -131,7 +131,7 @@ export function standLesen(s: Sitzung | null, vorher?: SitzungStand): SitzungSta
 /** Vergleicht zwei Stände einer Sitzung und liefert die Meldungen dazu. */
 export function sitzungMeldungen(alt: SitzungStand, neu: SitzungStand): BenachrichtigungEingabe[] {
   if (!neu.sitzung || !alt.sitzung || alt.sitzung.rolle !== neu.sitzung.rolle) return [];
-  const basis = { art: "sitzung" as const, href: "/sitzung/", linkText: "Sitzung ansehen" };
+  const basis = { art: "sitzung" as const, href: "/app/sitzung/", linkText: "Sitzung ansehen" };
   const meldungen: BenachrichtigungEingabe[] = [];
   if (neu.sitzung.rolle === "host") {
     if (alt.sitzung !== neu.sitzung) return [];

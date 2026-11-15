@@ -18,7 +18,7 @@ export const toolRegistry: ToolManifest[] = [
 ];
 
 export function toolHref(tool: ToolManifest): string {
-  return `/tools/${tool.id}/`;
+  return `/app/tools/${tool.id}/`;
 }
 
 /** Alle einsatzbezogenen Tool-Tabellen mit Schema, über alle Tools. */

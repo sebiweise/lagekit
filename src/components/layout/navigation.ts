@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Briefcase, CodeXml, FileArchive, History, Home, Info, LayoutPanelLeft, LifeBuoy, Search, Users } from "lucide-react";
+import { BookOpen, Briefcase, CodeXml, FileArchive, Globe2, History, Home, Info, LayoutPanelLeft, LifeBuoy, Search, Users } from "lucide-react";
 import { HILFE_URL, REPO_URL } from "@/core/projekt";
 import { t } from "@/i18n";
 import { toolHref, toolRegistry } from "@/tools/registry";
@@ -36,49 +36,59 @@ export function navigationsZiele(): NavZiel[] {
     beschreibung: tool.beschreibung,
   }));
   const unten = Object.keys(TOOLS_UNTEN)
-    .map((id) => tools.find((z) => z.href === `/tools/${id}/`))
+    .map((id) => tools.find((z) => z.href === `/app/tools/${id}/`))
     .filter((z): z is NavZiel => Boolean(z));
   const sonstige = tools.filter((z) => !z.unten);
 
   return [
-    { href: "/", text: t.nav.start, icon: Home, unten: true },
+    { href: "/app/", text: t.nav.start, icon: Home, unten: true },
     ...unten,
-    { href: "/suche/", text: t.nav.suche, icon: Search, unten: true },
+    { href: "/app/suche/", text: t.nav.suche, icon: Search, unten: true },
     {
-      href: "/einsatz/",
+      href: "/app/einsatz/",
       text: t.nav.einsatz,
       icon: Briefcase,
       beschreibung: "Einsatz anlegen, wechseln, abschließen, sichern",
     },
     {
-      href: "/export/",
+      href: "/app/export/",
       text: "Export, Druck, Mail",
       icon: FileArchive,
       beschreibung: "Alles zum Einsatz als ZIP, Bericht drucken, per Mail senden, Ordner verknüpfen",
     },
     ...sonstige,
     {
-      href: "/arbeitsbereich/",
+      href: "/app/arbeitsbereich/",
       text: t.nav.arbeitsbereich,
       icon: LayoutPanelLeft,
       beschreibung: "Mehrere Tools nebeneinander oder als Tabs",
     },
     {
-      href: "/sitzung/",
+      href: "/app/sitzung/",
       text: t.nav.sitzung,
       icon: Users,
       beta: true,
       beschreibung: "Mehrere Geräte am selben Einsatz",
     },
     {
-      href: "/aenderungen/",
+      href: "/app/aenderungen/",
       text: t.aenderungen.titel,
       icon: History,
       beschreibung: "Was ist neu, Updates und Datenumstellungen",
     },
-    { href: "/hinweise/", text: "Hinweise", icon: Info, beschreibung: t.hinweise.link },
+    { href: "/app/hinweise/", text: "Hinweise", icon: Info, beschreibung: t.hinweise.link },
   ];
 }
+
+/**
+ * Website rund um die App: Dokumentation und Startseite. Gleiche Domain und nach dem
+ * ersten Laden auch offline verfügbar, öffnen deshalb im selben Tab.
+ * `?ueber`: Die Startseite zeigt sich sonst nicht, wenn die App schon genutzt wird.
+ */
+export const websiteLinks: NavZiel[] = [
+  { href: "/docs/", text: "Dokumentation", icon: BookOpen, beschreibung: "Betrieb, Bedienung und fachliche Grundlagen" },
+  { href: "/?ueber", text: "Über Lagekit", icon: Globe2, beschreibung: "Startseite mit Überblick und Links" },
+];
 
 /** Links nach außen (GitHub), öffnen in einem neuen Tab. Brauchen Internet. */
 export const externeLinks: NavZiel[] = [
@@ -98,6 +108,6 @@ export const externeLinks: NavZiel[] = [
 
 /** Aktiv ist ein Ziel bei gleichem Pfad oder einer Unterseite (z. B. Druckansicht). */
 export function istAktiv(pfad: string, href: string): boolean {
-  if (href === "/") return pfad === "/";
+  if (href === "/app/") return pfad === "/app/" || pfad === "/app";
   return pfad === href || pfad.startsWith(href);
 }

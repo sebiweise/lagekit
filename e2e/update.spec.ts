@@ -56,7 +56,7 @@ async function neuenWorkerAusliefern() {
 }
 
 test("zeigt vor dem Update Änderungen und Datenumbau, aktualisiert erst nach Klick", async ({ page }) => {
-  await page.goto(`${baseURL}/`);
+  await page.goto(`${baseURL}/app/`);
   await expect(page.getByTestId("offline-status")).toHaveAttribute("data-status", "bereit");
   await expect(page.getByTestId("update-hinweis")).toHaveCount(0);
 
@@ -97,7 +97,7 @@ test("zeigt vor dem Update Änderungen und Datenumbau, aktualisiert erst nach Kl
 });
 
 test("Seite Änderungen zeigt die installierte Version und den Verlauf", async ({ page }) => {
-  await page.goto(`${baseURL}/aenderungen/`);
+  await page.goto(`${baseURL}/app/aenderungen/`);
   await expect(page.getByRole("heading", { level: 1, name: "Änderungen" })).toBeVisible();
   const version = JSON.parse(await readFile(path.resolve(import.meta.dirname, "../package.json"), "utf8")).version;
   await expect(page.getByRole("heading", { name: `Version ${version}` })).toBeVisible();
