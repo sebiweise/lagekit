@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatZeit } from "@/lib/zeit";
 import { sitzungen, type GastStatus, type HostGast, type HostSitzung } from "../sitzung";
+import { useKurzcodeDienst } from "../dienst-konfiguration";
 import { CodeEingabe } from "./code-eingabe";
+import { DienstHinweis } from "./dienst-hinweis";
 import { QrAnzeige } from "./qr-anzeige";
 import { TeilnehmerAngaben } from "./teilnehmer-zeile";
 
@@ -23,6 +25,7 @@ const STATUS: Record<GastStatus, { text: string; variant: "warn" | "secondary" |
 
 /** Ansicht des Hosts: Kurzcode, Aufnahme per QR-Code und Freigabe der Geräte. */
 export function SitzungHost({ sitzung }: { sitzung: HostSitzung }) {
+  const dienst = useKurzcodeDienst();
   return (
     <div className="flex flex-col gap-6">
       <Card>
@@ -38,7 +41,11 @@ export function SitzungHost({ sitzung }: { sitzung: HostSitzung }) {
             <h3 id="kurzcode-titel" className="font-semibold">
               Beitreten mit Kurzcode (Internet)
             </h3>
-            {sitzung.kurzcode ? (
+            {!sitzung.kurzcodeMoeglich ? (
+              <p className="text-sm text-muted-foreground" data-testid="kurzcode-aus">
+                Kurzcode ist in dieser Installation ausgeschaltet. Geräte treten mit QR-Code bei.
+              </p>
+            ) : sitzung.kurzcode ? (
               <p className="font-mono text-5xl font-bold tracking-widest tabular-nums" data-testid="kurzcode">
                 {sitzung.kurzcode.slice(0, 3)} {sitzung.kurzcode.slice(3)}
               </p>
@@ -52,9 +59,14 @@ export function SitzungHost({ sitzung }: { sitzung: HostSitzung }) {
             ) : (
               <p className="text-sm text-muted-foreground">Kurzcode wird angefordert …</p>
             )}
-            <p className="text-sm text-muted-foreground">
-              Über das Internet läuft nur der Verbindungsaufbau. Die Einsatzdaten gehen direkt im lokalen Netz.
-            </p>
+            {sitzung.kurzcodeMoeglich && (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Über das Internet läuft nur der Verbindungsaufbau. Die Einsatzdaten gehen direkt im lokalen Netz.
+                </p>
+                {dienst && <DienstHinweis dienst={dienst} />}
+              </>
+            )}
           </section>
           <section className="flex flex-col gap-2" aria-labelledby="qr-titel">
             <h3 id="qr-titel" className="font-semibold">

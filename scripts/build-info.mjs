@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { changelogLesen } from "../src/core/aenderungen/changelog.ts";
+import { dienstEndpunktBeimBuild } from "../src/core/sync/dienst-adresse.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -26,4 +27,12 @@ export function appCommit() {
 /** CHANGELOG.md als Abschnitte; wirft bei ungültigem Format, damit der Build scheitert. */
 export function appChangelog() {
   return changelogLesen(readFileSync(path.join(root, "CHANGELOG.md"), "utf8"));
+}
+
+/**
+ * Endpunkt des Vermittlungsdiensts für den Kurzcode aus LAGEKIT_KURZCODE_DIENST;
+ * leer heißt „aus“. Docker kann ihn zur Laufzeit überschreiben (/konfiguration.json).
+ */
+export function kurzcodeDienst() {
+  return dienstEndpunktBeimBuild(process.env) ?? "";
 }

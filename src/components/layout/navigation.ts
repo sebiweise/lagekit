@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
-import { Briefcase, History, Home, Info, LayoutPanelLeft, Search, Users } from "lucide-react";
+import { Briefcase, CodeXml, History, Home, Info, LayoutPanelLeft, LifeBuoy, Search, Users } from "lucide-react";
+import { HILFE_URL, REPO_URL } from "@/core/projekt";
 import { t } from "@/i18n";
 import { toolHref, toolRegistry } from "@/tools/registry";
 
@@ -72,6 +73,22 @@ export function navigationsZiele(): NavZiel[] {
     { href: "/hinweise/", text: "Hinweise", icon: Info, beschreibung: t.hinweise.link },
   ];
 }
+
+/** Links nach außen (GitHub), öffnen in einem neuen Tab. Brauchen Internet. */
+export const externeLinks: NavZiel[] = [
+  {
+    href: HILFE_URL,
+    text: "Hilfe und Feedback",
+    icon: LifeBuoy,
+    beschreibung: "Fehler melden oder Verbesserung vorschlagen (GitHub)",
+  },
+  {
+    href: REPO_URL,
+    text: "Quellcode",
+    icon: CodeXml,
+    beschreibung: "Öffentliches Projekt auf GitHub",
+  },
+];
 
 /** Aktiv ist ein Ziel bei gleichem Pfad oder einer Unterseite (z. B. Druckansicht). */
 export function istAktiv(pfad: string, href: string): boolean {
