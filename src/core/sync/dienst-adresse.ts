@@ -6,15 +6,16 @@
  * - nicht gesetzt oder `true`: gehosteter Dienst des Lagekit-Projekts
  *   (statische Installationen und Docker ohne eigenen Server),
  * - `false`: Kurzcode aus, Beitritt nur per QR-Code oder Datei,
- * - `selbst`: Dienst derselben Installation unter `/api/vermittlung` (Vercel),
+ * - `selbst`: Dienst derselben Installation unter `/api/vermittlung` (Vercel mit
+ *   Upstash, Cloudflare Worker, Docker Compose mit Redis),
  * - eine Adresse wie `https://lagekit.example.de`: eigene Lagekit-Installation
  *   mit Vermittlungsdienst.
  *
  * Diese Datei hat keine Imports, weil scripts/build-info.mjs sie direkt lädt.
  */
 
-/** Produktions-Deployment des Lagekit-Projekts mit Vermittlungsdienst. */
-export const GEHOSTETER_DIENST = "https://lagekit.vercel.app";
+/** Vermittlungsdienst des Lagekit-Projekts (Cloudflare Worker, siehe cloudflare/). */
+export const GEHOSTETER_DIENST = "https://lagekit-kurzcode.sebiweise.workers.dev";
 /**
  * Mit Schrägstrich am Ende: Vercel leitet sonst wegen `trailingSlash` um, und eine
  * Umleitung bricht die CORS-Vorabanfrage von fremden Installationen ab.
@@ -49,11 +50,12 @@ export function dienstEndpunkt(wert: string | null | undefined): string | null {
 }
 
 /**
- * Wert beim Build: ohne Angabe nutzt ein Build auf Vercel seinen eigenen Dienst
- * (auch Vorschauen pro Pull Request), alle anderen den gehosteten.
+ * Wert beim Build: ohne Angabe nutzt ein Build auf Vercel mit verbundenem Upstash
+ * seinen eigenen Dienst, alle anderen den gehosteten.
  */
 export function dienstEndpunktBeimBuild(env: Record<string, string | undefined>): string | null {
   const wert = env.LAGEKIT_KURZCODE_DIENST;
-  if ((wert === undefined || wert.trim() === "") && env.VERCEL) return DIENST_PFAD;
+  const upstash = (env.KV_REST_API_URL ?? env.UPSTASH_REDIS_REST_URL) && (env.KV_REST_API_TOKEN ?? env.UPSTASH_REDIS_REST_TOKEN);
+  if ((wert === undefined || wert.trim() === "") && env.VERCEL && upstash) return DIENST_PFAD;
   return dienstEndpunkt(wert);
 }

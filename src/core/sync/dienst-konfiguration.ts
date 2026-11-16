@@ -14,7 +14,7 @@ import { dienstEndpunkt } from "./dienst-adresse";
 export interface KurzcodeDienst {
   /** Adresse des Endpunkts, relativ (eigener Dienst) oder absolut. */
   endpunkt: string;
-  /** Rechnername des Diensts, z. B. `lagekit.vercel.app`. */
+  /** Rechnername des Diensts, z. B. `lagekit-kurzcode.sebiweise.workers.dev`. */
   host: string;
   /** Läuft der Dienst unter einer anderen Adresse als diese Installation? */
   fremd: boolean;

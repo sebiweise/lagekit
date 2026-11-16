@@ -1,52 +1,50 @@
 /**
- * Vercel-Funktion für den Kurzcode-Weg. Braucht Upstash Redis
- * (Vercel-Marketplace); die Zugangsdaten kommen aus den Umgebungsvariablen.
+ * Vercel-Funktion für den Kurzcode-Weg.
  *
- * Statische Installationen und Docker-Images ohne eigenen Server rufen den Dienst
- * von ihrer eigenen Adresse aus auf, daher CORS für alle Ursprünge. Cookies oder
- * andere Zugangsdaten gibt es nicht; geschützt wird über Kurzcode, Schlüssel und
- * die Begrenzung pro IP-Adresse.
+ * - Mit Upstash Redis (Vercel-Marketplace) vermittelt sie selbst; die Zugangsdaten
+ *   kommen aus den Umgebungsvariablen.
+ * - Ohne Upstash, aber mit `LAGEKIT_KURZCODE_DIENST` auf einen anderen Dienst (z. B.
+ *   einen Cloudflare Worker), reicht sie Anfragen dorthin weiter. So funktionieren
+ *   ältere Installationen weiter, die noch diese Adresse ansprechen.
  */
+import { dienstEndpunkt } from "../src/core/sync/dienst-adresse.js";
 import { upstashSpeicher, vermitteln } from "../src/core/sync/vermittlung-dienst.js";
+import { CORS, json, vermittlungBeantworten } from "../src/core/sync/vermittlung-http.js";
 
-const MAX_GROESSE = 8_000;
-
-const CORS = {
-  "access-control-allow-origin": "*",
-  "access-control-allow-methods": "POST, OPTIONS",
-  "access-control-allow-headers": "content-type",
-  "access-control-max-age": "86400",
-};
-
-function json(inhalt: unknown, status: number): Response {
-  return Response.json(inhalt, { status, headers: { ...CORS, "cache-control": "no-store" } });
+/** Ziel für die Weiterleitung, wenn hier kein Speicher eingerichtet ist. */
+function weiterleitungsZiel(request: Request): string | null {
+  try {
+    const ziel = dienstEndpunkt(process.env.LAGEKIT_KURZCODE_DIENST);
+    if (!ziel || !/^https?:/.test(ziel)) return null;
+    return new URL(ziel).host === new URL(request.url).host ? null : ziel;
+  } catch {
+    return null;
+  }
 }
 
-/** Vorabanfrage des Browsers bei Aufrufen von einer anderen Adresse. */
-export function OPTIONS(): Response {
-  return new Response(null, { status: 204, headers: CORS });
-}
-
-export async function POST(request: Request): Promise<Response> {
+async function bearbeiten(request: Request): Promise<Response> {
   const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) {
-    return json({ fehler: "Der Vermittlungsdienst ist nicht eingerichtet." }, 503);
+  if (url && token) {
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unbekannt";
+    return vermittlungBeantworten(request, ip, (eingabe, ip) => vermitteln(upstashSpeicher(url, token), eingabe, ip));
   }
-  const text = await request.text();
-  if (text.length > MAX_GROESSE) return json({ fehler: "Anfrage zu groß." }, 413);
-  let eingabe: unknown;
+  const ziel = weiterleitungsZiel(request);
+  if (!ziel) return json({ fehler: "Der Vermittlungsdienst ist nicht eingerichtet." }, 503);
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
   try {
-    eingabe = JSON.parse(text);
-  } catch {
-    return json({ fehler: "Ungültige Anfrage." }, 400);
-  }
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unbekannt";
-  try {
-    const { status, inhalt } = await vermitteln(upstashSpeicher(url, token), eingabe, ip);
-    return json(inhalt, status);
+    const antwort = await fetch(ziel, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: await request.text(),
+    });
+    return json(await antwort.json(), antwort.status);
   } catch (e) {
-    console.error("Vermittlung fehlgeschlagen", e);
+    console.error("Weiterleitung fehlgeschlagen", e);
     return json({ fehler: "Der Vermittlungsdienst ist gerade gestört." }, 502);
   }
 }
+
+/** Vorabanfrage des Browsers bei Aufrufen von einer anderen Adresse. */
+export const OPTIONS = bearbeiten;
+export const POST = bearbeiten;

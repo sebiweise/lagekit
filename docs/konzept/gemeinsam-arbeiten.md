@@ -14,7 +14,7 @@ Mehrere Geräte (Tablets, Handys, ELW-Rechner) arbeiten am selben Einsatz. Ein G
 
 Das beitretende Gerät wählt den Weg selbst, auch wenn Internet da ist.
 
-1. **Kurzcode (braucht kurz Internet).** Der Host zeigt einen 6-stelligen Code. Über den Vermittlungsdienst (`api/vermittlung.ts`, Vercel-Funktion mit Upstash Redis) laufen nur Beitrittsanfrage und Antwort, also die Verbindungsdaten, und das nur für wenige Minuten. Danach läuft die Sitzung auch ohne Internet weiter. Welcher Dienst genutzt wird, legt `LAGEKIT_KURZCODE_DIENST` fest (`src/core/sync/dienst-adresse.ts`, README „Kurzcode für ‚Gemeinsam arbeiten‘“): standardmäßig der gehostete unter `lagekit.vercel.app`, den statische und Docker-Installationen per CORS aufrufen.
+1. **Kurzcode (braucht kurz Internet).** Der Host zeigt einen 6-stelligen Code. Über den Vermittlungsdienst (Cloudflare Worker, Node-Server neben Redis oder Vercel-Funktion mit Upstash) laufen nur Beitrittsanfrage und Antwort, also die Verbindungsdaten, und das nur für wenige Minuten. Danach läuft die Sitzung auch ohne Internet weiter. Welcher Dienst genutzt wird, legt `LAGEKIT_KURZCODE_DIENST` fest (`src/core/sync/dienst-adresse.ts`, README „Kurzcode für ‚Gemeinsam arbeiten‘“): standardmäßig der gehostete Cloudflare Worker unter `lagekit-kurzcode.sebiweise.workers.dev`, den die Installationen per CORS aufrufen.
 2. **QR-Code (ganz offline).** Das Gerät zeigt seinen Beitrittscode, der Host scannt ihn, lässt zu und zeigt seinen Antwortcode, den das Gerät scannt. Ohne Kamera lassen sich beide Codes kopieren oder als Datei übertragen (z. B. USB-Stick).
 
 ## Technik
@@ -27,13 +27,17 @@ Das beitretende Gerät wählt den Weg selbst, auch wenn Internet da ist.
 | Stand übernehmen, Änderungen prüfen und anwenden | `src/core/sync/daten.ts` |
 | WebRTC-Verbindung, große Nachrichten in Teilen | `src/core/sync/peer.ts` |
 | Host- und Gast-Sitzung | `src/core/sync/sitzung.ts` |
-| Vermittlungsdienst (Logik und Upstash-Speicher) | `src/core/sync/vermittlung-dienst.ts` |
+| Vermittlungsdienst (Logik, Speicher für Redis/Upstash und Durable Object) | `src/core/sync/vermittlung-dienst.ts` |
+| HTTP-Hülle mit CORS, gleich für alle Varianten | `src/core/sync/vermittlung-http.ts` |
+| Cloudflare Worker mit Durable Object | `cloudflare/worker.ts` |
+| Node-Server für Docker Compose mit Redis | `server/vermittlung.ts` |
+| Vercel-Funktion mit Upstash oder Weiterleitung | `api/vermittlung.ts` |
 
 Neue Tools nehmen automatisch teil: Abgeglichen werden alle Tabellen aus dem Tool-Manifest (`tabellen`), dazu `einsaetze`. Geräteeinstellungen (z. B. Richtwerte, aktiver Einsatz) bleiben je Gerät.
 
 ## Einrichtung des Kurzcode-Wegs
 
-Im Vercel-Projekt Upstash Redis aus dem Marketplace verbinden. Die Funktion liest `KV_REST_API_URL` und `KV_REST_API_TOKEN` (oder `UPSTASH_REDIS_REST_URL` und `UPSTASH_REDIS_REST_TOKEN`). Ohne diese Variablen meldet der Host „Kein Kurzcode“, der QR-Weg funktioniert weiter. Wie eigene Installationen den Dienst nutzen oder abschalten, steht unter [Kurzcode-Dienst](../betrieb/kurzcode.md).
+Ohne Einstellung nutzt jede Installation den gehosteten Dienst. Einen eigenen Dienst gibt es als [Cloudflare Worker](../betrieb/cloudflare.md), mit [Docker Compose und Redis](../betrieb/docker.md#mit-eigenem-kurzcode-dienst-und-redis) oder als [Vercel-Funktion mit Upstash](../betrieb/vercel.md#kurzcode-dienst). Ist kein Dienst erreichbar, meldet der Host „Kein Kurzcode“, der QR-Weg funktioniert weiter. Wie eigene Installationen den Dienst nutzen oder abschalten, steht unter [Kurzcode-Dienst](../betrieb/kurzcode.md).
 
 ## Robustheit
 

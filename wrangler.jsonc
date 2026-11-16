@@ -1,0 +1,24 @@
+// Lagekit komplett auf Cloudflare: statischer Export aus out/ und Kurzcode-Dienst
+// in einem Worker. Vorher bauen: pnpm build && pnpm exec wrangler deploy
+// Nur den Kurzcode-Dienst (App z. B. auf Vercel): cloudflare/wrangler.jsonc
+// Anleitung: docs/betrieb/cloudflare.md
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lagekit",
+  "main": "cloudflare/worker.ts",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,
+  "assets": {
+    "directory": "out",
+    "binding": "ASSETS",
+    // /hinweise/ → /hinweise/index.html wie trailingSlash im Export; 404.html für Unbekanntes.
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*", "/konfiguration.json"]
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "VERMITTLUNG", "class_name": "Vermittlung" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Vermittlung"] }],
+  "observability": { "enabled": true }
+}

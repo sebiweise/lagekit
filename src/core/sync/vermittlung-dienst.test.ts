@@ -1,10 +1,34 @@
 import { describe, expect, it } from "vitest";
-import { speicherImArbeitsspeicher, vermitteln } from "./vermittlung-dienst";
+import {
+  abgelaufeneLoeschen,
+  schluesselSpeicher,
+  speicherImArbeitsspeicher,
+  vermitteln,
+  type SchluesselSpeicher,
+  type Speicher,
+} from "./vermittlung-dienst";
+
+/** Wie `ctx.storage.kv` eines Durable Objects, nur im Arbeitsspeicher. */
+function kvImArbeitsspeicher(): SchluesselSpeicher & { werte: Map<string, unknown> } {
+  const werte = new Map<string, unknown>();
+  return {
+    werte,
+    get: (s) => werte.get(s),
+    put: (s, w) => void werte.set(s, structuredClone(w)),
+    delete: (s) => werte.delete(s),
+    list: ({ prefix }) => [...werte].filter(([s]) => s.startsWith(prefix)),
+  };
+}
 
 const ANFRAGE = "LKA1.abcdefghijklmnop";
 const ANTWORT = "LKB1.abcdefghijklmnop";
 
-describe("Vermittlungsdienst", () => {
+const SPEICHER: [string, () => Speicher][] = [
+  ["Arbeitsspeicher", speicherImArbeitsspeicher],
+  ["Durable Object", () => schluesselSpeicher(kvImArbeitsspeicher())],
+];
+
+describe.each(SPEICHER)("Vermittlungsdienst (%s)", (_name, speicherImArbeitsspeicher) => {
   it("vermittelt Anfrage und Antwort zwischen Gast und Host", async () => {
     const s = speicherImArbeitsspeicher();
     const sitzung = await vermitteln(s, { aktion: "sitzung" }, "1");
@@ -65,5 +89,33 @@ describe("Vermittlungsdienst", () => {
       expect(r.status).toBe(404);
     }
     expect((await vermitteln(s, { aktion: "anfrage", kurzcode: "123456", anfrage: ANFRAGE }, "9")).status).toBe(429);
+  });
+});
+
+describe("Speicher im Durable Object", () => {
+  it("vergisst Einträge nach ihrer Ablaufzeit und räumt sie auf", async () => {
+    let jetzt = 1_000_000;
+    const kv = kvImArbeitsspeicher();
+    const s = schluesselSpeicher(kv, () => jetzt);
+    expect(await s.setzenWennFrei("lk:s:1", "a", 60)).toBe(true);
+    expect(await s.setzenWennFrei("lk:s:1", "b", 60)).toBe(false);
+    await s.anhaengen("lk:q:1", "x", 600);
+    await s.anhaengen("lk:q:1", "y", 600);
+    jetzt += 61_000;
+    expect(await s.lesen("lk:s:1")).toBeNull();
+    expect(await s.setzenWennFrei("lk:s:1", "b", 60)).toBe(true);
+    expect(abgelaufeneLoeschen(kv, jetzt + 61_000)).toBe(1);
+    expect(await s.allesNehmen("lk:q:1")).toEqual(["x", "y"]);
+    expect(await s.allesNehmen("lk:q:1")).toEqual([]);
+    expect(kv.werte.size).toBe(0);
+  });
+
+  it("zählt Aufrufe je Minute und beginnt danach neu", async () => {
+    let jetzt = 0;
+    const s = schluesselSpeicher(kvImArbeitsspeicher(), () => jetzt);
+    expect(await s.zaehlen("lk:r:1", 60)).toBe(1);
+    expect(await s.zaehlen("lk:r:1", 60)).toBe(2);
+    jetzt += 60_000;
+    expect(await s.zaehlen("lk:r:1", 60)).toBe(1);
   });
 });

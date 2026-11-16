@@ -1,0 +1,16 @@
+// Cloudflare Worker nur mit dem Kurzcode-Dienst; die App läuft woanders (z. B. Vercel).
+// Bereitstellen: pnpm exec wrangler deploy -c cloudflare/wrangler.jsonc
+// Anleitung: docs/betrieb/cloudflare.md
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "lagekit-kurzcode",
+  "main": "worker.ts",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,
+  "durable_objects": {
+    "bindings": [{ "name": "VERMITTLUNG", "class_name": "Vermittlung" }]
+  },
+  // Durable Objects mit SQLite-Speicher gibt es auch im Free-Plan.
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Vermittlung"] }],
+  "observability": { "enabled": true }
+}

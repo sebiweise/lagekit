@@ -6,7 +6,7 @@ import { DOKU, dokuHref } from "@/site/doku-liste";
 
 export const metadata: Metadata = {
   title: "Dokumentation",
-  description: "Lagekit selbst betreiben (Docker, Webserver, Vercel, Cloudflare Pages), Bedienung und fachliche Grundlagen.",
+  description: "Lagekit selbst betreiben (Docker, Webserver, Vercel, Cloudflare), Bedienung und fachliche Grundlagen.",
 };
 
 export default function DokuUebersicht() {

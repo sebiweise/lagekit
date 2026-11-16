@@ -325,9 +325,9 @@ test("Gehosteter Dienst als Standard: Datenschutzhinweis nennt die Adresse", asy
   await dienstImTest(kontext, speicherImArbeitsspeicher(), "1");
   const seite = await kontext.newPage();
   await seite.goto(`${baseURL}/app/sitzung/`);
-  await expect(seite.getByTestId("dienst-hinweis")).toContainText("lagekit.vercel.app");
+  await expect(seite.getByTestId("dienst-hinweis")).toContainText("lagekit-kurzcode.sebiweise.workers.dev");
   await seite.goto(`${baseURL}/app/hinweise/`);
-  await expect(seite.getByTestId("dienst-anzeige")).toContainText("lagekit.vercel.app");
+  await expect(seite.getByTestId("dienst-anzeige")).toContainText("lagekit-kurzcode.sebiweise.workers.dev");
   await expect(seite.getByRole("link", { name: /Fehler melden/ })).toHaveAttribute(
     "href",
     "https://github.com/sebiweise/lagekit/issues/new/choose",

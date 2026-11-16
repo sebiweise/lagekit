@@ -34,7 +34,7 @@ Die App startet offline, Einsätze lassen sich verwalten und per JSON-Sicherung 
 
 Alle Seiten unter `docs/` erscheinen auch in der App-Website unter `/docs/`.
 
-- Selbst betreiben: [Überblick](docs/betrieb/selbst-betreiben.md), [Docker](docs/betrieb/docker.md), [Statisches Hosting](docs/betrieb/statisch.md), [Vercel](docs/betrieb/vercel.md), [Cloudflare Pages](docs/betrieb/cloudflare-pages.md), [Kurzcode-Dienst](docs/betrieb/kurzcode.md)
+- Selbst betreiben: [Überblick](docs/betrieb/selbst-betreiben.md), [Docker](docs/betrieb/docker.md), [Statisches Hosting](docs/betrieb/statisch.md), [Vercel](docs/betrieb/vercel.md), [Cloudflare Workers](docs/betrieb/cloudflare.md), [Cloudflare Pages](docs/betrieb/cloudflare-pages.md), [Kurzcode-Dienst](docs/betrieb/kurzcode.md)
 - [Architektur und Grundsätze](docs/architektur.md): Leitprinzipien, Technik, Tool-Module, Risiken
 - [Bedienung im Einsatz](docs/konzept/bedienung-im-einsatz.md) und [Gemeinsam arbeiten](docs/konzept/gemeinsam-arbeiten.md)
 - Fachliche Grundlagen: [Strahlenexposition](docs/fachlich/strahlenexposition.md), [Karte und Standort](docs/fachlich/karte-und-standort.md), [Externe Tools](docs/fachlich/externe-tools.md)
@@ -89,7 +89,7 @@ Neue Tools bekommen einen eigenen Ordner unter `src/tools/<tool>/` mit `manifest
 docker run -d --name lagekit -p 8080:8080 --restart unless-stopped ghcr.io/sebiweise/lagekit:latest
 ```
 
-Anleitungen für [Docker](docs/betrieb/docker.md), [eigene Webserver](docs/betrieb/statisch.md) (nginx, Apache, Caddy), [Vercel](docs/betrieb/vercel.md) und [Cloudflare Pages](docs/betrieb/cloudflare-pages.md) sowie zum [Kurzcode-Dienst](docs/betrieb/kurzcode.md) für „Gemeinsam arbeiten“ stehen in der Dokumentation. Wichtig für jede Installation: HTTPS, eigene (Sub-)Domain statt Unterordner, `sw.js` ohne Zwischenspeicher, `404.html` für unbekannte Adressen ([Überblick](docs/betrieb/selbst-betreiben.md)).
+Anleitungen für [Docker](docs/betrieb/docker.md), [eigene Webserver](docs/betrieb/statisch.md) (nginx, Apache, Caddy), [Vercel](docs/betrieb/vercel.md), [Cloudflare Workers](docs/betrieb/cloudflare.md) und [Cloudflare Pages](docs/betrieb/cloudflare-pages.md) sowie zum [Kurzcode-Dienst](docs/betrieb/kurzcode.md) für „Gemeinsam arbeiten“ stehen in der Dokumentation. Wichtig für jede Installation: HTTPS, eigene (Sub-)Domain statt Unterordner, `sw.js` ohne Zwischenspeicher, `404.html` für unbekannte Adressen ([Überblick](docs/betrieb/selbst-betreiben.md)).
 
 ## Mitmachen
 

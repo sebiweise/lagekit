@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { dienstEndpunkt, dienstEndpunktBeimBuild } from "./dienst-adresse";
 
-const GEHOSTET = "https://lagekit.vercel.app/api/vermittlung/";
+const GEHOSTET = "https://lagekit-kurzcode.sebiweise.workers.dev/api/vermittlung/";
 
 describe("dienstEndpunkt", () => {
   it("nutzt ohne Angabe und bei true den gehosteten Dienst", () => {
@@ -31,8 +31,11 @@ describe("dienstEndpunkt", () => {
 });
 
 describe("dienstEndpunktBeimBuild", () => {
-  it("nimmt auf Vercel ohne Angabe den eigenen Dienst, sonst den gehosteten", () => {
-    expect(dienstEndpunktBeimBuild({ VERCEL: "1" })).toBe("/api/vermittlung/");
+  it("nimmt auf Vercel mit Upstash ohne Angabe den eigenen Dienst, sonst den gehosteten", () => {
+    expect(dienstEndpunktBeimBuild({ VERCEL: "1", KV_REST_API_URL: "https://u", KV_REST_API_TOKEN: "t" })).toBe(
+      "/api/vermittlung/",
+    );
+    expect(dienstEndpunktBeimBuild({ VERCEL: "1" })).toBe(GEHOSTET);
     expect(dienstEndpunktBeimBuild({})).toBe(GEHOSTET);
     expect(dienstEndpunktBeimBuild({ VERCEL: "1", LAGEKIT_KURZCODE_DIENST: "false" })).toBeNull();
   });

@@ -1,8 +1,18 @@
 # Kurzcode-Dienst
 
-Beim gemeinsamen Arbeiten treten weitere Geräte einem Einsatz per QR-Code, Datei oder Kurzcode bei. QR-Code und Datei funktionieren immer ohne Server. Der Kurzcode braucht einen kleinen Vermittlungsdienst (`api/vermittlung.ts`, Vercel-Funktion mit Upstash Redis), über den Beitrittsanfrage und Antwort laufen: Name, Funktion, Fahrzeug und Verbindungsdaten, für höchstens 10 Minuten. Einsatzdaten laufen nie darüber; die App weist an der Stelle darauf hin. Wie der Beitritt technisch abläuft, steht unter [Gemeinsam arbeiten](../konzept/gemeinsam-arbeiten.md).
+Beim gemeinsamen Arbeiten treten weitere Geräte einem Einsatz per QR-Code, Datei oder Kurzcode bei. QR-Code und Datei funktionieren immer ohne Server. Der Kurzcode braucht einen kleinen Vermittlungsdienst, über den Beitrittsanfrage und Antwort laufen: Name, Funktion, Fahrzeug und Verbindungsdaten, für höchstens 10 Minuten. Einsatzdaten laufen nie darüber; die App weist an der Stelle darauf hin. Wie der Beitritt technisch abläuft, steht unter [Gemeinsam arbeiten](../konzept/gemeinsam-arbeiten.md).
 
-Statische Installationen ohne eigenen Server (Docker, ZIP, Cloudflare Pages) nutzen standardmäßig den Dienst des Lagekit-Projekts unter `https://lagekit.vercel.app`.
+Installationen ohne eigenen Dienst (Vercel ohne Upstash, Docker ohne Compose, ZIP, Cloudflare Pages) nutzen standardmäßig den Dienst des Lagekit-Projekts unter `https://lagekit-kurzcode.sebiweise.workers.dev`.
+
+## Wo der Dienst laufen kann
+
+Die Logik ist überall dieselbe (`src/core/sync/vermittlung-dienst.ts`), nur der Speicher wechselt:
+
+| Variante | Speicher | Kosten | Anleitung |
+| --- | --- | --- | --- |
+| Cloudflare Worker | Durable Object (SQLite) | Free-Plan reicht für die meisten | [Cloudflare Workers](cloudflare.md) |
+| Docker Compose | Redis im Container daneben | eigener Server | [Docker](docker.md#mit-eigenem-kurzcode-dienst-und-redis) |
+| Vercel-Funktion | Upstash Redis | Free-Tier von Upstash, wird bei häufiger Nutzung knapp | [Vercel](vercel.md#kurzcode-dienst) |
 
 ## Einstellen
 
@@ -12,10 +22,11 @@ Statische Installationen ohne eigenen Server (Docker, ZIP, Cloudflare Pages) nut
 | --- | --- |
 | `true` (Standard) | Dienst des Lagekit-Projekts |
 | `false` | Kurzcode aus, Beitritt nur per QR-Code oder Datei |
-| `https://lagekit.example.de` | Dienst einer eigenen Lagekit-Installation auf Vercel (mit Upstash) |
-| `selbst` | Dienst derselben Installation unter `/api/vermittlung/` (Standard bei Builds auf Vercel) |
+| `https://lagekit-kurzcode.example.workers.dev` | eigener Dienst, z. B. ein eigener Cloudflare Worker oder eine andere Lagekit-Installation mit Dienst |
+| `selbst` | Dienst derselben Installation unter `/api/vermittlung/` (Standard bei Vercel mit Upstash, Cloudflare Worker mit App, Docker Compose) |
 
 - **Docker:** wird beim Start gelesen (`docker run -e LAGEKIT_KURZCODE_DIENST=false …`); das Image liefert den Wert als `/konfiguration.json` aus.
+- **Cloudflare Worker mit App:** als Variable des Workers, wirkt sofort.
 - **Eigener Build, Vercel, Cloudflare Pages:** beim Build gesetzt (`LAGEKIT_KURZCODE_DIENST=false pnpm build`).
 - **ZIP ohne neuen Build:** neben die `index.html` eine Datei `konfiguration.json` legen:
 
@@ -24,7 +35,3 @@ Statische Installationen ohne eigenen Server (Docker, ZIP, Cloudflare Pages) nut
   ```
 
 Welcher Dienst gilt, zeigt die App unter **Hinweise → Kurzcode**.
-
-## Eigenen Dienst betreiben
-
-Eine eigene Installation auf Vercel mit Upstash Redis bringt den Dienst mit, siehe [Vercel](vercel.md). Andere Installationen nutzen ihn dann mit `LAGEKIT_KURZCODE_DIENST=https://<adresse-der-vercel-installation>`.
