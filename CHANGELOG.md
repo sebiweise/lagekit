@@ -11,6 +11,18 @@ Regeln für diese Datei:
 
 ## [Unveröffentlicht]
 
+## [0.10.0] - 2026-11-16
+
+### Neu
+
+- „Sitzung beenden“ steht beim Host jetzt oben neben dem Titel der Sitzung und in der Befehlspalette (Strg+K). Vor dem Beenden fragt die App nach; danach sind alle Geräte getrennt und der Kurzcode gelöscht.
+
+### Geändert
+
+- Der Kurzcode für „Gemeinsam arbeiten“ gilt jetzt nur noch, solange der Host verbunden ist, und erlischt spätestens 30 Minuten danach (bisher starr 12 Stunden). Ist der Host länger offline, bekommt er beim nächsten Verbinden von selbst einen neuen Kurzcode.
+- Der Kurzcode-Dienst löscht Beitrittsanfragen und Antworten genau zu ihrer Ablaufzeit und speichert keine Logs mit IP-Adressen mehr.
+- Der Kurzcode-Dienst wehrt Missbrauch früher ab: zu viele Aufrufe von einer Adresse lehnt Cloudflare ab, bevor der Dienst arbeitet, und pro Adresse gibt es höchstens 10 neue Kurzcodes in 10 Minuten.
+
 ## [0.9.0] - 2026-11-16
 
 ### Neu

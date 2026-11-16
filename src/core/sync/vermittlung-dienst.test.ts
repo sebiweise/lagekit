@@ -83,6 +83,13 @@ describe.each(SPEICHER)("Vermittlungsdienst (%s)", (_name, speicherImArbeitsspei
     expect((await vermitteln(s, { aktion: "sitzung" }, "10")).status).toBe(200);
   });
 
+  it("begrenzt neue Kurzcodes je Adresse, damit niemand den Speicher füllt", async () => {
+    const s = speicherImArbeitsspeicher();
+    for (let i = 0; i < 10; i++) expect((await vermitteln(s, { aktion: "sitzung" }, "9")).status).toBe(200);
+    expect((await vermitteln(s, { aktion: "sitzung" }, "9")).status).toBe(429);
+    expect((await vermitteln(s, { aktion: "sitzung" }, "10")).status).toBe(200);
+  });
+
   it("begrenzt Beitrittsanfragen strenger, damit Kurzcodes nicht durchprobiert werden", async () => {
     const s = speicherImArbeitsspeicher();
     for (let i = 0; i < 30; i++) {
@@ -105,10 +112,36 @@ describe("Speicher im Durable Object", () => {
     jetzt += 61_000;
     expect(await s.lesen("lk:s:1")).toBeNull();
     expect(await s.setzenWennFrei("lk:s:1", "b", 60)).toBe(true);
-    expect(abgelaufeneLoeschen(kv, jetzt + 61_000)).toBe(1);
+    // Übrig bleibt nur die Liste; ihre Ablaufzeit ist der nächste Termin zum Löschen.
+    expect(abgelaufeneLoeschen(kv, jetzt + 61_000)).toBe(1_000_000 + 600_000);
     expect(await s.allesNehmen("lk:q:1")).toEqual(["x", "y"]);
     expect(await s.allesNehmen("lk:q:1")).toEqual([]);
     expect(kv.werte.size).toBe(0);
+  });
+
+  it("meldet jede Ablaufzeit und ist leer ohne Einträge", async () => {
+    const geplant: number[] = [];
+    const kv = kvImArbeitsspeicher();
+    const s = schluesselSpeicher(kv, () => 0, (bis) => geplant.push(bis));
+    await s.setzen("lk:a:1", "x", 600);
+    expect(geplant).toEqual([600_000]);
+    await s.loeschen("lk:a:1");
+    expect(abgelaufeneLoeschen(kv, 0)).toBeNull();
+  });
+
+  it("verlängert den Kurzcode erst nach der Hälfte der Zeit, um Schreibvorgänge zu sparen", async () => {
+    let jetzt = 0;
+    const geplant: number[] = [];
+    const s = schluesselSpeicher(kvImArbeitsspeicher(), () => jetzt, (bis) => geplant.push(bis));
+    await s.setzen("lk:s:1", "a", 1800);
+    jetzt = 60_000;
+    await s.verlaengern("lk:s:1", 1800);
+    expect(geplant).toEqual([1_800_000]);
+    jetzt = 1_000_000;
+    await s.verlaengern("lk:s:1", 1800);
+    expect(geplant).toEqual([1_800_000, 2_800_000]);
+    jetzt = 2_700_000;
+    expect(await s.lesen("lk:s:1")).toBe("a");
   });
 
   it("zählt Aufrufe je Minute und beginnt danach neu", async () => {
@@ -186,5 +219,24 @@ describe("Long-Polling", () => {
     const s = speicherImArbeitsspeicher();
     const { kurzcode, schluessel } = await sitzung(s);
     expect((await vermitteln(s, { aktion: "abholen", kurzcode, schluessel, warten: 600 }, "1")).status).toBe(400);
+  });
+});
+
+describe("Gültigkeit des Kurzcodes", () => {
+  it("bleibt bestehen, solange der Host fragt, und läuft sonst nach 30 Minuten ab", async () => {
+    let jetzt = 0;
+    const s = schluesselSpeicher(kvImArbeitsspeicher(), () => jetzt);
+    const { kurzcode, schluessel } = (await vermitteln(s, { aktion: "sitzung" }, "1")).inhalt as {
+      kurzcode: string;
+      schluessel: string;
+    };
+    // Host fragt eine Stunde lang jede Minute.
+    for (let i = 0; i < 60; i++) {
+      jetzt += 60_000;
+      expect((await vermitteln(s, { aktion: "abholen", kurzcode, schluessel }, "1")).status).toBe(200);
+    }
+    // Danach ist er weg (App geschlossen): nach 30 Minuten unbekannt.
+    jetzt += 31 * 60_000;
+    expect((await vermitteln(s, { aktion: "abholen", kurzcode, schluessel }, "1")).status).toBe(403);
   });
 });

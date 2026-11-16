@@ -89,6 +89,33 @@ Damit reicht der Free-Plan für über 600 Host-Stunden am Tag, also sehr viele �
 
 Den Verbrauch zeigt das Dashboard unter **Workers & Pages → lagekit-kurzcode → Metrics**.
 
+## Schutz vor Missbrauch
+
+Im Free-Plan entstehen nie Kosten: Ist eine Grenze erreicht, lehnt Cloudflare weitere Aufrufe bis Mitternacht (UTC) ab. Missbrauch kann den Kurzcode also höchstens für den Rest des Tages lahmlegen. Dagegen wirken mehrere Stufen:
+
+| Stufe | Grenze | Wirkung |
+| --- | --- | --- |
+| Rate Limiting von Cloudflare im Worker (`ratelimits` in der Konfiguration) | 300 Aufrufe pro Minute und IP-Adresse | lehnt ab, bevor das Durable Object arbeitet; spart dessen Aufrufe und Laufzeit |
+| Neue Kurzcodes | 10 pro IP-Adresse in 10 Minuten | niemand kann den Speicher mit Kurzcodes füllen |
+| Beitrittsanfragen | 30 pro IP-Adresse und Minute | erschwert das Durchprobieren von Kurzcodes (1 Million Möglichkeiten) |
+| Alle Aufrufe im Durable Object | 600 pro IP-Adresse und Minute | zweite Sicherung, auch ohne Rate Limiting |
+| Größe einer Anfrage | 8 KB | keine großen Datenmengen |
+
+Die Grenzen sind großzügig gewählt, weil sich alle Geräte eines ELW meist eine öffentliche IP-Adresse teilen (Router, Hotspot). Mit Long-Polling braucht ein Gerät nur wenige Aufrufe pro Minute.
+
+Auch abgelehnte Aufrufe zählen als Aufrufe des Workers. Gegen einen Angriff von sehr vielen Adressen hilft erst eine eigene Domain bei Cloudflare statt `workers.dev`: Dort blockieren eine Rate-Limiting-Regel der WAF (im Free-Plan eine Regel) und der Bot Fight Mode Aufrufe, bevor der Worker sie sieht, und diese zählen nicht mit.
+
 ## Datenschutz
 
-Gespeichert werden nur Kurzcode, Beitrittsanfrage (Name, Funktion, Fahrzeug, Verbindungsdaten) und die Antwort des Hosts, höchstens 10 Minuten bzw. 12 Stunden für den Kurzcode selbst. Abgelaufenes löscht der Worker stündlich. Einsatzdaten laufen nie über den Dienst. Die Logs des Workers (`observability`) enthalten Aufrufe, aber keine Inhalte; wer keine Logs möchte, setzt `"observability": { "enabled": false }`.
+Gespeichert wird nur, was für den Beitritt nötig ist, und nur so lange wie nötig:
+
+| Was | Wie lange |
+| --- | --- |
+| Beitrittsanfrage (Name, Funktion, Fahrzeug, Verbindungsdaten) | bis der Host sie abholt, höchstens 10 Minuten |
+| Antwort des Hosts | bis das Gerät sie abholt, höchstens 10 Minuten |
+| Kurzcode und Schlüssel des Hosts | solange der Host verbunden ist; ohne Abfrage des Hosts nach 30 Minuten gelöscht |
+| IP-Adressen für die Begrenzung von Anfragen | eine Minute, nur im Arbeitsspeicher |
+
+Ein Alarm des Durable Objects löscht jeden Eintrag genau zu seiner Ablaufzeit. Einsatzdaten laufen nie über den Dienst. Die Logs des Workers sind ausgeschaltet (`"observability": { "enabled": false }`), damit Cloudflare keine Aufrufe mit IP-Adressen speichert. Zur Fehlersuche lassen sie sich in der Konfiguration vorübergehend einschalten.
+
+Warum ein Durable Object und nicht Workers KV: KV erlaubt im Free-Plan nur 1.000 Schreibvorgänge am Tag, zeigt neue Einträge an anderen Standorten erst nach bis zu 60 Sekunden und kann niemanden wecken. Für Beitritte, die sofort ankommen sollen, braucht es dagegen einen Speicher, der sofort und an einer Stelle gilt.
