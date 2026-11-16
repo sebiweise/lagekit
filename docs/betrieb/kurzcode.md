@@ -1,6 +1,6 @@
 # Kurzcode-Dienst
 
-Beim gemeinsamen Arbeiten treten weitere Geräte einem Einsatz per QR-Code, Datei oder Kurzcode bei. QR-Code und Datei funktionieren immer ohne Server. Der Kurzcode braucht einen kleinen Vermittlungsdienst, über den Beitrittsanfrage und Antwort laufen: Name, Funktion, Fahrzeug und Verbindungsdaten, für höchstens 10 Minuten. Einsatzdaten laufen nie darüber; die App weist an der Stelle darauf hin. Wie der Beitritt technisch abläuft, steht unter [Gemeinsam arbeiten](../konzept/gemeinsam-arbeiten.md).
+Beim gemeinsamen Arbeiten treten weitere Geräte einem Einsatz per QR-Code, Datei oder Kurzcode bei. QR-Code und Datei funktionieren immer ohne Server. Der Kurzcode braucht einen kleinen Vermittlungsdienst, über den Beitrittsanfrage und Antwort laufen: Name, Funktion, Fahrzeug und Verbindungsdaten, für höchstens 10 Minuten. Der Kurzcode selbst erlischt spätestens 30 Minuten, nachdem der Host zuletzt verbunden war. Einsatzdaten laufen nie darüber; die App weist an der Stelle darauf hin. Wie der Beitritt technisch abläuft, steht unter [Gemeinsam arbeiten](../konzept/gemeinsam-arbeiten.md).
 
 Installationen ohne eigenen Dienst (Vercel ohne Upstash, Docker ohne Compose, ZIP, Cloudflare Pages) nutzen standardmäßig den Dienst des Lagekit-Projekts unter `https://lagekit-kurzcode.sebiweise.workers.dev`.
 

@@ -26,8 +26,8 @@ services:
   redis:
     image: redis:8-alpine
     restart: unless-stopped
-    # Kurzcodes gelten höchstens 12 Stunden; gespeichert wird nur, damit ein Neustart
-    # laufende Beitritte nicht abbricht.
+    # Einträge laufen nach Minuten ab (Redis löscht sie selbst); gespeichert wird nur,
+    # damit ein Neustart laufende Beitritte nicht abbricht.
     command: ["redis-server", "--save", "60", "1", "--maxmemory", "64mb", "--maxmemory-policy", "volatile-ttl"]
     volumes:
       - redis-daten:/data

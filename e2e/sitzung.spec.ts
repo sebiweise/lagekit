@@ -227,6 +227,19 @@ test("Gemeinsam arbeiten mit Kurzcode: Host sieht die Anfrage auf jeder Seite un
   await host.getByRole("link", { name: "Einsatz", exact: true }).click();
   await expect(host.getByTestId("einsatz-eintrag").filter({ hasText: "Hochwasser" })).toBeVisible();
 
+  // Host beendet die Sitzung über die Befehlspalette, mit Rückfrage; der Kurzcode ist danach weg.
+  await host.keyboard.press("Control+k");
+  await host.getByRole("combobox").fill("Sitzung beenden");
+  await host.keyboard.press("Enter");
+  const rueckfrage = host.getByRole("alertdialog");
+  await expect(rueckfrage).toContainText("Kurzcode wird gelöscht");
+  await rueckfrage.getByRole("button", { name: "Sitzung beenden" }).click();
+  await expect(host.getByRole("button", { name: "Sitzung starten" })).toBeVisible();
+  await expect(host.getByTestId("sitzung-status")).toHaveCount(0);
+  await expect
+    .poll(async () => (await vermitteln(speicher, { aktion: "anfrage", kurzcode, anfrage: "LKA1.abcdefghijk" }, "3")).status)
+    .toBe(404);
+
   await hostKontext.close();
   await gastKontext.close();
 });
