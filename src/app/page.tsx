@@ -51,10 +51,10 @@ const KERN: { icon: LucideIcon; titel: string; text: string }[] = [
 ];
 
 const BETRIEB: { icon: LucideIcon; titel: string; text: string; href: string; extern?: boolean }[] = [
-  { icon: Container, titel: "Docker", text: "Fertiges Image für amd64 und arm64, z. B. auf dem Server im Gerätehaus.", href: dokuHref("betrieb/docker") },
+  { icon: Container, titel: "Docker", text: "Fertiges Image für amd64 und arm64, mit Compose samt eigenem Kurzcode-Dienst und Redis.", href: dokuHref("betrieb/docker") },
   { icon: Server, titel: "Eigener Webserver", text: "ZIP aus dem Release entpacken, auf nginx, Apache, Caddy oder Webspace.", href: dokuHref("betrieb/statisch") },
-  { icon: Cloud, titel: "Vercel", text: "Fork importieren, fertig. Mit eigenem Kurzcode-Dienst.", href: dokuHref("betrieb/vercel") },
-  { icon: Cloud, titel: "Cloudflare Pages", text: "Aus dem Repository bauen oder das ZIP hochladen.", href: dokuHref("betrieb/cloudflare-pages") },
+  { icon: Cloud, titel: "Vercel", text: "Fork importieren, fertig. Vorschau für jede Änderung.", href: dokuHref("betrieb/vercel") },
+  { icon: Cloud, titel: "Cloudflare", text: "Kostenlos als Worker mit eigenem Kurzcode-Dienst, oder nur die Dateien über Pages.", href: dokuHref("betrieb/cloudflare") },
 ];
 
 const abschnitt = "mx-auto w-full max-w-6xl px-4 sm:px-6";

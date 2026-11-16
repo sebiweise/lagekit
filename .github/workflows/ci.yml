@@ -72,3 +72,12 @@ jobs:
           build-args: LAGEKIT_COMMIT=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Kurzcode-Dienst bauen
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: vermittlung
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

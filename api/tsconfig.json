@@ -5,8 +5,15 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "rootDir": "..",
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "plugins": []
   },
-  "include": ["./**/*.ts", "../src/core/sync/vermittlung-dienst.ts"]
+  "include": [
+    "./**/*.ts",
+    "../src/core/sync/vermittlung-dienst.ts",
+    "../src/core/sync/vermittlung-http.ts",
+    "../src/core/sync/dienst-adresse.ts"
+  ]
 }

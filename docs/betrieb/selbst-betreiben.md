@@ -6,10 +6,11 @@ Lagekit besteht nur aus statischen Dateien: HTML, JavaScript, CSS, Bilder und ei
 
 | Variante | Passt, wenn … | Anleitung |
 | --- | --- | --- |
-| Docker | ein Server oder NAS mit Docker vorhanden ist, z. B. im Gerätehaus oder Rechenzentrum | [Docker](docker.md) |
+| Docker | ein Server oder NAS mit Docker vorhanden ist, z. B. im Gerätehaus oder Rechenzentrum; mit Compose auch mit eigenem Kurzcode-Dienst und Redis | [Docker](docker.md) |
 | Statisches Hosting (ZIP) | schon ein Webserver läuft (nginx, Apache, Caddy, IIS) oder ein Webspace gebucht ist | [Statisches Hosting](statisch.md) |
-| Vercel | eine eigene Installation ohne eigenen Server gewünscht ist, mit eigenem Kurzcode-Dienst | [Vercel](vercel.md) |
-| Cloudflare Pages | eine eigene Installation ohne eigenen Server gewünscht ist, im Netz von Cloudflare | [Cloudflare Pages](cloudflare-pages.md) |
+| Vercel | eine eigene Installation ohne eigenen Server gewünscht ist | [Vercel](vercel.md) |
+| Cloudflare Workers | eine eigene Installation ohne eigenen Server gewünscht ist, mit eigenem Kurzcode-Dienst, kostenlos | [Cloudflare Workers](cloudflare.md) |
+| Cloudflare Pages | nur die statischen Dateien bei Cloudflare liegen sollen | [Cloudflare Pages](cloudflare-pages.md) |
 
 Wer nichts betreiben will, nutzt die gehostete Fassung unter <https://lagekit.vercel.app>. Auch dort bleiben alle Daten auf dem Gerät.
 
@@ -20,7 +21,7 @@ Wer nichts betreiben will, nutzt die gehostete Fassung unter <https://lagekit.ve
 3. **`sw.js` nicht zwischenspeichern.** Der Webserver sollte `/sw.js` mit `Cache-Control: no-cache` ausliefern, sonst kommen Updates erst Stunden später an. Dasselbe empfiehlt sich für `manifest.webmanifest`.
 4. **`404.html` für unbekannte Adressen.** Der Webserver soll bei unbekannten Adressen die Datei `404.html` mit Status 404 ausliefern. Sie leitet auch alte Adressen in die App weiter (siehe unten).
 
-Docker-Image, `vercel.json` und die Dateien `_redirects` und `_headers` für Cloudflare Pages und Netlify bringen das alles schon mit.
+Docker-Image, `vercel.json`, `wrangler.jsonc` und die Dateien `_redirects` und `_headers` für Cloudflare und Netlify bringen das alles schon mit.
 
 ## Adressen
 

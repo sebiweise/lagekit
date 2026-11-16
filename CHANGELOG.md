@@ -11,6 +11,18 @@ Regeln für diese Datei:
 
 ## [Unveröffentlicht]
 
+## [0.9.0] - 2026-11-16
+
+### Neu
+
+- Der Kurzcode für „Gemeinsam arbeiten“ läuft jetzt über einen Dienst bei Cloudflare, der im kostenlosen Plan auskommt. Beitrittsanfragen erscheinen beim Host und die Freigabe beim Gerät jetzt sofort statt nach bis zu 2 Sekunden, weil der Dienst Neuigkeiten direkt zurückmeldet, statt sich ständig fragen zu lassen.
+- Docker: Mit der neuen Datei `compose.yaml` laufen App, Kurzcode-Dienst und Redis zusammen auf dem eigenen Server. Der Kurzcode braucht dann keinen Dienst aus dem Internet mehr.
+- Lagekit lässt sich komplett als Cloudflare Worker betreiben, mit eigenem Kurzcode-Dienst. Anleitung unter Dokumentation → Cloudflare Workers.
+
+### Geändert
+
+- Installationen auf Vercel ohne Upstash nutzen jetzt den Kurzcode-Dienst des Lagekit-Projekts, statt „Kein Kurzcode“ zu melden. Ältere Installationen, die noch die alte Adresse ansprechen, werden dorthin weitergeleitet.
+
 ## [0.8.0] - 2026-11-15
 
 ### Neu

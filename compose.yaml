@@ -1,0 +1,36 @@
+# Lagekit mit eigenem Kurzcode-Dienst und Redis, ohne Dienst von außen.
+#   docker compose up -d
+# Danach unter http://localhost:8080. Für andere Geräte gehört ein Reverse-Proxy mit
+# HTTPS davor, siehe docs/betrieb/docker.md.
+services:
+  lagekit:
+    image: ghcr.io/sebiweise/lagekit:latest
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Kurzcode über den Dienst nebenan (nginx reicht /api/vermittlung/ weiter).
+      LAGEKIT_KURZCODE_DIENST: selbst
+      LAGEKIT_VERMITTLUNG: vermittlung:8787
+    depends_on:
+      - vermittlung
+
+  vermittlung:
+    image: ghcr.io/sebiweise/lagekit-vermittlung:latest
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    # Kurzcodes gelten höchstens 12 Stunden; gespeichert wird nur, damit ein Neustart
+    # laufende Beitritte nicht abbricht.
+    command: ["redis-server", "--save", "60", "1", "--maxmemory", "64mb", "--maxmemory-policy", "volatile-ttl"]
+    volumes:
+      - redis-daten:/data
+
+volumes:
+  redis-daten:
