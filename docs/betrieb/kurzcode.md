@@ -8,11 +8,13 @@ Installationen ohne eigenen Dienst (Vercel ohne Upstash, Docker ohne Compose, ZI
 
 Die Logik ist überall dieselbe (`src/core/sync/vermittlung-dienst.ts`), nur der Speicher wechselt:
 
-| Variante | Speicher | Kosten | Anleitung |
-| --- | --- | --- | --- |
-| Cloudflare Worker | Durable Object (SQLite) | Free-Plan reicht für die meisten | [Cloudflare Workers](cloudflare.md) |
-| Docker Compose | Redis im Container daneben | eigener Server | [Docker](docker.md#mit-eigenem-kurzcode-dienst-und-redis) |
-| Vercel-Funktion | Upstash Redis | Free-Tier von Upstash, wird bei häufiger Nutzung knapp | [Vercel](vercel.md#kurzcode-dienst) |
+| Variante | Speicher | Nachfragen | Kosten | Anleitung |
+| --- | --- | --- | --- | --- |
+| Cloudflare Worker | Durable Object (SQLite) | Long-Polling | Free-Plan reicht für die meisten | [Cloudflare Workers](cloudflare.md) |
+| Docker Compose | Redis im Container daneben | Long-Polling | eigener Server | [Docker](docker.md#mit-eigenem-kurzcode-dienst-und-redis) |
+| Vercel-Funktion | Upstash Redis | alle 2 Sekunden | Free-Tier von Upstash, wird bei häufiger Nutzung knapp | [Vercel](vercel.md#kurzcode-dienst) |
+
+Beim Long-Polling hält der Dienst eine Abfrage bis zu 25 Sekunden offen und antwortet, sobald eine Beitrittsanfrage oder die Freigabe des Hosts da ist. Beitritte gehen so ohne Verzögerung durch, und es gibt nur einen Bruchteil der Aufrufe. Ein Dienst, der nicht warten kann (Vercel-Funktion), antwortet sofort; dann fragt die App alle 2 Sekunden nach, im Hintergrund-Tab alle 10 Sekunden.
 
 ## Einstellen
 

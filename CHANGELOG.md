@@ -15,7 +15,7 @@ Regeln für diese Datei:
 
 ### Neu
 
-- Der Kurzcode für „Gemeinsam arbeiten“ läuft jetzt über einen Dienst bei Cloudflare, der im kostenlosen Plan auskommt. Für die Bedienung ändert sich nichts.
+- Der Kurzcode für „Gemeinsam arbeiten“ läuft jetzt über einen Dienst bei Cloudflare, der im kostenlosen Plan auskommt. Beitrittsanfragen erscheinen beim Host und die Freigabe beim Gerät jetzt sofort statt nach bis zu 2 Sekunden, weil der Dienst Neuigkeiten direkt zurückmeldet, statt sich ständig fragen zu lassen.
 - Docker: Mit der neuen Datei `compose.yaml` laufen App, Kurzcode-Dienst und Redis zusammen auf dem eigenen Server. Der Kurzcode braucht dann keinen Dienst aus dem Internet mehr.
 - Lagekit lässt sich komplett als Cloudflare Worker betreiben, mit eigenem Kurzcode-Dienst. Anleitung unter Dokumentation → Cloudflare Workers.
 

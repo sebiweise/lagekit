@@ -22,6 +22,45 @@ export interface Speicher {
   zaehlen(schluessel: string, sekunden: number): Promise<number>;
 }
 
+/**
+ * Wartende Abfragen (Long-Polling): Wer nachfragt und noch nichts bekommt, wartet bis
+ * zu {@link MAX_WARTEN_SEKUNDEN}, bis jemand für diesen Schlüssel etwas ablegt. Nur
+ * Dienste mit einem einzigen Prozess können das (Durable Object, Node-Server); ohne
+ * Warteliste antwortet der Dienst sofort, und die App fragt in Abständen nach.
+ */
+export interface Warteliste {
+  /**
+   * Wartet höchstens `ms`, bis {@link Warteliste.wecken} für den Schlüssel kommt.
+   * Es wartet immer nur die neueste Abfrage je Schlüssel: Eine neue verdrängt die
+   * ältere (`"verdraengt"`). Sonst nähme z. B. die Abfrage eines inzwischen neu
+   * geladenen Tabs die Beitrittsanfrage weg, und sie ginge verloren.
+   */
+  warten(schluessel: string, ms: number): Promise<"geweckt" | "zeit" | "verdraengt">;
+  wecken(schluessel: string): void;
+}
+
+export const MAX_WARTEN_SEKUNDEN = 25;
+
+/** Warteliste im Arbeitsspeicher eines Prozesses. */
+export function warteliste(): Warteliste {
+  type Grund = "geweckt" | "zeit" | "verdraengt";
+  const wartende = new Map<string, (grund: Grund) => void>();
+  return {
+    warten: (schluessel, ms) =>
+      new Promise<Grund>((fertig) => {
+        wartende.get(schluessel)?.("verdraengt");
+        const weiter = (grund: Grund) => {
+          clearTimeout(zeit);
+          if (wartende.get(schluessel) === weiter) wartende.delete(schluessel);
+          fertig(grund);
+        };
+        const zeit = setTimeout(() => weiter("zeit"), ms);
+        wartende.set(schluessel, weiter);
+      }),
+    wecken: (schluessel) => wartende.get(schluessel)?.("geweckt"),
+  };
+}
+
 const SITZUNG_SEKUNDEN = 12 * 60 * 60;
 const ANFRAGE_SEKUNDEN = 10 * 60;
 /**
@@ -39,14 +78,16 @@ const MAX_CODE_LAENGE = 4_000;
 export const kurzcodeSchema = z.string().regex(/^\d{6}$/);
 const geheim = z.string().regex(/^[0-9a-f-]{36}$/);
 const code = z.string().min(10).max(MAX_CODE_LAENGE);
+/** Wie lange der Aufruf höchstens auf Neues warten darf, in Sekunden. */
+const warten = z.number().int().min(0).max(MAX_WARTEN_SEKUNDEN).optional();
 
 const eingabeSchema = z.discriminatedUnion("aktion", [
   z.object({ aktion: z.literal("sitzung") }),
-  z.object({ aktion: z.literal("abholen"), kurzcode: kurzcodeSchema, schluessel: geheim }),
+  z.object({ aktion: z.literal("abholen"), kurzcode: kurzcodeSchema, schluessel: geheim, warten }),
   z.object({ aktion: z.literal("antworten"), kurzcode: kurzcodeSchema, schluessel: geheim, anfrageId: geheim, antwort: code.nullable() }),
   z.object({ aktion: z.literal("beenden"), kurzcode: kurzcodeSchema, schluessel: geheim }),
   z.object({ aktion: z.literal("anfrage"), kurzcode: kurzcodeSchema, anfrage: code }),
-  z.object({ aktion: z.literal("antwort"), anfrageId: geheim }),
+  z.object({ aktion: z.literal("antwort"), anfrageId: geheim, warten }),
 ]);
 
 interface AnfrageStatus {
@@ -74,7 +115,12 @@ function neuerKurzcode(): string {
   return String(zahl).padStart(6, "0");
 }
 
-export async function vermitteln(speicher: Speicher, roh: unknown, ip: string): Promise<Ergebnis> {
+/**
+ * Führt eine Aktion aus. Mit `wartende` warten „abholen“ und „antwort“ auf Wunsch
+ * (`warten` in Sekunden), bis etwas da ist; die Antwort enthält dann `gewartet: true`,
+ * damit die App sofort wieder fragen kann statt eine Pause einzulegen.
+ */
+export async function vermitteln(speicher: Speicher, roh: unknown, ip: string, wartende?: Warteliste): Promise<Ergebnis> {
   if ((await speicher.zaehlen(k.begrenzung(ip), 60)) > MAX_AUFRUFE_PRO_MINUTE) {
     return fehler(429, "Zu viele Anfragen. Bitte kurz warten.");
   }
@@ -106,12 +152,20 @@ export async function vermitteln(speicher: Speicher, roh: unknown, ip: string): 
       const status: AnfrageStatus = { kurzcode: e.kurzcode, status: "wartet" };
       await speicher.setzen(k.anfrage(anfrageId), JSON.stringify(status), ANFRAGE_SEKUNDEN);
       await speicher.anhaengen(k.anfragen(e.kurzcode), JSON.stringify({ anfrageId, anfrage: e.anfrage }), ANFRAGE_SEKUNDEN);
+      wartende?.wecken(k.anfragen(e.kurzcode));
       return { status: 200, inhalt: { anfrageId } };
     }
     case "abholen": {
       if (!(await hostPruefen(e.kurzcode, e.schluessel))) return fehler(403, "Sitzung unbekannt.");
-      const anfragen = (await speicher.allesNehmen(k.anfragen(e.kurzcode))).map((t) => JSON.parse(t));
-      return { status: 200, inhalt: { anfragen } };
+      let anfragen = await speicher.allesNehmen(k.anfragen(e.kurzcode));
+      const lange = Boolean(wartende && e.warten);
+      if (!anfragen.length && wartende && e.warten) {
+        const grund = await wartende.warten(k.anfragen(e.kurzcode), e.warten * 1000);
+        if (grund !== "verdraengt" && (await hostPruefen(e.kurzcode, e.schluessel))) {
+          anfragen = await speicher.allesNehmen(k.anfragen(e.kurzcode));
+        }
+      }
+      return { status: 200, inhalt: { anfragen: anfragen.map((t) => JSON.parse(t)), ...(lange && { gewartet: true }) } };
     }
     case "antworten": {
       if (!(await hostPruefen(e.kurzcode, e.schluessel))) return fehler(403, "Sitzung unbekannt.");
@@ -122,18 +176,32 @@ export async function vermitteln(speicher: Speicher, roh: unknown, ip: string): 
         ? { kurzcode: e.kurzcode, status: "zugelassen", antwort: e.antwort }
         : { kurzcode: e.kurzcode, status: "abgelehnt" };
       await speicher.setzen(k.anfrage(e.anfrageId), JSON.stringify(neu), ANFRAGE_SEKUNDEN);
+      wartende?.wecken(k.anfrage(e.anfrageId));
       return { status: 200, inhalt: {} };
     }
     case "antwort": {
-      const gespeichert = await speicher.lesen(k.anfrage(e.anfrageId));
+      const lesen = async () => {
+        const gespeichert = await speicher.lesen(k.anfrage(e.anfrageId));
+        return gespeichert ? (JSON.parse(gespeichert) as AnfrageStatus) : null;
+      };
+      let gespeichert = await lesen();
       if (!gespeichert) return fehler(404, "Anfrage unbekannt oder abgelaufen.");
-      const { status, antwort } = JSON.parse(gespeichert) as AnfrageStatus;
+      const lange = Boolean(wartende && e.warten);
+      if (gespeichert.status === "wartet" && wartende && e.warten) {
+        const grund = await wartende.warten(k.anfrage(e.anfrageId), e.warten * 1000);
+        // Verdrängt: Eine neuere Abfrage holt die Antwort ab, diese meldet nur „wartet“.
+        gespeichert = grund === "verdraengt" ? gespeichert : await lesen();
+        if (!gespeichert) return fehler(404, "Anfrage unbekannt oder abgelaufen.");
+      }
+      const { status, antwort } = gespeichert;
       if (status !== "wartet") await speicher.loeschen(k.anfrage(e.anfrageId));
-      return { status: 200, inhalt: antwort ? { status, antwort } : { status } };
+      const inhalt: Record<string, unknown> = antwort ? { status, antwort } : { status };
+      return { status: 200, inhalt: lange ? { ...inhalt, gewartet: true } : inhalt };
     }
     case "beenden": {
       if (await hostPruefen(e.kurzcode, e.schluessel)) {
         await speicher.loeschen(k.sitzung(e.kurzcode), k.anfragen(e.kurzcode));
+        wartende?.wecken(k.anfragen(e.kurzcode));
       }
       return { status: 200, inhalt: {} };
     }

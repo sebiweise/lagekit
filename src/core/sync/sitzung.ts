@@ -18,7 +18,7 @@ import {
 } from "./protokoll";
 import { ZodError } from "zod";
 import { codeErstellen, codeLesen, type KompaktesSdp } from "./verbindungscode";
-import { VermittlungFehler, type Vermittlung } from "./vermittlung";
+import { nachfragen, VermittlungFehler, type Vermittlung } from "./vermittlung";
 
 /** Einfache Beobachtbarkeit für `useSyncExternalStore`. */
 class Beobachtbar {
@@ -34,7 +34,6 @@ class Beobachtbar {
   }
 }
 
-const ABHOL_INTERVALL_MS = 2_000;
 const gleich = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
 /** Ungültige Daten: Erneut senden hilft nicht, die Änderung wird verworfen. */
@@ -82,7 +81,8 @@ export class HostSitzung extends Beobachtbar {
   private schluessel: string | null;
   private bekannt: Set<string>;
   private abmelden: () => void;
-  private abholen?: ReturnType<typeof setInterval>;
+  /** Beendet das Nachfragen nach Beitrittsanfragen. */
+  private abholenStoppen?: () => void;
   private beendet = false;
   /** Wird aufgerufen, sobald die Sitzung beendet ist. */
   onBeendet: (() => void) | null = null;
@@ -145,28 +145,29 @@ export class HostSitzung extends Beobachtbar {
         return;
       }
     }
-    clearInterval(this.abholen);
-    this.abholen = setInterval(() => void this.anfragenAbholen(), ABHOL_INTERVALL_MS);
-    void this.anfragenAbholen();
+    this.abholenStoppen?.();
+    this.abholenStoppen = nachfragen((signal) => this.anfragenAbholen(signal));
     this.melden();
   }
 
-  private async anfragenAbholen() {
-    if (!this.dienst || !this.kurzcode || !this.schluessel) return;
+  private async anfragenAbholen(signal: AbortSignal): Promise<{ gewartet: boolean } | "fertig"> {
+    if (!this.dienst || !this.kurzcode || !this.schluessel) return "fertig";
     try {
-      const neu = await this.dienst.anfragenAbholen(this.kurzcode, this.schluessel);
-      for (const { anfrageId, anfrage } of neu) {
+      const { daten, gewartet } = await this.dienst.anfragenAbholen(this.kurzcode, this.schluessel, signal);
+      for (const { anfrageId, anfrage } of daten) {
         await this.anfrageAufnehmen(anfrage, "kurzcode", anfrageId).catch(() => {});
       }
+      return { gewartet };
     } catch (e) {
-      if (e instanceof VermittlungFehler && e.status === 403) {
-        // Kurzcode abgelaufen: neuen anfordern.
+      if (!signal.aborted && e instanceof VermittlungFehler && e.status === 403) {
+        // Kurzcode abgelaufen: neuen anfordern (startet eine neue Abfrage).
         this.kurzcode = null;
         this.schluessel = null;
-        clearInterval(this.abholen);
         await this.kurzcodeAnfordern();
+        return "fertig";
       }
-      // Sonst: kurzzeitige Netzprobleme, beim nächsten Durchlauf erneut versuchen.
+      // Sonst: kurzzeitige Netzprobleme, nach einer Pause erneut versuchen.
+      throw e;
     }
   }
 
@@ -281,7 +282,7 @@ export class HostSitzung extends Beobachtbar {
 
   /** Gibt Beobachter und Abfragen frei, ohne die gespeicherte Sitzung zu löschen. */
   schliessen() {
-    clearInterval(this.abholen);
+    this.abholenStoppen?.();
     this.abmelden();
   }
 
@@ -416,7 +417,8 @@ export class GastSitzung extends Beobachtbar {
   onVerloren: (() => void) | null = null;
   private einsatzId: string | null;
   private abmelden: (() => void) | null = null;
-  private abholen?: ReturnType<typeof setInterval>;
+  /** Beendet das Warten auf die Antwort des Hosts. */
+  private abholenStoppen?: () => void;
   /** Einträge des Ausgangs, die mit dem Hallo verschickt wurden. */
   private imHallo = 0;
   /** Eingehende Nachrichten und der Ausgang laufen je in fester Reihenfolge. */
@@ -443,7 +445,7 @@ export class GastSitzung extends Beobachtbar {
       } else if (z === "getrennt" && this.status !== "abgelehnt" && this.status !== "getrennt") {
         this.status = "getrennt";
         this.meldung = "Verbindung zum Host verloren.";
-        clearInterval(this.abholen);
+        this.abholenStoppen?.();
         this.onVerloren?.();
       }
       this.melden();
@@ -530,28 +532,31 @@ export class GastSitzung extends Beobachtbar {
     const anfrageId = await this.dienst.anfrageSenden(kurzcode.replace(/\D/g, ""), this.anfrageCode);
     this.status = "wartet-auf-host";
     this.melden();
-    this.abholen = setInterval(async () => {
+    const dienst = this.dienst;
+    this.abholenStoppen?.();
+    this.abholenStoppen = nachfragen(async (signal) => {
       try {
-        const r = await this.dienst!.antwortAbholen(anfrageId);
-        if (r.status === "wartet") return;
-        clearInterval(this.abholen);
+        const { daten: r, gewartet } = await dienst.antwortAbholen(anfrageId, signal);
+        if (r.status === "wartet") return { gewartet };
         if (r.status === "abgelehnt" || !r.antwort) {
           this.beenden("Der Host hat den Beitritt abgelehnt.");
-          return;
+          return "fertig";
         }
         await this.antwortSetzen(r.antwort);
+        return "fertig";
       } catch (e) {
-        if (e instanceof VermittlungFehler && e.status === 404) {
+        if (!signal.aborted && e instanceof VermittlungFehler && e.status === 404) {
           // Anfrage abgelaufen (z. B. Host neu geladen): neu anfragen.
-          clearInterval(this.abholen);
           this.status = "getrennt";
           this.meldung = "Anfrage abgelaufen.";
           this.melden();
           this.onVerloren?.();
+          return "fertig";
         }
-        // Sonst beim nächsten Durchlauf erneut versuchen.
+        // Sonst nach einer Pause erneut versuchen.
+        throw e;
       }
-    }, ABHOL_INTERVALL_MS);
+    });
   }
 
   /** Verlässt die Sitzung auf eigenen Wunsch. */
@@ -562,7 +567,7 @@ export class GastSitzung extends Beobachtbar {
   /** Gibt Verbindung und Beobachter frei (z. B. wenn eine neue Verbindung diese ersetzt). */
   schliessen() {
     this.onVerloren = null;
-    clearInterval(this.abholen);
+    this.abholenStoppen?.();
     this.abmelden?.();
     this.abmelden = null;
     this.verbindung.schliessen();

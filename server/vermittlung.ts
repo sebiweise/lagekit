@@ -7,13 +7,22 @@
  *   Arbeitsspeicher und sind nach einem Neustart weg.
  * - `PORT`: Standard 8787.
  *
+ * Genau ein Prozess je Redis, sonst weckt eine Beitrittsanfrage den wartenden Host
+ * nicht sofort (er bekommt sie dann erst bei der nächsten Abfrage).
+ *
  * Läuft hinter dem nginx des Lagekit-Images, das `/api/vermittlung/` hierher
  * weiterreicht. Die IP-Adresse des Geräts kommt aus `X-Forwarded-For`.
  */
 import { createServer, type IncomingMessage } from "node:http";
 import { createClient } from "redis";
 import { DIENST_PFAD } from "../src/core/sync/dienst-adresse";
-import { redisSpeicher, speicherImArbeitsspeicher, vermitteln, type Speicher } from "../src/core/sync/vermittlung-dienst";
+import {
+  redisSpeicher,
+  speicherImArbeitsspeicher,
+  vermitteln,
+  warteliste,
+  type Speicher,
+} from "../src/core/sync/vermittlung-dienst";
 import { json, vermittlungBeantworten } from "../src/core/sync/vermittlung-http";
 
 const port = Number(process.env.PORT ?? 8787);
@@ -57,6 +66,8 @@ async function alsRequest(req: IncomingMessage): Promise<Request> {
 }
 
 const speicher = await speicherOeffnen();
+/** Long-Polling; geht, weil genau ein Prozess die Anfragen beantwortet. */
+const wartende = warteliste();
 
 createServer(async (req, res) => {
   const pfad = (req.url ?? "/").split("?")[0];
@@ -65,7 +76,7 @@ createServer(async (req, res) => {
     antwort = new Response("ok");
   } else if (pfad === DIENST_PFAD || pfad === DIENST_PFAD.slice(0, -1)) {
     const ip = String(req.headers["x-forwarded-for"] ?? req.socket.remoteAddress ?? "unbekannt").split(",")[0].trim();
-    antwort = await vermittlungBeantworten(await alsRequest(req), ip, (eingabe, ip) => vermitteln(speicher, eingabe, ip));
+    antwort = await vermittlungBeantworten(await alsRequest(req), ip, (eingabe, ip) => vermitteln(speicher, eingabe, ip, wartende));
   } else {
     antwort = json({ fehler: "Unbekannte Adresse." }, 404);
   }

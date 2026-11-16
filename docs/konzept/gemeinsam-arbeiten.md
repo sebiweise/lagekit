@@ -29,6 +29,7 @@ Das beitretende Gerät wählt den Weg selbst, auch wenn Internet da ist.
 | Host- und Gast-Sitzung | `src/core/sync/sitzung.ts` |
 | Vermittlungsdienst (Logik, Speicher für Redis/Upstash und Durable Object) | `src/core/sync/vermittlung-dienst.ts` |
 | HTTP-Hülle mit CORS, gleich für alle Varianten | `src/core/sync/vermittlung-http.ts` |
+| Client mit Long-Polling und Pausen (`nachfragen`) | `src/core/sync/vermittlung.ts` |
 | Cloudflare Worker mit Durable Object | `cloudflare/worker.ts` |
 | Node-Server für Docker Compose mit Redis | `server/vermittlung.ts` |
 | Vercel-Funktion mit Upstash oder Weiterleitung | `api/vermittlung.ts` |

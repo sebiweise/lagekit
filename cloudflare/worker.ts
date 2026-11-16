@@ -1,9 +1,10 @@
 /**
  * Cloudflare Worker mit dem Vermittlungsdienst für den Kurzcode.
  *
- * Alle Kurzcodes liegen in einem einzigen Durable Object („global“). Es bearbeitet
- * Aufrufe nacheinander und speichert in seiner eigenen SQLite-Datenbank; das reicht
- * für die wenigen Anfragen weit aus und läuft im Free-Plan von Cloudflare.
+ * Alle Kurzcodes liegen in einem einzigen Durable Object („global“). Es läuft in einem
+ * einzigen Prozess und speichert in seiner eigenen SQLite-Datenbank; das reicht für die
+ * wenigen Anfragen weit aus und läuft im Free-Plan von Cloudflare. Weil es ein Prozess
+ * ist, können Abfragen bis zu 25 Sekunden auf Neues warten (Long-Polling).
  *
  * Zwei Betriebsarten (siehe docs/betrieb/cloudflare.md):
  * - nur Kurzcode (cloudflare/wrangler.jsonc): Die App läuft woanders, z. B. auf Vercel,
@@ -13,7 +14,14 @@
  */
 import { DurableObject } from "cloudflare:workers";
 import { DIENST_PFAD } from "../src/core/sync/dienst-adresse";
-import { abgelaufeneLoeschen, schluesselSpeicher, vermitteln, type Ergebnis, type Speicher } from "../src/core/sync/vermittlung-dienst";
+import {
+  abgelaufeneLoeschen,
+  schluesselSpeicher,
+  vermitteln,
+  warteliste,
+  type Ergebnis,
+  type Speicher,
+} from "../src/core/sync/vermittlung-dienst";
 import { vermittlungBeantworten } from "../src/core/sync/vermittlung-http";
 
 interface Env {
@@ -28,6 +36,8 @@ const AUFRAEUMEN_MS = 60 * 60 * 1000;
 
 export class Vermittlung extends DurableObject<Env> {
   private readonly speicher: Speicher;
+  /** Long-Polling: Host und wartende Geräte bekommen Neues sofort, ohne ständig nachzufragen. */
+  private readonly wartende = warteliste();
   private aufraeumenGeplant = false;
 
   constructor(ctx: DurableObjectState, env: Env) {
@@ -36,7 +46,7 @@ export class Vermittlung extends DurableObject<Env> {
   }
 
   async vermitteln(eingabe: unknown, ip: string): Promise<Ergebnis> {
-    const ergebnis = await vermitteln(this.speicher, eingabe, ip);
+    const ergebnis = await vermitteln(this.speicher, eingabe, ip, this.wartende);
     if (!this.aufraeumenGeplant) {
       this.aufraeumenGeplant = true;
       if ((await this.ctx.storage.getAlarm()) === null) await this.ctx.storage.setAlarm(Date.now() + AUFRAEUMEN_MS);

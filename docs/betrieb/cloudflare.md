@@ -80,12 +80,12 @@ Im Free-Plan gelten je Konto und Tag unter anderem:
 
 | Grenze | Free-Plan | Verbrauch durch Lagekit |
 | --- | --- | --- |
-| Aufrufe von Workers | 100.000 | Der Host fragt alle 2 Sekunden nach neuen Beitrittsanfragen (1.800 je Stunde), wartende Geräte ebenso, bis sie zugelassen sind. |
+| Aufrufe von Workers | 100.000 | Der Host fragt nach neuen Beitrittsanfragen; der Worker hält die Abfrage bis zu 25 Sekunden offen und antwortet sofort, wenn eine kommt (Long-Polling). Das sind rund 150 Aufrufe je Host-Stunde, wartende Geräte ebenso, bis sie zugelassen sind. |
 | Aufrufe von Durable Objects | 100.000 | einer je Aufruf des Workers |
-| Laufzeit von Durable Objects | 13.000 GB-s | Ein einziges Objekt für alle Kurzcodes, durchgehend aktiv höchstens rund 11.000 GB-s am Tag |
+| Laufzeit von Durable Objects | 13.000 GB-s | Ein einziges Objekt für alle Kurzcodes, durchgehend aktiv höchstens rund 11.000 GB-s am Tag, egal wie viele Abfragen warten |
 | Geschriebene Zeilen | 100.000 | nur beim Anlegen, Anfragen und Antworten, nicht beim Nachfragen |
 
-Damit reicht der Free-Plan für etwa 50 Host-Stunden am Tag, also viele Übungen und Einsätze gleichzeitig. Ist eine Grenze erreicht, lehnt Cloudflare bis Mitternacht (UTC) ab; die App meldet dann „Kein Kurzcode“, QR-Code und Datei funktionieren weiter. Wer mehr braucht, wechselt auf den Workers-Paid-Plan (5 US-Dollar im Monat, 10 Millionen Aufrufe).
+Damit reicht der Free-Plan für über 600 Host-Stunden am Tag, also sehr viele Übungen und Einsätze gleichzeitig. Ist eine Grenze erreicht, lehnt Cloudflare bis Mitternacht (UTC) ab; die App meldet dann „Kein Kurzcode“, QR-Code und Datei funktionieren weiter. Wer mehr braucht, wechselt auf den Workers-Paid-Plan (5 US-Dollar im Monat, 10 Millionen Aufrufe).
 
 Den Verbrauch zeigt das Dashboard unter **Workers & Pages → lagekit-kurzcode → Metrics**.
 
