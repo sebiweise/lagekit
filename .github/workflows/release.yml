@@ -2,7 +2,8 @@ name: Release
 
 # Läuft nach jedem Merge auf master. Gibt es zur Version aus package.json noch
 # kein Tag, entstehen Tag, GitHub-Release (Text aus CHANGELOG.md, dazu der
-# statische Export als ZIP) und das Docker-Image in der GitHub Container Registry.
+# statische Export als ZIP) und die Docker-Images (App und Kurzcode-Dienst) in der
+# GitHub Container Registry.
 
 on:
   push:
@@ -122,6 +123,32 @@ jobs:
           build-args: LAGEKIT_COMMIT=${{ github.sha }}
           # Ohne Attestierungen: Buildx legt sie sonst als Manifeste mit
           # Plattform „unknown/unknown“ ab, die GHCR wie eigene Images listet.
+          provenance: false
+          sbom: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - id: meta-vermittlung
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository }}-vermittlung
+          tags: |
+            type=semver,pattern={{version}},value=v${{ needs.pruefen.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=v${{ needs.pruefen.outputs.version }}
+            type=raw,value=latest
+          labels: |
+            org.opencontainers.image.title=Lagekit-Kurzcode-Dienst
+            org.opencontainers.image.description=Vermittlung für „Gemeinsam arbeiten“ mit Kurzcode, z. B. neben Redis in Docker Compose
+
+      - name: Kurzcode-Dienst veröffentlichen
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: vermittlung
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta-vermittlung.outputs.tags }}
+          labels: ${{ steps.meta-vermittlung.outputs.labels }}
           provenance: false
           sbom: false
           cache-from: type=gha

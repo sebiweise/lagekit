@@ -1,6 +1,6 @@
 import type { Server } from "node:http";
 import { expect, test, type BrowserContext } from "@playwright/test";
-import { speicherImArbeitsspeicher, vermitteln } from "../src/core/sync/vermittlung-dienst";
+import { speicherImArbeitsspeicher, vermitteln, warteliste } from "../src/core/sync/vermittlung-dienst";
 import { starteServer, stoppeServer } from "./server";
 
 let server: Server;
@@ -16,15 +16,20 @@ test.afterEach(() => stoppeServer(server));
 const DIENST = "**/api/vermittlung/";
 const CORS = { "access-control-allow-origin": "*" };
 
-/** Vermittlungsdienst im Testprozess statt der Vercel-Funktion; der echte Dienst wird nie angesprochen. */
+/** Long-Polling wie im Cloudflare Worker: eine Warteliste für alle Geräte eines Tests. */
+const wartende = new WeakMap<object, ReturnType<typeof warteliste>>();
+
+/** Vermittlungsdienst im Testprozess statt des echten Diensts, der nie angesprochen wird. */
 async function dienstImTest(kontext: BrowserContext, speicher: ReturnType<typeof speicherImArbeitsspeicher>, ip: string) {
+  if (!wartende.has(speicher)) wartende.set(speicher, warteliste());
   await kontext.route(DIENST, async (route) => {
     if (route.request().method() === "OPTIONS") {
       await route.fulfill({ status: 204, headers: { ...CORS, "access-control-allow-headers": "content-type" } });
       return;
     }
-    const { status, inhalt } = await vermitteln(speicher, route.request().postDataJSON(), ip);
-    await route.fulfill({ status, json: inhalt, headers: CORS });
+    const { status, inhalt } = await vermitteln(speicher, route.request().postDataJSON(), ip, wartende.get(speicher));
+    // Seite inzwischen geschlossen: Die wartende Abfrage gibt es nicht mehr.
+    await route.fulfill({ status, json: inhalt, headers: CORS }).catch(() => {});
   });
 }
 
@@ -325,9 +330,9 @@ test("Gehosteter Dienst als Standard: Datenschutzhinweis nennt die Adresse", asy
   await dienstImTest(kontext, speicherImArbeitsspeicher(), "1");
   const seite = await kontext.newPage();
   await seite.goto(`${baseURL}/app/sitzung/`);
-  await expect(seite.getByTestId("dienst-hinweis")).toContainText("lagekit.vercel.app");
+  await expect(seite.getByTestId("dienst-hinweis")).toContainText("lagekit-kurzcode.sebiweise.workers.dev");
   await seite.goto(`${baseURL}/app/hinweise/`);
-  await expect(seite.getByTestId("dienst-anzeige")).toContainText("lagekit.vercel.app");
+  await expect(seite.getByTestId("dienst-anzeige")).toContainText("lagekit-kurzcode.sebiweise.workers.dev");
   await expect(seite.getByRole("link", { name: /Fehler melden/ })).toHaveAttribute(
     "href",
     "https://github.com/sebiweise/lagekit/issues/new/choose",

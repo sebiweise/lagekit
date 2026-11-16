@@ -24,11 +24,12 @@ export const DOKU: DokuGruppe[] = [
     titel: "Selbst betreiben",
     eintraege: [
       { pfad: "betrieb/selbst-betreiben", name: "Überblick", beschreibung: "Welche Variante passt, was jede Installation braucht" },
-      { pfad: "betrieb/docker", name: "Docker", beschreibung: "Fertiges Image mit nginx, mit Docker Compose und Reverse-Proxy" },
+      { pfad: "betrieb/docker", name: "Docker", beschreibung: "Fertiges Image mit nginx, Compose mit Redis und Reverse-Proxy" },
       { pfad: "betrieb/statisch", name: "Statisches Hosting", beschreibung: "ZIP auf nginx, Apache, Caddy oder einen anderen Webserver" },
-      { pfad: "betrieb/vercel", name: "Vercel", beschreibung: "Eigenes Projekt aus dem Repository, mit Kurzcode-Dienst" },
+      { pfad: "betrieb/vercel", name: "Vercel", beschreibung: "Eigenes Projekt aus dem Repository" },
+      { pfad: "betrieb/cloudflare", name: "Cloudflare Workers", beschreibung: "Kurzcode-Dienst kostenlos, auf Wunsch mit der ganzen App" },
       { pfad: "betrieb/cloudflare-pages", name: "Cloudflare Pages", beschreibung: "Aus dem Repository bauen oder das ZIP hochladen" },
-      { pfad: "betrieb/kurzcode", name: "Kurzcode-Dienst", beschreibung: "Vermittlung für „Gemeinsam arbeiten“ ein- oder ausschalten" },
+      { pfad: "betrieb/kurzcode", name: "Kurzcode-Dienst", beschreibung: "Vermittlung für „Gemeinsam arbeiten“: wo sie läuft, ein- oder ausschalten" },
     ],
   },
   {

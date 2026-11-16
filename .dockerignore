@@ -13,3 +13,4 @@ e2e
 !CHANGELOG.md
 Dockerfile
 .dockerignore
+.wrangler

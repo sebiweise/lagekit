@@ -1,6 +1,6 @@
 # Cloudflare Pages
 
-Cloudflare Pages liefert statische Seiten kostenlos über das Netz von Cloudflare aus. Die mitgelieferten Dateien `_redirects` (Weiterleitung alter Adressen) und `_headers` (`sw.js` ohne Zwischenspeicher) wertet Pages von selbst aus; die Seite `404.html` nutzt Pages für unbekannte Adressen.
+Cloudflare Pages liefert statische Seiten kostenlos über das Netz von Cloudflare aus. Wer den Kurzcode-Dienst gleich mitbetreiben möchte, nimmt stattdessen einen Worker mit App und Kurzcode, siehe [Cloudflare Workers](cloudflare.md). Die mitgelieferten Dateien `_redirects` (Weiterleitung alter Adressen) und `_headers` (`sw.js` ohne Zwischenspeicher) wertet Pages von selbst aus; die Seite `404.html` nutzt Pages für unbekannte Adressen.
 
 ## Variante A: aus dem Repository bauen
 
@@ -41,7 +41,7 @@ Für ein Update den Inhalt des neuen ZIPs genauso hochladen.
 
 ## Kurzcode-Dienst
 
-Pages führt die Vercel-Funktion des Vermittlungsdiensts nicht aus. Eine Pages-Installation nutzt deshalb standardmäßig den Dienst des Lagekit-Projekts (`LAGEKIT_KURZCODE_DIENST` nicht gesetzt oder `true`). Mit `false` ist der Kurzcode aus; beim ZIP geht das ohne neuen Build über eine Datei `konfiguration.json`, siehe [Kurzcode-Dienst](kurzcode.md).
+Eine Pages-Installation hat keinen eigenen Vermittlungsdienst und nutzt standardmäßig den des Lagekit-Projekts (`LAGEKIT_KURZCODE_DIENST` nicht gesetzt oder `true`). Ein eigener Dienst ist ein Worker im selben Konto, siehe [Cloudflare Workers](cloudflare.md#nur-kurzcode-dienst); dann `LAGEKIT_KURZCODE_DIENST` auf dessen Adresse setzen. Mit `false` ist der Kurzcode aus; beim ZIP geht das ohne neuen Build über eine Datei `konfiguration.json`, siehe [Kurzcode-Dienst](kurzcode.md).
 
 ## Eigene Domain
 

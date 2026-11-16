@@ -16,16 +16,16 @@ Lagekit wird selbst auf Vercel betrieben (<https://lagekit.vercel.app>). Eine ei
 
 ## Kurzcode-Dienst
 
-Auf Vercel läuft neben den statischen Dateien die Funktion `api/vermittlung.ts`, der Vermittlungsdienst für den Kurzcode. Standardmäßig nutzt eine Vercel-Installation ihren eigenen Dienst. Dafür braucht er einen Speicher:
+Ohne weitere Einstellung nutzt eine Vercel-Installation den Kurzcode-Dienst des Lagekit-Projekts. Für einen eigenen Dienst gibt es zwei Wege:
 
-1. Im Projekt unter **Storage** (Marketplace) **Upstash Redis** hinzufügen und mit dem Projekt verbinden.
-2. Neu deployen. Die Funktion liest `KV_REST_API_URL` und `KV_REST_API_TOKEN` (oder `UPSTASH_REDIS_REST_URL` und `UPSTASH_REDIS_REST_TOKEN`).
+- **Cloudflare Worker (empfohlen, kostenlos):** einen eigenen Worker anlegen, siehe [Cloudflare Workers](cloudflare.md#nur-kurzcode-dienst), und unter **Settings → Environment Variables** `LAGEKIT_KURZCODE_DIENST` auf dessen Adresse setzen. Die Funktion `api/vermittlung.ts` reicht dann auch Anfragen an die Vercel-Adresse dorthin weiter.
+- **Upstash Redis:** Im Projekt unter **Storage** (Marketplace) **Upstash Redis** verbinden und neu deployen. Die Funktion liest `KV_REST_API_URL` und `KV_REST_API_TOKEN` (oder `UPSTASH_REDIS_REST_URL` und `UPSTASH_REDIS_REST_TOKEN`) und vermittelt selbst. Weil Host und wartende Geräte alle 2 Sekunden nachfragen, ist das Free-Tier von Upstash bei regelmäßiger Nutzung schnell verbraucht.
 
-Ohne Upstash meldet die App „Kein Kurzcode“; QR-Code und Datei funktionieren trotzdem. Alternativ unter **Settings → Environment Variables** `LAGEKIT_KURZCODE_DIENST` setzen:
-
-| Wert | Wirkung |
+| `LAGEKIT_KURZCODE_DIENST` | Wirkung |
 | --- | --- |
-| nicht gesetzt | eigener Dienst dieser Installation (braucht Upstash) |
+| nicht gesetzt | mit Upstash: eigener Dienst, sonst Dienst des Lagekit-Projekts |
+| `https://…` | Dienst unter dieser Adresse, z. B. eigener Cloudflare Worker |
+| `selbst` | eigener Dienst dieser Installation (braucht Upstash) |
 | `true` | Dienst des Lagekit-Projekts |
 | `false` | Kurzcode aus |
 
@@ -37,7 +37,7 @@ Neue Versionen kommen über **Sync fork** auf GitHub in den eigenen Fork; Vercel
 
 ## Ohne Git
 
-Wer keinen Fork möchte, kann das ZIP eines Releases entpacken und mit der Vercel-CLI hochladen. Dann fehlen der Kurzcode-Dienst und die Weiterleitungen aus `vercel.json`; die Seite `404.html` leitet alte Adressen trotzdem weiter.
+Wer keinen Fork möchte, kann das ZIP eines Releases entpacken und mit der Vercel-CLI hochladen. Dann fehlen die Funktion für den Kurzcode-Dienst (die App nutzt den des Lagekit-Projekts) und die Weiterleitungen aus `vercel.json`; die Seite `404.html` leitet alte Adressen trotzdem weiter.
 
 ```bash
 npx vercel deploy ./lagekit --prod
