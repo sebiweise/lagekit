@@ -7,7 +7,7 @@ import { useEffect, useRef } from "react";
  * „Tagebuch-Eintrag schreiben“ wechselt zum Tagebuch und setzt dort den Cursor
  * ins Eingabefeld. Der Auftrag bleibt liegen, bis die Seite ihn abholt.
  */
-export type Anfrage = "tagebuch-eintrag" | "einsatz-neu" | "einsatz-bearbeiten";
+export type Anfrage = "tagebuch-eintrag" | "einsatz-neu" | "einsatz-bearbeiten" | "sitzung-beenden";
 
 let offen: Anfrage | null = null;
 const zuhoerer = new Set<(a: Anfrage) => void>();

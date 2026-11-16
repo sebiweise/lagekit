@@ -12,6 +12,7 @@ import {
   NotebookPen,
   Pencil,
   Plus,
+  Power,
   Save,
   Search,
   Sun,
@@ -40,6 +41,7 @@ import { useAktiverEinsatz, useEinsaetze } from "@/core/einsatz/hooks";
 import { aktivenEinsatzSetzen } from "@/core/einsatz/repository";
 import type { Einsatz } from "@/core/einsatz/schema";
 import { exportHref } from "@/core/export/hooks";
+import { useSitzung } from "@/core/sync/hooks";
 import { cn } from "@/lib/utils";
 import { sucheMerken } from "@/tools/recherche/components/teile";
 import { externeTools } from "@/tools/recherche/katalog";
@@ -220,6 +222,7 @@ function useBefehle(eingabe: string, schliessen: () => void): BefehlsGruppe[] {
   const einsatz = useAktiverEinsatz() ?? null;
   const einsaetze = useEinsaetze();
   const { wahl, setzen } = useFarbschema();
+  const leitetSitzung = useSitzung()?.rolle === "host";
 
   return useMemo(() => {
     const gehe = (href: string) => () => {
@@ -238,7 +241,10 @@ function useBefehle(eingabe: string, schliessen: () => void): BefehlsGruppe[] {
       gruppen.push({ titel: "Suchen", nachrangig: true, items: suchBefehle(begriff, einsatz, { gehe, tun }) });
     }
 
-    gruppen.push({ titel: "Einsatz", items: einsatzBefehle(einsatz, einsaetze ?? [], { gehe, tun, pfad }) });
+    gruppen.push({
+      titel: "Einsatz",
+      items: einsatzBefehle(einsatz, einsaetze ?? [], leitetSitzung, { gehe, tun, pfad }),
+    });
 
     gruppen.push({
       titel: "Gehe zu",
@@ -295,12 +301,13 @@ function useBefehle(eingabe: string, schliessen: () => void): BefehlsGruppe[] {
     });
 
     return gruppen;
-  }, [eingabe, einsatz, einsaetze, wahl, setzen, router, pfad, schliessen]);
+  }, [eingabe, einsatz, einsaetze, leitetSitzung, wahl, setzen, router, pfad, schliessen]);
 }
 
 function einsatzBefehle(
   einsatz: Einsatz | null,
   einsaetze: Einsatz[],
+  leitetSitzung: boolean,
   { gehe, tun, pfad }: { gehe: (href: string) => () => void; tun: (f: () => void) => () => void; pfad: string },
 ): Befehl[] {
   const befehle: Befehl[] = [];
@@ -354,6 +361,16 @@ function einsatzBefehle(
         ausfuehren: tun(() => void einsaetzeSichern([einsatz.id])),
       },
     );
+  }
+  if (leitetSitzung) {
+    befehle.push({
+      id: "sitzung-beenden",
+      text: "Sitzung beenden",
+      hinweis: "Alle Geräte trennen und den Kurzcode löschen",
+      stichworte: ["Gemeinsam arbeiten", "Kurzcode", "trennen", "schließen"],
+      icon: Power,
+      ausfuehren: auftrag("/app/sitzung/", "sitzung-beenden"),
+    });
   }
   // Wechseln: laufende zuerst, abgeschlossene danach; der aktive fehlt.
   const andere = einsaetze

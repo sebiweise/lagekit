@@ -11,6 +11,10 @@
     "bindings": [{ "name": "VERMITTLUNG", "class_name": "Vermittlung" }]
   },
   // Durable Objects mit SQLite-Speicher gibt es auch im Free-Plan.
+  // Grenze pro IP-Adresse, bevor das Durable Object arbeitet. Mit Long-Polling braucht
+  // ein Gerät nur wenige Aufrufe pro Minute; alle Geräte eines ELW teilen sich oft eine IP.
+  "ratelimits": [{ "name": "GRENZE", "namespace_id": "1001", "simple": { "limit": 300, "period": 60 } }],
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Vermittlung"] }],
-  "observability": { "enabled": true }
+  // Keine Logs: Cloudflare soll keine Aufrufe mit IP-Adressen speichern.
+  "observability": { "enabled": false }
 }

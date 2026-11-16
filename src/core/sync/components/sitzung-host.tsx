@@ -3,10 +3,23 @@
 // Sitzungen sind veränderliche Objekte; der React Compiler darf hier nichts zwischenspeichern.
 "use no memo";
 
+import { useState } from "react";
 import { Check, Power, Unplug, X } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAnfrage } from "@/core/befehle/anfrage";
 import { formatZeit } from "@/lib/zeit";
 import { sitzungen, type GastStatus, type HostGast, type HostSitzung } from "../sitzung";
 import { useKurzcodeDienst } from "../dienst-konfiguration";
@@ -29,12 +42,15 @@ export function SitzungHost({ sitzung }: { sitzung: HostSitzung }) {
   return (
     <div className="flex flex-col gap-6">
       <Card>
-        <CardHeader>
-          <CardTitle>Sitzung für „{sitzung.einsatz.stichwort}“</CardTitle>
-          <CardDescription>
-            Sie leiten die Sitzung. Jedes Gerät erscheint unten mit Name, Funktion und Gerät und erhält erst nach Ihrer
-            Freigabe Zugriff auf den Einsatz.
-          </CardDescription>
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col gap-1.5">
+            <CardTitle>Sitzung für „{sitzung.einsatz.stichwort}“</CardTitle>
+            <CardDescription>
+              Sie leiten die Sitzung. Jedes Gerät erscheint unten mit Name, Funktion und Gerät und erhält erst nach Ihrer
+              Freigabe Zugriff auf den Einsatz.
+            </CardDescription>
+          </div>
+          <SitzungBeenden sitzung={sitzung} />
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <section className="flex flex-col gap-2" aria-labelledby="kurzcode-titel">
@@ -95,19 +111,45 @@ export function SitzungHost({ sitzung }: { sitzung: HostSitzung }) {
           <GastKarte key={gast.anfrageId} sitzung={sitzung} gast={gast} />
         ))}
       </section>
-
-      <div>
-        <Button
-          variant="destructive"
-          onClick={() => {
-            sitzung.beenden();
-            sitzungen.setzen(null);
-          }}
-        >
-          <Power /> Sitzung beenden
-        </Button>
-      </div>
     </div>
+  );
+}
+
+/**
+ * Beendet die Sitzung nach Rückfrage: trennt alle Geräte und löscht den Kurzcode beim
+ * Vermittlungsdienst. Auch über die Befehlspalette erreichbar.
+ */
+function SitzungBeenden({ sitzung }: { sitzung: HostSitzung }) {
+  const [offen, setOffen] = useState(false);
+  useAnfrage("sitzung-beenden", () => setOffen(true));
+  const verbunden = sitzung.verbunden.length;
+  return (
+    <AlertDialog open={offen} onOpenChange={setOffen}>
+      <AlertDialogTrigger render={<Button variant="destructive" className="shrink-0" />}>
+        <Power /> Sitzung beenden
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Sitzung beenden?</AlertDialogTitle>
+          <AlertDialogDescription>
+            {verbunden === 1 ? "Das verbundene Gerät wird" : verbunden > 1 ? `Alle ${verbunden} verbundenen Geräte werden` : "Alle Geräte werden"}{" "}
+            getrennt, und der Kurzcode wird gelöscht. Neue Geräte können erst wieder beitreten, wenn Sie eine neue
+            Sitzung starten. Der Einsatz bleibt auf allen Geräten gespeichert.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => {
+              sitzung.beenden();
+              sitzungen.setzen(null);
+            }}
+          >
+            <Power /> Sitzung beenden
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 

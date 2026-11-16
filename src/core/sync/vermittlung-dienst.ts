@@ -14,6 +14,8 @@ export interface Speicher {
   setzenWennFrei(schluessel: string, wert: string, sekunden: number): Promise<boolean>;
   lesen(schluessel: string): Promise<string | null>;
   setzen(schluessel: string, wert: string, sekunden: number): Promise<void>;
+  /** Setzt die Ablaufzeit eines vorhandenen Werts neu (gleitende Gültigkeit). */
+  verlaengern(schluessel: string, sekunden: number): Promise<void>;
   loeschen(...schluessel: string[]): Promise<void>;
   anhaengen(schluessel: string, wert: string, sekunden: number): Promise<void>;
   /** Liefert alle Listeneinträge und leert die Liste. */
@@ -61,7 +63,13 @@ export function warteliste(): Warteliste {
   };
 }
 
-const SITZUNG_SEKUNDEN = 12 * 60 * 60;
+/**
+ * Gültigkeit eines Kurzcodes ohne Lebenszeichen des Hosts. Jede Abfrage des Hosts
+ * verlängert sie; schließt der Host die App oder verliert er das Internet, ist der
+ * Kurzcode samt Schlüssel spätestens nach dieser Zeit weg. Danach vergibt die App
+ * von selbst einen neuen.
+ */
+export const SITZUNG_SEKUNDEN = 30 * 60;
 const ANFRAGE_SEKUNDEN = 10 * 60;
 /**
  * Alle Geräte im ELW teilen sich meist eine öffentliche IP (Router, Hotspot). Host und
@@ -72,6 +80,11 @@ const ANFRAGE_SEKUNDEN = 10 * 60;
 const MAX_AUFRUFE_PRO_MINUTE = 600;
 /** Beitrittsanfragen pro IP und Minute; erschwert das Durchprobieren von Kurzcodes. */
 const MAX_ANFRAGEN_PRO_MINUTE = 30;
+/**
+ * Neue Kurzcodes pro IP in 10 Minuten. Ein Host braucht einen je Sitzung; die Grenze
+ * verhindert, dass jemand den Speicher mit Kurzcodes füllt.
+ */
+const MAX_SITZUNGEN_PRO_10_MINUTEN = 10;
 const MAX_CODE_LAENGE = 4_000;
 
 /** Kurzcode, wie der Dienst ihn vergibt: sechs Ziffern. */
@@ -108,6 +121,7 @@ const k = {
   anfrage: (id: string) => `lk:a:${id}`,
   begrenzung: (ip: string) => `lk:r:${ip}`,
   anfrageBegrenzung: (ip: string) => `lk:ra:${ip}`,
+  sitzungBegrenzung: (ip: string) => `lk:rs:${ip}`,
 };
 
 function neuerKurzcode(): string {
@@ -132,6 +146,9 @@ export async function vermitteln(speicher: Speicher, roh: unknown, ip: string, w
 
   switch (e.aktion) {
     case "sitzung": {
+      if ((await speicher.zaehlen(k.sitzungBegrenzung(ip), 10 * 60)) > MAX_SITZUNGEN_PRO_10_MINUTEN) {
+        return fehler(429, "Zu viele neue Sitzungen. Bitte einige Minuten warten.");
+      }
       const schluessel = crypto.randomUUID();
       for (let versuch = 0; versuch < 10; versuch++) {
         const c = neuerKurzcode();
@@ -157,6 +174,7 @@ export async function vermitteln(speicher: Speicher, roh: unknown, ip: string, w
     }
     case "abholen": {
       if (!(await hostPruefen(e.kurzcode, e.schluessel))) return fehler(403, "Sitzung unbekannt.");
+      await speicher.verlaengern(k.sitzung(e.kurzcode), SITZUNG_SEKUNDEN);
       let anfragen = await speicher.allesNehmen(k.anfragen(e.kurzcode));
       const lange = Boolean(wartende && e.warten);
       if (!anfragen.length && wartende && e.warten) {
@@ -226,6 +244,9 @@ export function redisSpeicher(quelle: {
     setzen: async (s, w, sek) => {
       await befehl("SET", s, w, "EX", sek);
     },
+    verlaengern: async (s, sek) => {
+      await befehl("EXPIRE", s, sek);
+    },
     loeschen: async (...s) => {
       if (s.length) await befehl("DEL", ...s);
     },
@@ -292,7 +313,12 @@ interface Eintrag {
  * Zähler für die Begrenzung bleiben im Arbeitsspeicher: Sie müssen keinen Neustart
  * überstehen und kosten so keine Schreibvorgänge.
  */
-export function schluesselSpeicher(kv: SchluesselSpeicher, jetzt: () => number = Date.now): Speicher {
+export function schluesselSpeicher(
+  kv: SchluesselSpeicher,
+  jetzt: () => number = Date.now,
+  /** Meldet jede neue Ablaufzeit, damit der Eintrag genau dann gelöscht werden kann. */
+  ablaufGeplant: (bis: number) => void = () => {},
+): Speicher {
   const zaehler = new Map<string, { n: number; bis: number }>();
   const lesen = (s: string): Eintrag | null => {
     const e = kv.get(s) as Eintrag | undefined;
@@ -303,7 +329,11 @@ export function schluesselSpeicher(kv: SchluesselSpeicher, jetzt: () => number =
     }
     return e;
   };
-  const schreiben = (s: string, wert: Eintrag["wert"], sek: number) => kv.put(s, { wert, bis: jetzt() + sek * 1000 });
+  const schreiben = (s: string, wert: Eintrag["wert"], sek: number) => {
+    const bis = jetzt() + sek * 1000;
+    kv.put(s, { wert, bis });
+    ablaufGeplant(bis);
+  };
   return {
     setzenWennFrei: async (s, w, sek) => {
       if (lesen(s)) return false;
@@ -315,6 +345,12 @@ export function schluesselSpeicher(kv: SchluesselSpeicher, jetzt: () => number =
       return typeof e?.wert === "string" ? e.wert : null;
     },
     setzen: async (s, w, sek) => schreiben(s, w, sek),
+    verlaengern: async (s, sek) => {
+      const e = lesen(s);
+      // Erst nach der Hälfte der Zeit neu schreiben: Der Host fragt ständig, und
+      // jeder Schreibvorgang zählt im Free-Plan.
+      if (e && e.bis - jetzt() < (sek * 1000) / 2) schreiben(s, e.wert, sek);
+    },
     loeschen: async (...s) => s.forEach((x) => kv.delete(x)),
     anhaengen: async (s, w, sek) => {
       const alt = lesen(s)?.wert;
@@ -337,14 +373,18 @@ export function schluesselSpeicher(kv: SchluesselSpeicher, jetzt: () => number =
   };
 }
 
-/** Löscht abgelaufene Einträge eines Schlüsselspeichers; gibt die Zahl der übrigen zurück. */
-export function abgelaufeneLoeschen(kv: SchluesselSpeicher, jetzt = Date.now()): number {
-  let uebrig = 0;
+/**
+ * Löscht abgelaufene Einträge eines Schlüsselspeichers. Gibt die nächste Ablaufzeit
+ * der übrigen zurück, oder `null`, wenn nichts mehr gespeichert ist.
+ */
+export function abgelaufeneLoeschen(kv: SchluesselSpeicher, jetzt = Date.now()): number | null {
+  let naechste: number | null = null;
   for (const [s, e] of kv.list({ prefix: "lk:" })) {
-    if ((e as Eintrag).bis <= jetzt) kv.delete(s);
-    else uebrig++;
+    const { bis } = e as Eintrag;
+    if (bis <= jetzt) kv.delete(s);
+    else naechste = naechste === null ? bis : Math.min(naechste, bis);
   }
-  return uebrig;
+  return naechste;
 }
 
 /** Speicher im Arbeitsspeicher, für Tests. */
@@ -355,6 +395,7 @@ export function speicherImArbeitsspeicher(): Speicher {
     setzenWennFrei: async (s, w) => (werte.has(s) ? false : (werte.set(s, w), true)),
     lesen: async (s) => werte.get(s) ?? null,
     setzen: async (s, w) => void werte.set(s, w),
+    verlaengern: async () => {},
     loeschen: async (...s) => s.forEach((x) => (werte.delete(x), listen.delete(x))),
     anhaengen: async (s, w) => void listen.set(s, [...(listen.get(s) ?? []), w]),
     allesNehmen: async (s) => {
