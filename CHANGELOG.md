@@ -11,6 +11,12 @@ Regeln für diese Datei:
 
 ## [Unveröffentlicht]
 
+## [0.10.1] - 2026-11-16
+
+### Geändert
+
+- Für den Betrieb bei Cloudflare: Die `wrangler.jsonc` im Wurzelordner beschreibt jetzt den Kurzcode-Worker `lagekit-kurzcode`, der Name passt damit zu Workers Builds. Die Variante mit App und Kurzcode in einem Worker liegt unter `cloudflare/wrangler.app.jsonc`.
+
 ## [0.10.0] - 2026-11-16
 
 ### Neu

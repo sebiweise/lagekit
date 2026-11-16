@@ -8,9 +8,9 @@
  * löscht jeden Eintrag zu seiner Ablaufzeit.
  *
  * Zwei Betriebsarten (siehe docs/betrieb/cloudflare.md):
- * - nur Kurzcode (cloudflare/wrangler.jsonc): Die App läuft woanders, z. B. auf Vercel,
+ * - nur Kurzcode (wrangler.jsonc im Wurzelordner): Die App läuft woanders, z. B. auf Vercel,
  *   und ruft den Worker per CORS auf.
- * - App und Kurzcode (wrangler.jsonc im Wurzelordner): Der Worker liefert zusätzlich
+ * - App und Kurzcode (cloudflare/wrangler.app.jsonc): Der Worker liefert zusätzlich
  *   den statischen Export aus `out/` aus.
  */
 import { DurableObject } from "cloudflare:workers";

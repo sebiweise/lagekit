@@ -1,6 +1,6 @@
 {
   "name": "lagekit",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,8 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "kurzcode:dev": "wrangler dev -c cloudflare/wrangler.jsonc",
-    "kurzcode:deploy": "wrangler deploy -c cloudflare/wrangler.jsonc"
+    "kurzcode:dev": "wrangler dev",
+    "kurzcode:deploy": "wrangler deploy"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

@@ -8,8 +8,8 @@ Der Code liegt in [`cloudflare/worker.ts`](../../cloudflare/worker.ts), die Logi
 
 | Variante | Konfiguration | Passt, wenn … |
 | --- | --- | --- |
-| Nur Kurzcode-Dienst | [`cloudflare/wrangler.jsonc`](../../cloudflare/wrangler.jsonc), Worker `lagekit-kurzcode` | die App woanders läuft, z. B. auf Vercel, im Docker-Container oder als ZIP |
-| App und Kurzcode | [`wrangler.jsonc`](../../wrangler.jsonc), Worker `lagekit` | alles bei Cloudflare liegen soll |
+| Nur Kurzcode-Dienst | [`wrangler.jsonc`](../../wrangler.jsonc), Worker `lagekit-kurzcode` | die App woanders läuft, z. B. auf Vercel, im Docker-Container oder als ZIP |
+| App und Kurzcode | [`cloudflare/wrangler.app.jsonc`](../../cloudflare/wrangler.app.jsonc), Worker `lagekit` | alles bei Cloudflare liegen soll |
 
 ## Nur Kurzcode-Dienst
 
@@ -23,10 +23,11 @@ Der Code liegt in [`cloudflare/worker.ts`](../../cloudflare/worker.ts), die Logi
    | --- | --- |
    | Project name | `lagekit-kurzcode` |
    | Build command | leer lassen |
-   | Deploy command | `pnpm exec wrangler deploy -c cloudflare/wrangler.jsonc` |
+   | Deploy command | `pnpm exec wrangler deploy` |
+   | Non-production branch deploy command | `pnpm exec wrangler versions upload`, oder Builds für andere Branches ausschalten |
    | Root directory | `/` |
 
-   Unter **Build variables** `PNPM_VERSION` auf die Version aus `packageManager` in `package.json` setzen (z. B. `12.18.0`). Damit der Worker nicht bei jeder Änderung an der App neu gebaut wird, unter **Build watch paths** `cloudflare/*` und `src/core/sync/*` eintragen.
+   Unter **Build variables** `PNPM_VERSION` auf die Version aus `packageManager` in `package.json` setzen (z. B. `12.18.0`). Damit der Worker nicht bei jeder Änderung an der App neu gebaut wird, unter **Build watch paths** `wrangler.jsonc`, `cloudflare/*` und `src/core/sync/*` eintragen.
 4. **Deploy**. Der Worker ist danach unter `https://lagekit-kurzcode.<konto>.workers.dev` erreichbar. Wer die Adresse im Browser öffnet, sieht einen kurzen Text; die App ruft `/api/vermittlung/` auf.
 
 ### Mit der Wrangler-CLI
@@ -64,13 +65,15 @@ Der Worker liefert den statischen Export aus `out/` aus und beantwortet `/api/ve
    | --- | --- |
    | Project name | `lagekit` |
    | Build command | `pnpm build` |
-   | Deploy command | `pnpm exec wrangler deploy` |
+   | Deploy command | `pnpm exec wrangler deploy -c cloudflare/wrangler.app.jsonc` |
 
    Dazu `PNPM_VERSION` wie oben. Die Node.js-Version (26) kommt aus `.nvmrc`.
 2. **Deploy**. Die App nutzt ohne weitere Einstellung den eigenen Dienst (`selbst`). Wer ihn abschalten will, setzt unter **Settings → Variables and Secrets** `LAGEKIT_KURZCODE_DIENST` auf `false`; das wirkt sofort, ohne neuen Build.
 3. Optional unter **Settings → Domains & Routes** eine eigene Domain eintragen. Lagekit muss in der Wurzel der Domain liegen.
 
-Mit der CLI: `pnpm build && pnpm exec wrangler deploy`.
+Mit der CLI: `pnpm build && pnpm exec wrangler deploy -c cloudflare/wrangler.app.jsonc`.
+
+Cloudflare meldet beim Build, dass der Name in `wrangler.jsonc` (`lagekit-kurzcode`) nicht zum Worker passt; das betrifft nur die Datei im Wurzelordner und lässt sich ignorieren, weil der Befehl die andere Datei nimmt.
 
 Weiterleitungen alter Adressen (`_redirects`), Kopfzeilen für `sw.js` (`_headers`) und `404.html` wertet Cloudflare wie bei Pages aus.
 

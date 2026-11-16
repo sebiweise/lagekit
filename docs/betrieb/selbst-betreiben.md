@@ -21,7 +21,7 @@ Wer nichts betreiben will, nutzt die gehostete Fassung unter <https://lagekit.ve
 3. **`sw.js` nicht zwischenspeichern.** Der Webserver sollte `/sw.js` mit `Cache-Control: no-cache` ausliefern, sonst kommen Updates erst Stunden später an. Dasselbe empfiehlt sich für `manifest.webmanifest`.
 4. **`404.html` für unbekannte Adressen.** Der Webserver soll bei unbekannten Adressen die Datei `404.html` mit Status 404 ausliefern. Sie leitet auch alte Adressen in die App weiter (siehe unten).
 
-Docker-Image, `vercel.json`, `wrangler.jsonc` und die Dateien `_redirects` und `_headers` für Cloudflare und Netlify bringen das alles schon mit.
+Docker-Image, `vercel.json`, `cloudflare/wrangler.app.jsonc` und die Dateien `_redirects` und `_headers` für Cloudflare und Netlify bringen das alles schon mit.
 
 ## Adressen
 
