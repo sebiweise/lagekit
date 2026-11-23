@@ -91,26 +91,6 @@ docker run -d --name lagekit -p 8080:8080 --restart unless-stopped ghcr.io/sebiw
 
 Anleitungen für [Docker](docs/betrieb/docker.md), [eigene Webserver](docs/betrieb/statisch.md) (nginx, Apache, Caddy), [Vercel](docs/betrieb/vercel.md), [Cloudflare Workers](docs/betrieb/cloudflare.md) und [Cloudflare Pages](docs/betrieb/cloudflare-pages.md) sowie zum [Kurzcode-Dienst](docs/betrieb/kurzcode.md) für „Gemeinsam arbeiten“ stehen in der Dokumentation. Wichtig für jede Installation: HTTPS, eigene (Sub-)Domain statt Unterordner, `sw.js` ohne Zwischenspeicher, `404.html` für unbekannte Adressen ([Überblick](docs/betrieb/selbst-betreiben.md)).
 
-## Claude-Skills
-
-Für die Arbeit mit Claude Code sind diese Skills empfohlen. Sie liegen nicht im Repo, sondern werden einmal pro Rechner unter `~/.claude/skills/` installiert und gelten dann für alle Projekte. Cloud-Sessions (Claude Code im Web) sehen sie nicht.
-
-- [apple-design](https://github.com/dickwu/apple-design-skill): Design-Reviews nach Apples Human Interface Guidelines
-
-Windows (PowerShell):
-
-```powershell
-git clone https://github.com/dickwu/apple-design-skill.git "$env:USERPROFILE\.claude\skills\apple-design"
-```
-
-macOS und Linux:
-
-```bash
-git clone https://github.com/dickwu/apple-design-skill.git ~/.claude/skills/apple-design
-```
-
-Danach Claude Code neu starten; `/skills` zeigt die installierten Skills. Aktualisieren mit `git pull` im Klon.
-
 ## Mitmachen
 
 Fehler, Wünsche und fachliche Hinweise über die [Issue-Vorlagen](https://github.com/sebiweise/lagekit/issues/new/choose). Wie Beiträge und neue Tools aussehen, steht in [CONTRIBUTING.md](CONTRIBUTING.md); Sicherheitsprobleme bitte nach [SECURITY.md](SECURITY.md) melden.
