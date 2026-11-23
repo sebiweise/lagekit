@@ -109,7 +109,7 @@ macOS und Linux:
 git clone https://github.com/dickwu/apple-design-skill.git ~/.claude/skills/apple-design
 ```
 
-Danach Claude Code neu starten; `/skills` zeigt die installierten Skills. Aktualisieren mit `git pull` im jeweiligen Klon (bei swiftui-expert danach den Ordner erneut kopieren).
+Danach Claude Code neu starten; `/skills` zeigt die installierten Skills. Aktualisieren mit `git pull` im Klon.
 
 ## Mitmachen
 
