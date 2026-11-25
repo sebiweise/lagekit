@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { changelogLesen } from "../src/core/aenderungen/changelog.ts";
+import { basisPfadAus } from "../src/core/pwa/adressen.ts";
 import { dienstEndpunktBeimBuild } from "../src/core/sync/dienst-adresse.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -35,4 +36,29 @@ export function appChangelog() {
  */
 export function kurzcodeDienst() {
   return dienstEndpunktBeimBuild(process.env) ?? "";
+}
+
+/**
+ * Basispfad aus BASE_PATH, z. B. `/lagekit` für GitHub Pages unter
+ * `<name>.github.io/lagekit/`; leer (Standard) für eine eigene (Sub-)Domain.
+ */
+export function basisPfad() {
+  return basisPfadAus(process.env.BASE_PATH);
+}
+
+/**
+ * Neue Adresse der App aus LAGEKIT_UMZUG_URL, nur beim Build der alten Installation
+ * gesetzt: Die App zeigt dann einen Hinweis zum Umzug (src/core/pwa/components/umzug-hinweis.tsx).
+ */
+export function umzugAdresse() {
+  const roh = (process.env.LAGEKIT_UMZUG_URL ?? "").trim();
+  if (!roh) return "";
+  let url;
+  try {
+    url = new URL(roh);
+  } catch {
+    throw new Error(`LAGEKIT_UMZUG_URL: „${roh}“ ist keine Adresse.`);
+  }
+  if (url.protocol !== "https:") throw new Error(`LAGEKIT_UMZUG_URL: „${roh}“ muss mit https:// beginnen.`);
+  return url.href;
 }

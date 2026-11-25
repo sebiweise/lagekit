@@ -1,11 +1,9 @@
 import { cp, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import type { Server } from "node:http";
-import type { AddressInfo } from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { expect, test } from "@playwright/test";
-import { serveOut } from "../scripts/serve-out.mjs";
-import { stoppeServer } from "./server";
+import { starteServer, stoppeServer } from "./server";
 
 /**
  * Update mit Änderungsliste: Eine Kopie von out/ wird ausgeliefert, danach
@@ -19,8 +17,7 @@ let ordner: string;
 test.beforeEach(async () => {
   ordner = await mkdtemp(path.join(os.tmpdir(), "lagekit-update-"));
   await cp(path.resolve(import.meta.dirname, "../out"), ordner, { recursive: true });
-  server = await serveOut({ root: ordner, port: 0 });
-  baseURL = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  ({ server, baseURL } = await starteServer(ordner));
 });
 
 test.afterEach(async () => {

@@ -1,0 +1,66 @@
+name: GitHub Pages
+
+# Baut den Static Export mit Basispfad /<repo> und veröffentlicht ihn als
+# Projektseite unter https://<owner>.github.io/<repo>/. Tests laufen in der CI.
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions: {}
+
+# Nie zwei Veröffentlichungen gleichzeitig; eine laufende wird nicht abgebrochen.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      # Version kommt aus dem Feld packageManager in package.json.
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build (Static Export und Service Worker)
+        run: pnpm build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}
+          # Pages hat kein /api: Kurzcode über den gehosteten Dienst (Cloudflare Worker).
+          LAGEKIT_KURZCODE_DIENST: "true"
+
+      # Über Actions läuft kein Jekyll; .nojekyll schadet nicht und hält den Export
+      # auch beim Veröffentlichen aus einem Branch vollständig (_next/).
+      - run: touch out/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: out/
+          include-hidden-files: true
+
+  deploy:
+    name: Veröffentlichen
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

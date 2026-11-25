@@ -5,6 +5,7 @@ import { Benachrichtigungen } from "@/core/benachrichtigungen/components/benachr
 import { DateiVorschau } from "@/core/dateien/components/datei-vorschau";
 import { OrdnerHinweis } from "@/core/dateien/components/ordner-hinweis";
 import { AppGenutzt } from "@/core/pwa/components/app-genutzt";
+import { UmzugHinweis } from "@/core/pwa/components/umzug-hinweis";
 import { UpdateHinweis } from "@/core/pwa/components/update-hinweis";
 import { SitzungHinweis } from "@/core/sync/components/sitzung-hinweis";
 
@@ -17,6 +18,7 @@ export default function AppLayout({ children }: LayoutProps<"/app">) {
       <div className="flex flex-1">
         <Seitenleiste />
         <div className="flex min-w-0 flex-1 flex-col">
+          <UmzugHinweis />
           <UpdateHinweis />
           <SitzungHinweis />
           <OrdnerHinweis />
