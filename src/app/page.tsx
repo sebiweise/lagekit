@@ -22,7 +22,7 @@ import { SiteFuss } from "@/components/site/site-fuss";
 import { SiteKopf } from "@/components/site/site-kopf";
 import { buttonVariants } from "@/components/ui/button";
 import { DOCKER_IMAGE, RELEASES_URL, REPO_URL } from "@/core/projekt";
-import { APP_PFAD, START_SKRIPT } from "@/core/pwa/adressen";
+import { APP_PFAD, mitBasis, START_SKRIPT } from "@/core/pwa/adressen";
 import { t } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { dokuHref } from "@/site/doku-liste";
@@ -95,7 +95,7 @@ export default function Startseite() {
             <figure className="overflow-hidden rounded-xl border bg-card shadow-2xl shadow-red-950/10 dark:shadow-black/40">
               {/* eslint-disable-next-line @next/next/no-img-element -- statischer Export ohne Bildoptimierung */}
               <img
-                src="/bilder/app-tagebuch-hell.png"
+                src={mitBasis("/bilder/app-tagebuch-hell.png")}
                 alt="Lagekit am PC: Einsatztagebuch mit Schnellerfassung und Einträgen zum Einsatz „Gefahrstoffaustritt“"
                 width={1440}
                 height={860}
@@ -103,7 +103,7 @@ export default function Startseite() {
               />
               {/* eslint-disable-next-line @next/next/no-img-element -- statischer Export ohne Bildoptimierung */}
               <img
-                src="/bilder/app-tagebuch-dunkel.png"
+                src={mitBasis("/bilder/app-tagebuch-dunkel.png")}
                 alt="Lagekit am PC im dunklen Farbschema: Einsatztagebuch"
                 width={1440}
                 height={860}

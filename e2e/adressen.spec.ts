@@ -61,7 +61,9 @@ test("Dokumentation mit Navigation und Links zwischen den Seiten", async ({ page
   await expect(page.getByRole("heading", { level: 1, name: "Dokumentation" })).toBeVisible();
   await page.getByRole("main").getByRole("link", { name: /Cloudflare Pages/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Cloudflare Pages" })).toBeVisible();
-  await page.locator(`main a[href="/docs/betrieb/kurzcode/"]`).first().click();
+  // Links im Markdown tragen den Basispfad (BASE_PATH) selbst.
+  const kurzcode = new URL(`${baseURL}/docs/betrieb/kurzcode/`).pathname;
+  await page.locator(`main a[href="${kurzcode}"]`).first().click();
   await expect(page).toHaveURL(`${baseURL}/docs/betrieb/kurzcode/`);
   await page.goto(`${baseURL}/docs/gibt-es-nicht/`);
   await expect(page.getByRole("heading", { name: "Seite nicht gefunden" })).toBeVisible();

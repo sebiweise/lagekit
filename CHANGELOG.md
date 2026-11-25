@@ -11,6 +11,11 @@ Regeln für diese Datei:
 
 ## [Unveröffentlicht]
 
+### Neu
+
+- Lagekit lässt sich auch in einem Unterordner betreiben, z. B. als Projektseite auf GitHub Pages unter `https://sebiweise.github.io/lagekit/`. Anleitung unter Dokumentation → GitHub Pages.
+- Zieht eine Installation auf eine neue Adresse um, kann sie einen Hinweis zeigen: Gespeicherte Daten ziehen nicht von selbst mit, deshalb gibt es dort gleich „Alles sichern“ und den Link zur neuen Adresse. Wie die Sicherung an der neuen Adresse eingelesen wird, steht unter Dokumentation → Selbst betreiben → Umzug auf eine neue Adresse.
+
 ## [0.10.0] - 2026-11-16
 
 ### Neu

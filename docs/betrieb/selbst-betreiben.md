@@ -11,19 +11,22 @@ Lagekit besteht nur aus statischen Dateien: HTML, JavaScript, CSS, Bilder und ei
 | Vercel | eine eigene Installation ohne eigenen Server gewünscht ist | [Vercel](vercel.md) |
 | Cloudflare Workers | eine eigene Installation ohne eigenen Server gewünscht ist, mit eigenem Kurzcode-Dienst, kostenlos | [Cloudflare Workers](cloudflare.md) |
 | Cloudflare Pages | nur die statischen Dateien bei Cloudflare liegen sollen | [Cloudflare Pages](cloudflare-pages.md) |
+| GitHub Pages | ein Fork auf GitHub genügen soll, ohne weiteres Konto | [GitHub Pages](github-pages.md) |
 
 Wer nichts betreiben will, nutzt die gehostete Fassung unter <https://lagekit.vercel.app>. Auch dort bleiben alle Daten auf dem Gerät.
 
 ## Was jede Installation braucht
 
 1. **HTTPS.** Browser starten den Service Worker und damit den Offline-Modus nur über HTTPS. Ausnahme ist `http://localhost` auf demselben Rechner.
-2. **Eine eigene Adresse in der Wurzel**, z. B. `https://lagekit.example.de/`. Lagekit lässt sich nicht in einem Unterordner wie `https://example.de/lagekit/` betreiben, weil der Service Worker die ganze Domain abdeckt.
+2. **Eine eigene Adresse**, am besten in der Wurzel, z. B. `https://lagekit.example.de/`. Ein Unterordner wie `https://example.de/lagekit/` geht nur mit eigenem Build (`BASE_PATH=/lagekit pnpm build`, siehe [GitHub Pages](github-pages.md#basispfad)); das ZIP und das Docker-Image gehören in die Wurzel. Andere Anwendungen auf derselben Domain teilen sich mit Lagekit den Speicher im Browser.
 3. **`sw.js` nicht zwischenspeichern.** Der Webserver sollte `/sw.js` mit `Cache-Control: no-cache` ausliefern, sonst kommen Updates erst Stunden später an. Dasselbe empfiehlt sich für `manifest.webmanifest`.
 4. **`404.html` für unbekannte Adressen.** Der Webserver soll bei unbekannten Adressen die Datei `404.html` mit Status 404 ausliefern. Sie leitet auch alte Adressen in die App weiter (siehe unten).
 
-Docker-Image, `vercel.json`, `wrangler.jsonc` und die Dateien `_redirects` und `_headers` für Cloudflare und Netlify bringen das alles schon mit.
+Docker-Image, `vercel.json`, `wrangler.jsonc` und die Dateien `_redirects` und `_headers` für Cloudflare und Netlify bringen das alles schon mit. GitHub Pages kann keine Kopfzeilen setzen; warum es trotzdem geht, steht unter [GitHub Pages](github-pages.md#was-pages-nicht-kann).
 
 ## Adressen
+
+Mit Basispfad (`BASE_PATH`) steht er vor jeder Adresse, z. B. `/lagekit/app/`.
 
 | Adresse | Inhalt |
 | --- | --- |
@@ -41,9 +44,24 @@ Geräte, auf denen die App schon genutzt wird, springen beim Aufruf von `/` dire
 Bis Version 0.4 lag die App direkt in der Wurzel, z. B. `/einsatz/` oder `/tools/einsatztagebuch/`. Diese Adressen führen weiterhin in die App (`/app/einsatz/` usw.): Lesezeichen, installierte Apps und alte Links funktionieren also weiter.
 
 - Docker, Vercel, Cloudflare Pages und Netlify leiten schon auf dem Server um (Status 301 bzw. 308).
-- Auf allen anderen Webservern, und offline, leitet die Seite `404.html` im Browser um. Dafür muss der Webserver sie für unbekannte Adressen ausliefern.
+- Auf allen anderen Webservern (auch GitHub Pages), und offline, leitet die Seite `404.html` im Browser um. Dafür muss der Webserver sie für unbekannte Adressen ausliefern.
 
 Die gespeicherten Daten (Einsätze, Tagebuch, Einstellungen) liegen je Domain im Browser und sind vom Umzug nicht betroffen.
+
+## Umzug auf eine neue Adresse
+
+Der Browser speichert Einsätze, Tagebuch und Einstellungen je Adresse (Ursprung: Protokoll, Rechnername, Port). Eine neue Adresse, z. B. von `https://lagekit.vercel.app` nach `https://sebiweise.github.io/lagekit/`, beginnt deshalb leer, und eine installierte App bleibt an der alten Adresse. Die Daten kommen per Sicherung mit:
+
+1. In der alten Installation unter **Einsatz → Sicherung und Gerätewechsel** auf **Alles sichern (JSON)** tippen. Die Datei enthält alle Einsätze mit allen Tool-Daten.
+2. Die neue Adresse öffnen, bei Bedarf als App installieren, und dort unter **Einsatz** auf **Sicherung importieren** tippen. Vorhandene Daten werden ergänzt, nicht gelöscht.
+3. Einstellungen, die nur auf dem Gerät liegen, neu setzen: verknüpfte Ordner (Dateien), Richtwerte der Strahlenexposition, Verfasser im Tagebuch, Mail-Empfänger, Aufteilung des Arbeitsbereichs, Farbschema und den aktiven Einsatz.
+4. Erst wenn alles da ist, die alte App deinstallieren.
+
+„Gemeinsam arbeiten“ ersetzt die Sicherung nicht: Eine Sitzung überträgt nur ihren einen Einsatz und keine Geräteeinstellungen.
+
+Der Betreiber der alten Installation kann beim Build `LAGEKIT_UMZUG_URL` auf die neue Adresse setzen (z. B. `LAGEKIT_UMZUG_URL=https://sebiweise.github.io/lagekit/`). Nach dem nächsten Update zeigt die App dort einen Hinweis mit **Alles sichern** und **Neue Adresse öffnen**; „Später“ blendet ihn bis zum nächsten Start aus. Unter der neuen Adresse erscheint der Hinweis nicht.
+
+Die alte Installation sollte danach noch eine Weile weiterlaufen, damit niemand Daten verliert. Wird sie später durch eine Weiterleitung auf die neue Adresse ersetzt, starten installierte Apps weiter aus ihrem Zwischenspeicher, samt Hinweis und Daten, bekommen aber keine Updates mehr.
 
 ## Updates
 

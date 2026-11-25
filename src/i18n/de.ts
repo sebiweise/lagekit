@@ -148,6 +148,14 @@ export const de = {
     titel: "Seite nicht gefunden",
     text: "Diese Adresse gibt es in Lagekit nicht.",
   },
+  umzug: {
+    text: (host: string) => `Lagekit zieht um nach ${host}.`,
+    daten:
+      "Gespeicherte Daten ziehen nicht mit: hier alles sichern, unter der neuen Adresse öffnen und dort unter Einsatz importieren.",
+    sichern: "Alles sichern",
+    oeffnen: "Neue Adresse öffnen",
+    spaeter: "Später",
+  },
 } as const;
 
 export type Texte = typeof de;

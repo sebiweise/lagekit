@@ -7,6 +7,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { Marked, type Tokens } from "marked";
 import { REPO_URL } from "@/core/projekt";
+import { mitBasis } from "@/core/pwa/adressen";
 import { ALLE_DOKUS, DOKU, dokuHref, type DokuEintrag } from "./doku-liste";
 
 export { ALLE_DOKUS, DOKU, dokuHref, type DokuEintrag };
@@ -99,7 +100,8 @@ export function dokuLaden(pfad: string): DokuSeite {
         const t = title ? ` title="${title}"` : "";
         return extern
           ? `<a href="${href}"${t} target="_blank" rel="noopener noreferrer">${text}</a>`
-          : `<a href="${href}"${t}>${text}</a>`;
+          : // Reines HTML ohne next/link: Basispfad selbst davor (`/docs/…`).
+            `<a href="${mitBasis(href)}"${t}>${text}</a>`;
       },
     },
   });

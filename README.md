@@ -34,7 +34,7 @@ Die App startet offline, Einsätze lassen sich verwalten und per JSON-Sicherung 
 
 Alle Seiten unter `docs/` erscheinen auch in der App-Website unter `/docs/`.
 
-- Selbst betreiben: [Überblick](docs/betrieb/selbst-betreiben.md), [Docker](docs/betrieb/docker.md), [Statisches Hosting](docs/betrieb/statisch.md), [Vercel](docs/betrieb/vercel.md), [Cloudflare Workers](docs/betrieb/cloudflare.md), [Cloudflare Pages](docs/betrieb/cloudflare-pages.md), [Kurzcode-Dienst](docs/betrieb/kurzcode.md)
+- Selbst betreiben: [Überblick](docs/betrieb/selbst-betreiben.md), [Docker](docs/betrieb/docker.md), [Statisches Hosting](docs/betrieb/statisch.md), [Vercel](docs/betrieb/vercel.md), [Cloudflare Workers](docs/betrieb/cloudflare.md), [Cloudflare Pages](docs/betrieb/cloudflare-pages.md), [GitHub Pages](docs/betrieb/github-pages.md), [Kurzcode-Dienst](docs/betrieb/kurzcode.md)
 - [Architektur und Grundsätze](docs/architektur.md): Leitprinzipien, Technik, Tool-Module, Risiken
 - [Bedienung im Einsatz](docs/konzept/bedienung-im-einsatz.md) und [Gemeinsam arbeiten](docs/konzept/gemeinsam-arbeiten.md)
 - Fachliche Grundlagen: [Strahlenexposition](docs/fachlich/strahlenexposition.md), [Karte und Standort](docs/fachlich/karte-und-standort.md), [Externe Tools](docs/fachlich/externe-tools.md)
@@ -89,7 +89,23 @@ Neue Tools bekommen einen eigenen Ordner unter `src/tools/<tool>/` mit `manifest
 docker run -d --name lagekit -p 8080:8080 --restart unless-stopped ghcr.io/sebiweise/lagekit:latest
 ```
 
-Anleitungen für [Docker](docs/betrieb/docker.md), [eigene Webserver](docs/betrieb/statisch.md) (nginx, Apache, Caddy), [Vercel](docs/betrieb/vercel.md), [Cloudflare Workers](docs/betrieb/cloudflare.md) und [Cloudflare Pages](docs/betrieb/cloudflare-pages.md) sowie zum [Kurzcode-Dienst](docs/betrieb/kurzcode.md) für „Gemeinsam arbeiten“ stehen in der Dokumentation. Wichtig für jede Installation: HTTPS, eigene (Sub-)Domain statt Unterordner, `sw.js` ohne Zwischenspeicher, `404.html` für unbekannte Adressen ([Überblick](docs/betrieb/selbst-betreiben.md)).
+Anleitungen für [Docker](docs/betrieb/docker.md), [eigene Webserver](docs/betrieb/statisch.md) (nginx, Apache, Caddy), [Vercel](docs/betrieb/vercel.md), [Cloudflare Workers](docs/betrieb/cloudflare.md), [Cloudflare Pages](docs/betrieb/cloudflare-pages.md) und [GitHub Pages](docs/betrieb/github-pages.md) sowie zum [Kurzcode-Dienst](docs/betrieb/kurzcode.md) für „Gemeinsam arbeiten“ stehen in der Dokumentation. Wichtig für jede Installation: HTTPS, am besten eine eigene (Sub-)Domain (ein Unterordner braucht einen Build mit `BASE_PATH`), `sw.js` ohne Zwischenspeicher, `404.html` für unbekannte Adressen ([Überblick](docs/betrieb/selbst-betreiben.md)).
+
+### GitHub Pages
+
+Der Workflow `.github/workflows/pages.yml` baut bei jeder Änderung auf `master` (oder per Hand) mit `BASE_PATH=/<repository>` und veröffentlicht `out/` als Projektseite, z. B. `https://sebiweise.github.io/lagekit/`. Im Repository muss dafür unter **Settings → Pages** die Quelle „GitHub Actions“ gewählt sein. Next.js, Service Worker, Manifest, Weiterleitung alter Adressen und Links richten sich nach dem Basispfad; ohne `BASE_PATH` bleibt alles wie bisher in der Wurzel (Vercel, Docker, Cloudflare).
+
+Pages kann keine Kopfzeilen setzen und liefert alles mit `Cache-Control: max-age=600` aus. Das ist vertretbar: Browser prüfen `sw.js` beim Update am HTTP-Zwischenspeicher vorbei, der Service Worker lädt geänderte Dateien mit `cache: "reload"`, und ein geändertes Manifest kommt höchstens 10 Minuten später an. Alte Adressen leitet statt einer 301 die Seite `404.html` im Browser weiter. Pages hat kein `/api`; der Kurzcode läuft über den Cloudflare Worker `lagekit-kurzcode.sebiweise.workers.dev`. Einzelheiten: [GitHub Pages](docs/betrieb/github-pages.md).
+
+### Umzug von lagekit.vercel.app
+
+Eine neue Adresse ist für den Browser ein neuer Ursprung: Installierte Apps und die Daten in IndexedDB bleiben unter `lagekit.vercel.app`. Mitnehmen lassen sie sich mit der JSON-Sicherung: in der alten Installation unter **Einsatz** auf **Alles sichern (JSON)** tippen, die neue Adresse öffnen und dort **Sicherung importieren**. Geräteeinstellungen (verknüpfte Ordner, Richtwerte, Verfasser, Mail-Empfänger, Arbeitsbereich, Farbschema) sind nicht in der Sicherung und werden neu gesetzt. Schritt für Schritt: [Umzug auf eine neue Adresse](docs/betrieb/selbst-betreiben.md#umzug-auf-eine-neue-adresse).
+
+Für die Umstellung ist vorgesehen:
+
+1. GitHub Pages läuft parallel zu Vercel; beide Builds kommen aus demselben Stand.
+2. Auf Vercel `LAGEKIT_UMZUG_URL=https://sebiweise.github.io/lagekit/` setzen und neu deployen. Nach dem Update zeigt die App dort einen Hinweis mit **Alles sichern** und **Neue Adresse öffnen**, der sich mit „Später“ ausblenden lässt.
+3. `lagekit.vercel.app` bleibt danach mindestens einige Monate mit diesem Hinweis erreichbar, samt `api/vermittlung.ts`, das ältere Installationen an den Kurzcode-Dienst weiterreicht. Erst danach kann `vercel.json` alle Seiten auf die neue Adresse umleiten (außer `/api/vermittlung/`, solange alte Installationen ihn nutzen). Installierte Apps laufen dann aus ihrem Zwischenspeicher weiter, mit Hinweis und Daten, bekommen aber keine Updates mehr.
 
 ## Claude-Skills
 

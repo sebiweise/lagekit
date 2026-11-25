@@ -87,10 +87,14 @@ Caddy holt das Zertifikat selbst von Let's Encrypt.
 
 - **Netlify** liest die mitgelieferten Dateien `_redirects` und `_headers`; es ist nichts weiter einzustellen.
 - **Cloudflare Pages:** siehe [Cloudflare Pages](cloudflare-pages.md).
-- **GitHub Pages** funktioniert nur mit eigener Domain (sonst liegt die Seite in einem Unterordner). `404.html` wird dort automatisch genutzt.
+- **GitHub Pages:** siehe [GitHub Pages](github-pages.md). Das ZIP passt dort nur mit eigener Domain, für eine Projektseite im Unterordner braucht es einen eigenen Build mit `BASE_PATH`.
 - **IIS:** `404.html` als Fehlerseite für 404 eintragen und für `.webmanifest` den MIME-Typ `application/manifest+json` ergänzen.
 
 Fehlen die Weiterleitungen, ist das nicht schlimm: Die Seite `404.html` leitet alte Adressen dann im Browser in die App weiter.
+
+## Unterordner
+
+Das ZIP gehört in die Wurzel einer (Sub-)Domain. Für einen Unterordner wie `https://example.de/lagekit/` selbst bauen (siehe unten) und dabei den Pfad angeben: `BASE_PATH=/lagekit pnpm build`. Der Inhalt von `out/` kommt dann in diesen Ordner; Weiterleitungen und Kopfzeilen wie oben gelten entsprechend unter `/lagekit/`.
 
 ## Selbst bauen
 

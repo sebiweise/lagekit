@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { FARBSCHEMA_SKRIPT } from "@/core/darstellung/farbschema";
+import { mitBasis } from "@/core/pwa/adressen";
 import { t } from "@/i18n";
 import "./globals.css";
 
@@ -8,7 +9,8 @@ export const metadata: Metadata = {
   description: t.app.beschreibung,
   applicationName: t.app.name,
   // Statische Datei in public/: App-Routen für Metadaten passen nicht zu Static Export mit Cache Components.
-  manifest: "/manifest.webmanifest",
+  // Next.js setzt hier den Basispfad nicht selbst davor.
+  manifest: mitBasis("/manifest.webmanifest"),
   appleWebApp: { capable: true, title: t.app.name, statusBarStyle: "black-translucent" },
 };
 

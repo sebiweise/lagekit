@@ -31,6 +31,10 @@ Ohne weitere Einstellung nutzt eine Vercel-Installation den Kurzcode-Dienst des 
 
 Die Variable wirkt beim Build, nach einer Änderung also neu deployen. Mehr unter [Kurzcode-Dienst](kurzcode.md).
 
+## Umzug
+
+Zieht die Installation auf eine andere Adresse um (etwa nach [GitHub Pages](github-pages.md)), unter **Settings → Environment Variables** `LAGEKIT_UMZUG_URL` auf die neue Adresse setzen und neu deployen. Die App zeigt dann einen Hinweis zum Sichern und zur neuen Adresse, siehe [Umzug auf eine neue Adresse](selbst-betreiben.md#umzug-auf-eine-neue-adresse). `vercel.json` und `api/vermittlung.ts` bleiben dabei, damit ältere Installationen ihren Kurzcode-Dienst behalten.
+
 ## Updates
 
 Neue Versionen kommen über **Sync fork** auf GitHub in den eigenen Fork; Vercel baut dann automatisch neu. Die Geräte aktivieren die neue Version erst nach Bestätigung.

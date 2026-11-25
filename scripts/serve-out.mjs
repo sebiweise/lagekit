@@ -33,11 +33,24 @@ async function resolveFile(root, urlPath) {
   return null;
 }
 
-/** Startet den Server; Port 0 wählt einen freien Port. */
-export function serveOut({ root, port = 3000, host = "127.0.0.1" } = {}) {
+/**
+ * Startet den Server; Port 0 wählt einen freien Port. `basis` (z. B. `/lagekit`)
+ * liefert out/ wie GitHub Pages in diesem Unterordner aus, alles andere ist 404.
+ */
+export function serveOut({ root, port = 3000, host = "127.0.0.1", basis = "" } = {}) {
   const base = path.resolve(root ?? path.join(path.dirname(fileURLToPath(import.meta.url)), "../out"));
   const server = createServer(async (req, res) => {
-    const file = await resolveFile(base, req.url ?? "/");
+    let url = req.url ?? "/";
+    if (basis) {
+      if (url === basis || url.startsWith(`${basis}?`)) {
+        res.writeHead(301, { Location: `${basis}/${url.slice(basis.length)}` });
+        res.end();
+        return;
+      }
+      // Außerhalb des Unterordners: auf Pages die 404-Seite eines anderen Projekts.
+      url = url.startsWith(`${basis}/`) ? url.slice(basis.length) : "/404-ausserhalb-der-basis/";
+    }
+    const file = await resolveFile(base, url);
     const status = file ? 200 : 404;
     const body = file ?? path.join(base, "404.html");
     res.writeHead(status, {
@@ -53,7 +66,9 @@ export function serveOut({ root, port = 3000, host = "127.0.0.1" } = {}) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const port = Number(process.env.PORT ?? 3000);
-  const server = await serveOut({ port });
+  const { basisPfadAus } = await import("../src/core/pwa/adressen.ts");
+  const basis = basisPfadAus(process.env.BASE_PATH);
+  const server = await serveOut({ port, basis });
   const address = server.address();
-  console.log(`Lagekit läuft auf http://${address.address}:${address.port}`);
+  console.log(`Lagekit läuft auf http://${address.address}:${address.port}${basis}/`);
 }

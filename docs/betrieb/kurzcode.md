@@ -29,7 +29,7 @@ Beim Long-Polling hält der Dienst eine Abfrage bis zu 25 Sekunden offen und ant
 
 - **Docker:** wird beim Start gelesen (`docker run -e LAGEKIT_KURZCODE_DIENST=false …`); das Image liefert den Wert als `/konfiguration.json` aus.
 - **Cloudflare Worker mit App:** als Variable des Workers, wirkt sofort.
-- **Eigener Build, Vercel, Cloudflare Pages:** beim Build gesetzt (`LAGEKIT_KURZCODE_DIENST=false pnpm build`).
+- **Eigener Build, Vercel, Cloudflare Pages, GitHub Pages:** beim Build gesetzt (`LAGEKIT_KURZCODE_DIENST=false pnpm build`, bei GitHub Pages in `.github/workflows/pages.yml`).
 - **ZIP ohne neuen Build:** neben die `index.html` eine Datei `konfiguration.json` legen:
 
   ```json

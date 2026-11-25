@@ -29,6 +29,7 @@ export const DOKU: DokuGruppe[] = [
       { pfad: "betrieb/vercel", name: "Vercel", beschreibung: "Eigenes Projekt aus dem Repository" },
       { pfad: "betrieb/cloudflare", name: "Cloudflare Workers", beschreibung: "Kurzcode-Dienst kostenlos, auf Wunsch mit der ganzen App" },
       { pfad: "betrieb/cloudflare-pages", name: "Cloudflare Pages", beschreibung: "Aus dem Repository bauen oder das ZIP hochladen" },
+      { pfad: "betrieb/github-pages", name: "GitHub Pages", beschreibung: "Projektseite im Unterordner, gebaut von GitHub Actions" },
       { pfad: "betrieb/kurzcode", name: "Kurzcode-Dienst", beschreibung: "Vermittlung für „Gemeinsam arbeiten“: wo sie läuft, ein- oder ausschalten" },
     ],
   },

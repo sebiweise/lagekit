@@ -16,6 +16,7 @@
 import { Serwist, type PrecacheEntry } from "serwist";
 import { AKTUELLE_VERSION } from "@/core/aenderungen/aktuell";
 import { VERSION_INFO_ANFRAGE } from "@/core/aenderungen/version-info";
+import { mitBasis } from "./adressen";
 
 declare const self: ServiceWorkerGlobalScope & {
   __SW_MANIFEST: (PrecacheEntry | string)[] | undefined;
@@ -42,7 +43,7 @@ const serwist = new Serwist({
       return varianten;
     },
     // Unbekannte Adressen zeigen offline die 404-Seite statt eines Browserfehlers.
-    navigateFallback: "/404.html",
+    navigateFallback: mitBasis("/404.html"),
   },
   skipWaiting: false,
   clientsClaim: true,

@@ -2,7 +2,11 @@
  * Registrierung des Service Workers und Update-Steuerung.
  * Nur im Produktions-Build aktiv; `next dev` läuft ohne Service Worker.
  */
-export const SW_URL = "/sw.js";
+import { mitBasis } from "./adressen";
+
+/** Der Service Worker liegt in der Wurzel der Installation und steuert sie ganz. */
+export const SW_URL = mitBasis("/sw.js");
+export const SW_SCOPE = mitBasis("/");
 
 export function serviceWorkerSupported(): boolean {
   return typeof navigator !== "undefined" && "serviceWorker" in navigator;
@@ -10,7 +14,7 @@ export function serviceWorkerSupported(): boolean {
 
 export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (!serviceWorkerSupported() || process.env.NODE_ENV !== "production") return null;
-  return navigator.serviceWorker.register(SW_URL, { scope: "/" });
+  return navigator.serviceWorker.register(SW_URL, { scope: SW_SCOPE });
 }
 
 /**

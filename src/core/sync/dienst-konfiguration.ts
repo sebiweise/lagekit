@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { mitBasis } from "@/core/pwa/adressen";
 import { dienstEndpunkt } from "./dienst-adresse";
 
 /**
@@ -26,7 +27,7 @@ let geladen: Promise<KurzcodeDienst | null> | null = null;
 
 async function endpunktLaden(): Promise<string | null> {
   try {
-    const antwort = await fetch("/konfiguration.json", { cache: "no-store", signal: AbortSignal.timeout(3_000) });
+    const antwort = await fetch(mitBasis("/konfiguration.json"), { cache: "no-store", signal: AbortSignal.timeout(3_000) });
     if (antwort.ok && antwort.headers.get("content-type")?.includes("json")) {
       const konfiguration = (await antwort.json()) as { kurzcodeDienst?: unknown };
       if (typeof konfiguration.kurzcodeDienst === "string") return dienstEndpunkt(konfiguration.kurzcodeDienst);
