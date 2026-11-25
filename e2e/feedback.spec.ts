@@ -12,7 +12,7 @@ test.beforeEach(async () => {
 test.afterEach(() => stoppeServer(server));
 
 /** Endpunkt des gehosteten Feedback-Diensts (CI baut mit LAGEKIT_FEEDBACK_URL=true); im Test nie wirklich angesprochen. */
-const DIENST = "https://feedback.sebiweise.workers.dev/v1/feedback/lagekit";
+const DIENST = "https://feedback.goscinski.dev/v1/feedback/lagekit";
 const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers": "content-type" };
 
 test("Feedback: Eingabe prüfen, nur Text, Art und Diagnose senden, Fehler und Offline klar melden", async ({

@@ -3,7 +3,7 @@
  *
  * Gesteuert über die Umgebungsvariable `LAGEKIT_FEEDBACK_URL` beim Build:
  *
- * - `true`: gehosteter Dienst unter `https://feedback.sebiweise.workers.dev`,
+ * - `true`: gehosteter Dienst unter `https://feedback.goscinski.dev`,
  * - `false`: Formular aus, die App zeigt nur den Link zu GitHub,
  * - eine Adresse wie `https://feedback.example.de`: anderer Dienst mit demselben Vertrag
  *   (`/v1/feedback/lagekit` wird angehängt, falls er fehlt),
@@ -17,7 +17,7 @@
  */
 
 /** Feedback-Dienst des Lagekit-Projekts. */
-export const GEHOSTETER_FEEDBACK_DIENST = "https://feedback.sebiweise.workers.dev";
+export const GEHOSTETER_FEEDBACK_DIENST = "https://feedback.goscinski.dev";
 /** Projekt-ID beim Feedback-Dienst. */
 export const FEEDBACK_PROJEKT = "lagekit";
 const FEEDBACK_PFAD = `/v1/feedback/${FEEDBACK_PROJEKT}`;

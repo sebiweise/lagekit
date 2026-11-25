@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { feedbackEndpunkt, feedbackEndpunktBeimBuild } from "./adresse";
 
-const GEHOSTET = "https://feedback.sebiweise.workers.dev/v1/feedback/lagekit";
+const GEHOSTET = "https://feedback.goscinski.dev/v1/feedback/lagekit";
 
 describe("feedbackEndpunkt", () => {
   it("nutzt bei true den gehosteten Dienst", () => {
