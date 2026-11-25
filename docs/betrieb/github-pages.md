@@ -5,11 +5,11 @@ GitHub Pages liefert statische Seiten kostenlos aus, direkt aus dem Repository. 
 ## Einrichten
 
 1. Das Repository [sebiweise/lagekit](https://github.com/sebiweise/lagekit) auf GitHub forken.
-2. Im Fork unter **Settings → Pages** bei **Source** „GitHub Actions“ wählen.
+2. Im Fork unter **Settings → Pages** bei **Source** „GitHub Actions“ wählen. Das geht auch, bevor der Workflow im Repository liegt, und muss vor dem ersten Lauf passieren, sonst bricht der Schritt „deploy“ ab.
 3. Unter **Actions** den Workflow „GitHub Pages“ starten (**Run workflow**). Danach läuft er bei jeder Änderung auf `master` von selbst.
 4. `https://<konto>.github.io/<repository>/app/` öffnen und prüfen, dass „Offline bereit“ erscheint.
 
-Der Workflow baut mit `BASE_PATH=/<repository>`, legt eine leere Datei `.nojekyll` in `out/` (sonst lässt Pages Ordner wie `_next/` weg) und veröffentlicht `out/`. Neue Versionen kommen über **Sync fork**; die Geräte aktivieren sie erst nach Bestätigung.
+Der Workflow baut mit `BASE_PATH=/<repository>`, legt eine leere Datei `.nojekyll` in `out/` (beim Veröffentlichen über Actions läuft ohnehin kein Jekyll; die Datei hält den Export auch beim Veröffentlichen aus einem Branch vollständig, sonst fehlen Ordner wie `_next/`) und veröffentlicht `out/`. Neue Versionen kommen über **Sync fork**; die Geräte aktivieren sie erst nach Bestätigung.
 
 ## Basispfad
 
@@ -35,6 +35,7 @@ Pages setzt keine eigenen Kopfzeilen und kennt weder Weiterleitungen noch Funkti
 | `immutable` für `/_next/static/` | Vor dem ersten Start des Service Workers fragt der Browser nach 10 Minuten nach, ob sich Dateien geändert haben (Antwort 304). | Danach kommt alles aus dem Precache des Service Workers. |
 | Weiterleitung alter Adressen (301) | Alte Adressen aus der Zeit vor `/app/` antworten mit 404. | Die Seite `404.html` leitet sie im Browser weiter, auch offline. Nur Suchmaschinen und Aufrufe ohne JavaScript sehen den Status 404. |
 | `Service-Worker-Allowed` | keine | `sw.js` liegt im Basispfad und deckt genau ihn ab. |
+| Eigener Ursprung | Alle Projektseiten und die Benutzerseite eines Kontos teilen sich den Ursprung `https://<konto>.github.io` und damit den Speicher im Browser (IndexedDB, localStorage). JavaScript auf jeder dieser Seiten kann die Einsatzdaten lesen. | Ein eigenes Konto oder eine eigene Organisation nur für Lagekit nutzen oder eine eigene Domain einrichten, wenn unter dem Konto weitere Seiten mit JavaScript laufen. |
 | `/api/vermittlung/` | Kein eigener Kurzcode-Dienst (`LAGEKIT_KURZCODE_DIENST=selbst` geht nicht). | Der Workflow nutzt den Dienst des Lagekit-Projekts (Cloudflare Worker), siehe [Kurzcode-Dienst](kurzcode.md). Ein eigener Worker geht über die Adresse in `LAGEKIT_KURZCODE_DIENST`. |
 
 ## Neue Adresse heißt neue Daten

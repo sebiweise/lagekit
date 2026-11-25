@@ -41,7 +41,8 @@ jobs:
           # Pages hat kein /api: Kurzcode über den gehosteten Dienst (Cloudflare Worker).
           LAGEKIT_KURZCODE_DIENST: "true"
 
-      # Ohne Jekyll ausliefern, damit Ordner wie _next/ erhalten bleiben.
+      # Über Actions läuft kein Jekyll; .nojekyll schadet nicht und hält den Export
+      # auch beim Veröffentlichen aus einem Branch vollständig (_next/).
       - run: touch out/.nojekyll
 
       - uses: actions/upload-pages-artifact@v5

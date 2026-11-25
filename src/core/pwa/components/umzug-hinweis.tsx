@@ -8,6 +8,8 @@ import { t } from "@/i18n";
 
 /** Neue Adresse aus dem Build (LAGEKIT_UMZUG_URL); leer in allen anderen Installationen. */
 const ZIEL = process.env.NEXT_PUBLIC_UMZUG_URL ? new URL(process.env.NEXT_PUBLIC_UMZUG_URL) : null;
+/** Rechnername und Pfad ohne abschließenden Schrägstrich, z. B. „sebiweise.github.io/lagekit“. */
+const ZIEL_TEXT = ZIEL ? ZIEL.host + (ZIEL.pathname.endsWith("/") ? ZIEL.pathname.slice(0, -1) : ZIEL.pathname) : "";
 const SPAETER_SCHLUESSEL = "lagekit.umzug-spaeter";
 
 function spaeterGewaehlt(): boolean {
@@ -40,7 +42,7 @@ export function UmzugHinweis() {
     <div className="border-b border-warn bg-warn/10 print:hidden" role="status" data-testid="umzug-hinweis">
       <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-1.5 text-sm sm:px-6">
         <Truck className="size-4 shrink-0" />
-        <span className="font-medium">{t.umzug.text(ZIEL.host)}</span>
+        <span className="font-medium">{t.umzug.text(ZIEL_TEXT)}</span>
         <span>{t.umzug.daten}</span>
         <Button variant="outline" size="sm" className="h-8" onClick={() => void einsaetzeSichern()}>
           <Download /> {t.umzug.sichern}

@@ -93,17 +93,17 @@ Anleitungen für [Docker](docs/betrieb/docker.md), [eigene Webserver](docs/betri
 
 ### GitHub Pages
 
-Der Workflow `.github/workflows/pages.yml` baut bei jeder Änderung auf `master` (oder per Hand) mit `BASE_PATH=/<repository>` und veröffentlicht `out/` als Projektseite, z. B. `https://sebiweise.github.io/lagekit/`. Im Repository muss dafür unter **Settings → Pages** die Quelle „GitHub Actions“ gewählt sein. Next.js, Service Worker, Manifest, Weiterleitung alter Adressen und Links richten sich nach dem Basispfad; ohne `BASE_PATH` bleibt alles wie bisher in der Wurzel (Vercel, Docker, Cloudflare).
+Der Workflow `.github/workflows/pages.yml` baut bei jeder Änderung auf `master` (oder per Hand) mit `BASE_PATH=/<repository>` und veröffentlicht `out/` als Projektseite, z. B. `https://sebiweise.github.io/lagekit/`. Im Repository muss dafür unter **Settings → Pages** die Quelle „GitHub Actions“ gewählt sein, und zwar vor dem ersten Lauf (also vor dem Merge des Workflows), sonst schlägt der erste Deploy fehl. Next.js, Service Worker, Manifest, Weiterleitung alter Adressen und Links richten sich nach dem Basispfad; ohne `BASE_PATH` bleibt alles wie bisher in der Wurzel (Vercel, Docker, Cloudflare).
 
 Pages kann keine Kopfzeilen setzen und liefert alles mit `Cache-Control: max-age=600` aus. Das ist vertretbar: Browser prüfen `sw.js` beim Update am HTTP-Zwischenspeicher vorbei, der Service Worker lädt geänderte Dateien mit `cache: "reload"`, und ein geändertes Manifest kommt höchstens 10 Minuten später an. Alte Adressen leitet statt einer 301 die Seite `404.html` im Browser weiter. Pages hat kein `/api`; der Kurzcode läuft über den Cloudflare Worker `lagekit-kurzcode.sebiweise.workers.dev`. Einzelheiten: [GitHub Pages](docs/betrieb/github-pages.md).
 
 ### Umzug von lagekit.vercel.app
 
-Eine neue Adresse ist für den Browser ein neuer Ursprung: Installierte Apps und die Daten in IndexedDB bleiben unter `lagekit.vercel.app`. Mitnehmen lassen sie sich mit der JSON-Sicherung: in der alten Installation unter **Einsatz** auf **Alles sichern (JSON)** tippen, die neue Adresse öffnen und dort **Sicherung importieren**. Geräteeinstellungen (verknüpfte Ordner, Richtwerte, Verfasser, Mail-Empfänger, Arbeitsbereich, Farbschema) sind nicht in der Sicherung und werden neu gesetzt. Schritt für Schritt: [Umzug auf eine neue Adresse](docs/betrieb/selbst-betreiben.md#umzug-auf-eine-neue-adresse).
+Eine neue Adresse ist für den Browser ein neuer Ursprung: Installierte Apps und die Daten in IndexedDB bleiben unter `lagekit.vercel.app`. Mitnehmen lassen sie sich mit der JSON-Sicherung: in der alten Installation unter **Einsatz** auf **Alles sichern (JSON)** tippen, die neue Adresse öffnen und dort **Sicherung importieren**. Geräteeinstellungen (verknüpfte Ordner, Richtwerte, Verfasser, eigene Angaben für „Gemeinsam arbeiten“, Mail-Empfänger, Arbeitsbereich, Farbschema) sind nicht in der Sicherung und werden neu gesetzt. Eine laufende Sitzung vorher beenden oder vollständig abgleichen, denn noch nicht gesendete Änderungen eines Gasts fehlen in der Sicherung. Schritt für Schritt: [Umzug auf eine neue Adresse](docs/betrieb/selbst-betreiben.md#umzug-auf-eine-neue-adresse).
 
 Für die Umstellung ist vorgesehen:
 
-1. GitHub Pages läuft parallel zu Vercel; beide Builds kommen aus demselben Stand.
+1. Vor dem Merge unter **Settings → Pages** die Quelle „GitHub Actions“ wählen. GitHub Pages läuft dann parallel zu Vercel; beide Builds kommen aus demselben Stand.
 2. Auf Vercel `LAGEKIT_UMZUG_URL=https://sebiweise.github.io/lagekit/` setzen und neu deployen. Nach dem Update zeigt die App dort einen Hinweis mit **Alles sichern** und **Neue Adresse öffnen**, der sich mit „Später“ ausblenden lässt.
 3. `lagekit.vercel.app` bleibt danach mindestens einige Monate mit diesem Hinweis erreichbar, samt `api/vermittlung.ts`, das ältere Installationen an den Kurzcode-Dienst weiterreicht. Erst danach kann `vercel.json` alle Seiten auf die neue Adresse umleiten (außer `/api/vermittlung/`, solange alte Installationen ihn nutzen). Installierte Apps laufen dann aus ihrem Zwischenspeicher weiter, mit Hinweis und Daten, bekommen aber keine Updates mehr.
 

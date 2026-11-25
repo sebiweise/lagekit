@@ -52,10 +52,11 @@ Die gespeicherten Daten (Einsätze, Tagebuch, Einstellungen) liegen je Domain im
 
 Der Browser speichert Einsätze, Tagebuch und Einstellungen je Adresse (Ursprung: Protokoll, Rechnername, Port). Eine neue Adresse, z. B. von `https://lagekit.vercel.app` nach `https://sebiweise.github.io/lagekit/`, beginnt deshalb leer, und eine installierte App bleibt an der alten Adresse. Die Daten kommen per Sicherung mit:
 
-1. In der alten Installation unter **Einsatz → Sicherung und Gerätewechsel** auf **Alles sichern (JSON)** tippen. Die Datei enthält alle Einsätze mit allen Tool-Daten.
-2. Die neue Adresse öffnen, bei Bedarf als App installieren, und dort unter **Einsatz** auf **Sicherung importieren** tippen. Vorhandene Daten werden ergänzt, nicht gelöscht.
-3. Einstellungen, die nur auf dem Gerät liegen, neu setzen: verknüpfte Ordner (Dateien), Richtwerte der Strahlenexposition, Verfasser im Tagebuch, Mail-Empfänger, Aufteilung des Arbeitsbereichs, Farbschema und den aktiven Einsatz.
-4. Erst wenn alles da ist, die alte App deinstallieren.
+1. Eine laufende Sitzung „Gemeinsam arbeiten“ vorher beenden bzw. vollständig abgleichen: Änderungen, die ein Gast noch nicht an den Host gesendet hat, sind nicht in der Sicherung.
+2. In der alten Installation unter **Einsatz → Sicherung und Gerätewechsel** auf **Alles sichern (JSON)** tippen. Die Datei enthält alle Einsätze mit allen Tool-Daten.
+3. Die neue Adresse öffnen, bei Bedarf als App installieren, und dort unter **Einsatz** auf **Sicherung importieren** tippen. Vorhandene Daten werden ergänzt, nicht gelöscht.
+4. Einstellungen, die nur auf dem Gerät liegen, neu setzen: verknüpfte Ordner (Dateien), Richtwerte der Strahlenexposition, Verfasser im Tagebuch, eigene Angaben für „Gemeinsam arbeiten“ (Name, Funktion, Fahrzeug), Mail-Empfänger, Aufteilung des Arbeitsbereichs, Farbschema und den aktiven Einsatz.
+5. Erst wenn alles da ist, die alte App deinstallieren.
 
 „Gemeinsam arbeiten“ ersetzt die Sicherung nicht: Eine Sitzung überträgt nur ihren einen Einsatz und keine Geräteeinstellungen.
 

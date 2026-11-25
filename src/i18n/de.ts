@@ -149,7 +149,7 @@ export const de = {
     text: "Diese Adresse gibt es in Lagekit nicht.",
   },
   umzug: {
-    text: (host: string) => `Lagekit zieht um nach ${host}.`,
+    text: (adresse: string) => `Lagekit zieht um nach ${adresse}.`,
     daten:
       "Gespeicherte Daten ziehen nicht mit: hier alles sichern, unter der neuen Adresse öffnen und dort unter Einsatz importieren.",
     sichern: "Alles sichern",
