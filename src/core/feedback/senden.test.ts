@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { t } from "@/i18n";
-import { feedbackBody, feedbackFormularSchema, feedbackSenden, plattform } from "./senden";
+import { feedbackBody, feedbackFormularSchema, feedbackSenden, plattform, zeichenAnzahl } from "./senden";
 
 const DIAGNOSE = { appVersion: "0.11.0", platform: "Windows, Browser" };
 const ENDPUNKT = "https://feedback.example.de/v1/feedback/lagekit";
@@ -21,6 +21,15 @@ describe("feedbackFormularSchema", () => {
     const ergebnis = feedbackFormularSchema.safeParse({ art: "wish", nachricht: "  kurz    ", email: "", diagnose: true, website: "" });
     expect(ergebnis.success).toBe(false);
     expect(ergebnis.error?.issues[0]?.message).toBe(t.feedback.zuKurz(10));
+  });
+
+  it("zählt Schriftzeichen wie der Dienst, nicht UTF-16-Einheiten", () => {
+    // 5 Emoji sind 10 UTF-16-Einheiten, aber nur 5 Zeichen: Der Dienst lehnte das ab.
+    const emoji = feedbackFormularSchema.safeParse({ art: "other", nachricht: "👍👍👍👍👍", email: "", diagnose: false, website: "" });
+    expect(emoji.success).toBe(false);
+    expect(emoji.error?.issues[0]?.message).toBe(t.feedback.zuKurz(10));
+    expect(zeichenAnzahl("👍🏽👨‍👩‍👧é")).toBe(3);
+    expect(eingabe({ nachricht: "👍".repeat(10) }).nachricht).toHaveLength(20);
   });
 
   it("lässt die E-Mail leer zu, prüft sie sonst", () => {

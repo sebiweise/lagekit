@@ -11,7 +11,7 @@ test.beforeEach(async () => {
 
 test.afterEach(() => stoppeServer(server));
 
-/** Endpunkt des gehosteten Feedback-Diensts (Standard im Build); im Test nie wirklich angesprochen. */
+/** Endpunkt des gehosteten Feedback-Diensts (CI baut mit LAGEKIT_FEEDBACK_URL=true); im Test nie wirklich angesprochen. */
 const DIENST = "https://feedback.sebiweise.workers.dev/v1/feedback/lagekit";
 const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers": "content-type" };
 
@@ -59,8 +59,13 @@ test("Feedback: Eingabe prüfen, nur Text, Art und Diagnose senden, Fehler und O
   await expect(formular.getByRole("alert")).toHaveText("Zu viele Anfragen. Bitte in einer Minute erneut versuchen.");
   await expect(page.getByLabel("Ihre Nachricht")).toHaveValue("Bitte eine Spalte für die Uhrzeit im Druck.");
 
-  // Erfolg.
+  expect(bodies[0]).not.toHaveProperty("diagnostics");
+
+  // Erfolg, diesmal mit angehakter Diagnose (standardmäßig aus).
   antworten = "ok";
+  const diagnose = formular.getByRole("checkbox", { name: /App-Version und Plattform/ });
+  await expect(diagnose).not.toBeChecked();
+  await diagnose.check();
   await formular.getByRole("button", { name: "Feedback senden" }).click();
   await expect(page.getByRole("status").filter({ hasText: "Danke" })).toBeVisible();
   expect(bodies).toHaveLength(2);

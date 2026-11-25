@@ -27,7 +27,7 @@ import {
   type FeedbackFormularWerte,
 } from "../senden";
 
-const LEER: FeedbackFormularWerte = { art: "bug", nachricht: "", email: "", diagnose: true, website: "" };
+const LEER: FeedbackFormularWerte = { art: "bug", nachricht: "", email: "", diagnose: false, website: "" };
 
 const nieAendern = () => () => {};
 

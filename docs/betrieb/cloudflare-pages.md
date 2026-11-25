@@ -43,6 +43,10 @@ Für ein Update den Inhalt des neuen ZIPs genauso hochladen.
 
 Eine Pages-Installation hat keinen eigenen Vermittlungsdienst und nutzt standardmäßig den des Lagekit-Projekts (`LAGEKIT_KURZCODE_DIENST` nicht gesetzt oder `true`). Ein eigener Dienst ist ein Worker im selben Konto, siehe [Cloudflare Workers](cloudflare.md#nur-kurzcode-dienst); dann `LAGEKIT_KURZCODE_DIENST` auf dessen Adresse setzen. Mit `false` ist der Kurzcode aus; beim ZIP geht das ohne neuen Build über eine Datei `konfiguration.json`, siehe [Kurzcode-Dienst](kurzcode.md).
 
+## Feedback-Formular
+
+Eine Pages-Installation zeigt unter **Hinweise → Feedback** nur den Link zu GitHub, weil der Feedback-Dienst nur die Adressen des Lagekit-Projekts freigibt; siehe [Feedback-Formular](selbst-betreiben.md#feedback-formular).
+
 ## Eigene Domain
 
 Unter **Custom domains** eine Domain oder Subdomain eintragen. Lagekit muss in der Wurzel der Domain liegen.

@@ -74,6 +74,8 @@ Mit der CLI: `pnpm build && pnpm exec wrangler deploy`.
 
 Weiterleitungen alter Adressen (`_redirects`), Kopfzeilen für `sw.js` (`_headers`) und `404.html` wertet Cloudflare wie bei Pages aus.
 
+Das Feedback-Formular unter **Hinweise → Feedback** ist in diesem Build aus und zeigt nur den Link zu GitHub, weil der Feedback-Dienst nur die Adressen des Lagekit-Projekts freigibt; siehe [Feedback-Formular](selbst-betreiben.md#feedback-formular).
+
 ## Kosten und Grenzen
 
 Im Free-Plan gelten je Konto und Tag unter anderem:

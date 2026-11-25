@@ -51,7 +51,7 @@ Unter **Hinweise → Feedback** (`/app/hinweise/#feedback`, auch über die Befeh
 - Empfänger: der zentrale Feedback-Dienst `POST https://feedback.sebiweise.workers.dev/v1/feedback/lagekit` (Cloudflare Worker, USA, EU-US Data Privacy Framework), der daraus ein Issue in einem privaten GitHub-Repository macht (GitHub, USA, EU-US Data Privacy Framework). Die IP-Adresse wird nur kurz für das Rate Limit gezählt und nicht gespeichert.
 - Der Dienst nimmt nur Anfragen von `https://sebiweise.github.io` und `https://lagekit.vercel.app` an; Docker-Image und Release-ZIP sind ohne Formular gebaut.
 - Ohne Netz ist der Knopf gesperrt, und die App sagt, dass Feedback Internet braucht. Fehlertexte des Diensts (z. B. zu viele Anfragen) zeigt sie so an.
-- `LAGEKIT_FEEDBACK_URL` beim Build: nicht gesetzt oder `true` = gehosteter Dienst, `false` = Formular aus, eine Adresse = anderer Dienst. Code unter `src/core/feedback/`, Einzelheiten unter [Selbst betreiben](docs/betrieb/selbst-betreiben.md#feedback-formular).
+- `LAGEKIT_FEEDBACK_URL` beim Build: `true` = gehosteter Dienst, nicht gesetzt = aus (außer im Produktions-Build auf `lagekit.vercel.app`; der Pages-Workflow schaltet es nur im Repository `sebiweise/lagekit` ein), `false` = Formular aus, eine Adresse = anderer Dienst. Code unter `src/core/feedback/`, Einzelheiten unter [Selbst betreiben](docs/betrieb/selbst-betreiben.md#feedback-formular).
 - Lagekit setzt selbst keine Content-Security-Policy. Wer eine davorschaltet, braucht `connect-src https://feedback.sebiweise.workers.dev`.
 
 ## Entwicklung

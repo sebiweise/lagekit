@@ -3,7 +3,8 @@ import "@/lib/formular";
 import { t } from "@/i18n";
 
 /**
- * Feedback an den zentralen Feedback-Dienst (Vertrag im Repository feedback-worker).
+ * Feedback an den zentralen Feedback-Dienst: `POST /v1/feedback/lagekit` mit JSON-Body,
+ * Antwort `{ ok: true }` oder `{ ok: false, error, code }`.
  *
  * Gesendet wird nur, was im Formular steht: Art, Text, freiwillig eine E-Mail-Adresse und,
  * wenn angehakt, Version und Plattform. Nie Einsatzdaten, nie die aufgerufene Seite.
@@ -15,17 +16,25 @@ export const FEEDBACK_ENDPUNKT = process.env.NEXT_PUBLIC_FEEDBACK_URL || null;
 export const FEEDBACK_ARTEN = ["bug", "wish", "other"] as const;
 export type FeedbackArt = (typeof FEEDBACK_ARTEN)[number];
 
-/** Grenzen des Diensts; er zählt selbst nach und meldet Abweichungen mit eigenem Text. */
+/** Grenzen des Diensts in Schriftzeichen (Graphemen); er zählt selbst nach. */
 export const NACHRICHT_MIN = 10;
 export const NACHRICHT_MAX = 4000;
+
+const segmentierer = typeof Intl !== "undefined" && "Segmenter" in Intl ? new Intl.Segmenter("de", { granularity: "grapheme" }) : null;
+
+/** Länge wie beim Dienst: Ein Emoji wie 👍🏽 zählt als ein Zeichen, nicht als vier UTF-16-Einheiten. */
+export function zeichenAnzahl(text: string): number {
+  if (!segmentierer) return Array.from(text).length;
+  return Array.from(segmentierer.segment(text)).length;
+}
 
 export const feedbackFormularSchema = z.object({
   art: z.enum(FEEDBACK_ARTEN),
   nachricht: z
     .string()
     .trim()
-    .min(NACHRICHT_MIN, t.feedback.zuKurz(NACHRICHT_MIN))
-    .max(NACHRICHT_MAX, t.feedback.zuLang(NACHRICHT_MAX)),
+    .refine((text) => zeichenAnzahl(text) >= NACHRICHT_MIN, t.feedback.zuKurz(NACHRICHT_MIN))
+    .refine((text) => zeichenAnzahl(text) <= NACHRICHT_MAX, t.feedback.zuLang(NACHRICHT_MAX)),
   email: z.union([z.literal(""), z.email(t.feedback.emailUngueltig)]),
   diagnose: z.boolean(),
   /** Unsichtbares Feld gegen Bots; Menschen lassen es leer. */
