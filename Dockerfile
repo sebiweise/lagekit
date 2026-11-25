@@ -14,7 +14,8 @@ FROM deps AS build
 COPY . .
 # Ohne .git im Build-Kontext kommt der Commit als Argument (siehe scripts/build-info.mjs).
 ARG LAGEKIT_COMMIT=unbekannt
-ENV LAGEKIT_COMMIT=$LAGEKIT_COMMIT NEXT_TELEMETRY_DISABLED=1
+# Feedback-Formular aus: Der Feedback-Dienst nimmt nur die Adressen des Projekts an.
+ENV LAGEKIT_COMMIT=$LAGEKIT_COMMIT NEXT_TELEMETRY_DISABLED=1 LAGEKIT_FEEDBACK_URL=false
 RUN pnpm build
 
 # Kurzcode-Dienst als eigenes Image (ghcr.io/sebiweise/lagekit-vermittlung), gedacht

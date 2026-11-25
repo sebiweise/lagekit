@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { changelogLesen } from "../src/core/aenderungen/changelog.ts";
+import { feedbackEndpunkt } from "../src/core/feedback/adresse.ts";
 import { basisPfadAus } from "../src/core/pwa/adressen.ts";
 import { dienstEndpunktBeimBuild } from "../src/core/sync/dienst-adresse.ts";
 
@@ -36,6 +37,11 @@ export function appChangelog() {
  */
 export function kurzcodeDienst() {
   return dienstEndpunktBeimBuild(process.env) ?? "";
+}
+
+/** Endpunkt des Feedback-Diensts aus LAGEKIT_FEEDBACK_URL; leer heißt „Formular aus“. */
+export function feedbackDienst() {
+  return feedbackEndpunkt(process.env.LAGEKIT_FEEDBACK_URL) ?? "";
 }
 
 /**

@@ -63,6 +63,9 @@ jobs:
 
       - name: Build (Static Export und Service Worker)
         run: pnpm build
+        env:
+          # ZIP zum Selbst-Hosten: Der Feedback-Dienst nimmt nur die Adressen des Projekts an.
+          LAGEKIT_FEEDBACK_URL: "false"
 
       - name: Release anlegen
         env:

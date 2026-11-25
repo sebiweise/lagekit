@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
+import { FeedbackFormular } from "@/core/feedback/components/feedback-formular";
 import { HILFE_URL, REPO_URL } from "@/core/projekt";
 import { t } from "@/i18n";
 import { DienstAnzeige } from "./dienst-anzeige";
@@ -30,6 +31,10 @@ export default function HinweisePage() {
         <h2 className="text-xl font-semibold">{t.hinweise.kurzcodeTitel}</h2>
         <p className="text-lg leading-relaxed">{t.hinweise.kurzcode}</p>
         <DienstAnzeige />
+      </section>
+      <section id="feedback" className="flex scroll-mt-20 flex-col gap-2">
+        <h2 className="text-xl font-semibold">{t.feedback.titel}</h2>
+        <FeedbackFormular />
       </section>
       <section id="hilfe" className="flex scroll-mt-20 flex-col gap-2">
         <h2 className="text-xl font-semibold">{t.hinweise.hilfeTitel}</h2>

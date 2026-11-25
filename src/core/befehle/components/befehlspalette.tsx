@@ -7,6 +7,7 @@ import {
   ExternalLink,
   FileText,
   Globe,
+  MessageSquare,
   Monitor,
   Moon,
   NotebookPen,
@@ -41,7 +42,9 @@ import { useAktiverEinsatz, useEinsaetze } from "@/core/einsatz/hooks";
 import { aktivenEinsatzSetzen } from "@/core/einsatz/repository";
 import type { Einsatz } from "@/core/einsatz/schema";
 import { exportHref } from "@/core/export/hooks";
+import { FEEDBACK_ENDPUNKT } from "@/core/feedback/senden";
 import { useSitzung } from "@/core/sync/hooks";
+import { t } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { sucheMerken } from "@/tools/recherche/components/teile";
 import { externeTools } from "@/tools/recherche/katalog";
@@ -278,14 +281,29 @@ function useBefehle(eingabe: string, schliessen: () => void): BefehlsGruppe[] {
 
     gruppen.push({
       titel: "Lagekit",
-      items: websiteLinks.map((z) => ({
-        id: `web:${z.href}`,
-        text: z.text,
-        hinweis: z.beschreibung,
-        icon: z.icon,
-        stichworte: ["Hilfe", "Anleitung"],
-        ausfuehren: gehe(z.href),
-      })),
+      items: [
+        ...websiteLinks.map((z) => ({
+          id: `web:${z.href}`,
+          text: z.text,
+          hinweis: z.beschreibung,
+          icon: z.icon,
+          stichworte: ["Hilfe", "Anleitung"],
+          ausfuehren: gehe(z.href),
+        })),
+        // Formular unter Hinweise, nur wenn diese Installation einen Feedback-Dienst hat.
+        ...(FEEDBACK_ENDPUNKT
+          ? [
+              {
+                id: "feedback",
+                text: t.feedback.befehl,
+                hinweis: t.feedback.befehlHinweis,
+                icon: MessageSquare,
+                stichworte: ["Fehler melden", "Wunsch", "Rückmeldung", "Kontakt"],
+                ausfuehren: gehe("/app/hinweise/#feedback"),
+              },
+            ]
+          : []),
+      ],
     });
 
     gruppen.push({
