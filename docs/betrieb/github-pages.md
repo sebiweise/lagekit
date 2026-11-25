@@ -36,6 +36,7 @@ Pages setzt keine eigenen Kopfzeilen und kennt weder Weiterleitungen noch Funkti
 | Weiterleitung alter Adressen (301) | Alte Adressen aus der Zeit vor `/app/` antworten mit 404. | Die Seite `404.html` leitet sie im Browser weiter, auch offline. Nur Suchmaschinen und Aufrufe ohne JavaScript sehen den Status 404. |
 | `Service-Worker-Allowed` | keine | `sw.js` liegt im Basispfad und deckt genau ihn ab. |
 | Eigener Ursprung | Alle Projektseiten und die Benutzerseite eines Kontos teilen sich den Ursprung `https://<konto>.github.io` und damit den Speicher im Browser (IndexedDB, localStorage). JavaScript auf jeder dieser Seiten kann die Einsatzdaten lesen. | Ein eigenes Konto oder eine eigene Organisation nur für Lagekit nutzen oder eine eigene Domain einrichten, wenn unter dem Konto weitere Seiten mit JavaScript laufen. |
+| Feedback-Formular | In einem Fork zeigt **Hinweise → Feedback** nur den Link zu GitHub. | Der Feedback-Dienst nimmt nur Anfragen von den Adressen des Lagekit-Projekts an; der Workflow setzt `LAGEKIT_FEEDBACK_URL` deshalb nur im Repository `sebiweise/lagekit` auf `true`, siehe [Feedback-Formular](selbst-betreiben.md#feedback-formular). |
 | `/api/vermittlung/` | Kein eigener Kurzcode-Dienst (`LAGEKIT_KURZCODE_DIENST=selbst` geht nicht). | Der Workflow nutzt den Dienst des Lagekit-Projekts (Cloudflare Worker), siehe [Kurzcode-Dienst](kurzcode.md). Ein eigener Worker geht über die Adresse in `LAGEKIT_KURZCODE_DIENST`. |
 
 ## Neue Adresse heißt neue Daten

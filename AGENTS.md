@@ -17,3 +17,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Nichts aus dem Netz nachladen (offline-fähig, keine Web-Fonts, keine CDN-Skripte).
 - Die Base-UI-Doku liegt lokal unter `node_modules/@base-ui/react/docs/`.
 - Desktop (PC im ELW) ist das Hauptziel; Handy (iPhone/Safari) immer mitprüfen.
+
+## Feedback
+
+- Das Formular unter Hinweise (`src/core/feedback/`) schickt nur, was dort eingegeben ist, an den Feedback-Dienst (`LAGEKIT_FEEDBACK_URL`, Projekt `lagekit`). Nie Einsatzdaten, Seitenpfade oder die Browser-Kennung anhängen; als Diagnose gehen nur App-Version und grobe Plattform mit.
+- Kommt ein Empfänger dazu, die Datenschutztexte in `src/i18n/de.ts` (`hinweise.daten`, `feedback.datenschutz`), README und `docs/betrieb/selbst-betreiben.md` mitziehen.

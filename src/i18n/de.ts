@@ -130,7 +130,7 @@ export const de = {
       "Lagekit ist ein Hilfsmittel zur Dokumentation und Berechnung. Es ersetzt weder Messgeräte wie Dosimeter noch die Verantwortung der Einsatzleitung. Alle Ergebnisse sind vor einer Entscheidung zu prüfen. Die Nutzung erfolgt ohne Gewähr.",
     datenTitel: "Daten und Datenschutz",
     daten:
-      "Alle Eingaben werden ausschließlich im Browser dieses Geräts gespeichert. Es gibt kein Konto, keinen Server und kein Tracking. Für Exporte und deren Weitergabe ist die nutzende Einheit verantwortlich. Ausnahmen, nur bei Internet: Die Karte lädt Kartenbilder von OpenStreetMap, und wer „Standort“ oder die Adresssuche antippt, schickt Koordinaten bzw. Suchbegriff an den Adressdienst von OpenStreetMap (Nominatim). Für „Gemeinsam arbeiten“ per Kurzcode laufen Verbindungsdaten kurz über einen Vermittlungsdienst (siehe unten).",
+      "Alle Eingaben werden ausschließlich im Browser dieses Geräts gespeichert. Es gibt kein Konto, keinen Server und kein Tracking. Für Exporte und deren Weitergabe ist die nutzende Einheit verantwortlich. Ausnahmen, nur bei Internet: Die Karte lädt Kartenbilder von OpenStreetMap, und wer „Standort“ oder die Adresssuche antippt, schickt Koordinaten bzw. Suchbegriff an den Adressdienst von OpenStreetMap (Nominatim). Für „Gemeinsam arbeiten“ per Kurzcode laufen Verbindungsdaten kurz über einen Vermittlungsdienst (siehe unten). Wer das Feedback-Formular abschickt, sendet den eingegebenen Text über Cloudflare an GitHub (siehe unten).",
     kurzcodeTitel: "Kurzcode und Vermittlungsdienst",
     kurzcode:
       "Beim Beitritt per Kurzcode schicken Host und Gerät die Beitrittsanfrage und die Antwort über einen Vermittlungsdienst. Darin stehen die Angaben aus „Ihre Angaben“ (Name, Funktion, Fahrzeug) und die Verbindungsdaten der Geräte, darunter Netzwerkadressen. Der Dienst hält sie höchstens 10 Minuten vor und löscht sie, sobald sie abgeholt sind. Der Kurzcode selbst gilt, solange der Host verbunden ist, und erlischt spätestens 30 Minuten danach. Die IP-Adresse wird eine Minute lang gezählt, um zu viele Anfragen abzuwehren. Einsatzdaten laufen nie über den Dienst. Wer das nicht möchte, nutzt den Weg mit QR-Code, der ganz ohne Internet auskommt.",
@@ -143,6 +143,37 @@ export const de = {
     lizenzTitel: "Lizenz",
     lizenz: "Lagekit ist freie Software unter der GNU Affero General Public License v3.0.",
     zurueck: "Zur Startseite",
+  },
+  feedback: {
+    titel: "Feedback",
+    befehl: "Feedback senden",
+    befehlHinweis: "Fehler, Wunsch oder Hinweis direkt aus der App (braucht Internet)",
+    einleitung:
+      "Fehler entdeckt, etwas fehlt oder ein fachlicher Hinweis? Schreiben Sie es hier. Gesendet wird erst, wenn Sie auf „Feedback senden“ tippen.",
+    datenschutz:
+      "Gesendet werden nur die gewählte Art, der Text, den Sie hier eingeben, und, falls angegeben, Ihre E-Mail-Adresse; mit Häkchen außerdem App-Version und Plattform. Nie Einsatzdaten, nie Ihr Standort. Der Weg: über einen Cloudflare Worker (Cloudflare, USA, EU-US Data Privacy Framework) als Issue in ein privates GitHub-Repository des Lagekit-Entwicklers (GitHub, USA, ebenfalls EU-US Data Privacy Framework). Ihre IP-Adresse wird dabei nur kurz gezählt, um zu viele Anfragen abzuwehren, und nicht gespeichert.",
+    artLabel: "Art",
+    arten: { bug: "Fehler", wish: "Wunsch", other: "Sonstiges" },
+    nachrichtLabel: "Ihre Nachricht",
+    nachrichtHinweis: "Bitte keine Einsatzdaten, Namen oder Adressen aus Einsätzen eintragen.",
+    emailLabel: "E-Mail für Rückfragen (freiwillig)",
+    emailHinweis: "Nur für Rückfragen; sie steht im privaten Repository und wird nicht veröffentlicht.",
+    diagnoseLabel: (version: string, plattform: string) => `App-Version und Plattform mitsenden (${version}, ${plattform})`,
+    honeypotLabel: "Website (bitte leer lassen)",
+    senden: "Feedback senden",
+    wirdGesendet: "Wird gesendet …",
+    danke: "Danke! Ihr Feedback ist angekommen.",
+    weiteres: "Weiteres Feedback schreiben",
+    offline:
+      "Kein Netz: Feedback lässt sich nur mit Internet senden. Ihr Text bleibt im Formular stehen, bis Sie die Seite verlassen.",
+    nichtErreichbar:
+      "Der Feedback-Dienst ist gerade nicht erreichbar oder für diese Installation nicht freigegeben. Bitte später erneut versuchen oder auf GitHub melden.",
+    fehler: (status: number) => `Feedback konnte nicht gesendet werden (Fehler ${status}).`,
+    zuKurz: (min: number) => `Bitte mindestens ${min} Zeichen schreiben.`,
+    zuLang: (max: number) => `Bitte höchstens ${max} Zeichen schreiben.`,
+    emailUngueltig: "Bitte eine gültige E-Mail-Adresse eingeben oder das Feld leer lassen.",
+    aus: "In dieser Installation ist das Feedback-Formular ausgeschaltet; Fehler und Wünsche bitte über GitHub melden.",
+    github: "Lieber öffentlich auf GitHub melden",
   },
   nichtGefunden: {
     titel: "Seite nicht gefunden",

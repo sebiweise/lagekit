@@ -73,3 +73,9 @@ Releases mit Änderungsliste, ZIP und Docker-Image stehen auf [GitHub](https://g
 ## Kurzcode für „Gemeinsam arbeiten“
 
 Mehrere Geräte können einem Einsatz per QR-Code, Datei oder Kurzcode beitreten. Nur der Kurzcode braucht einen kleinen Vermittlungsdienst. Standardmäßig nutzen eigene Installationen den Dienst des Lagekit-Projekts; wie man ihn abschaltet oder einen eigenen betreibt, steht unter [Kurzcode-Dienst](kurzcode.md).
+
+## Feedback-Formular
+
+Unter **Hinweise → Feedback** gibt es ein Formular, das Fehler und Wünsche an das Lagekit-Projekt schickt: Gesendet werden nur Art, eingegebener Text, freiwillig eine E-Mail-Adresse und, wenn angehakt, App-Version und grobe Plattform (z. B. „Windows, Browser“), nie Einsatzdaten. Der Weg führt über einen Cloudflare Worker (`feedback.goscinski.dev`, USA, EU-US Data Privacy Framework) als Issue in ein privates GitHub-Repository (GitHub, USA, EU-US Data Privacy Framework); die IP-Adresse wird nur kurz zum Abwehren zu vieler Anfragen gezählt und nicht gespeichert. Offline lässt sich nichts senden, die App sagt das.
+
+Der Dienst nimmt nur Anfragen von den Adressen des Projekts an (`sebiweise.github.io`, `lagekit.vercel.app`). Docker-Image, Release-ZIP, Forks und eigene Builds zeigen deshalb statt des Formulars nur den Link zu GitHub. `LAGEKIT_FEEDBACK_URL` steuert das beim Build: nicht gesetzt = aus (nur der Produktions-Build auf `lagekit.vercel.app` schaltet es von selbst ein), `true` = gehosteter Dienst, `false` = aus, eine Adresse = anderer Dienst mit demselben Vertrag. Der Workflow für GitHub Pages setzt `true` nur im Repository `sebiweise/lagekit`, in Forks `false`. Wer eine Content-Security-Policy setzt, braucht für das Formular `connect-src https://feedback.goscinski.dev`.

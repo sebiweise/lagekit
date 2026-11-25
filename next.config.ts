@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { appChangelog, appCommit, appVersion, basisPfad, kurzcodeDienst, umzugAdresse } from "./scripts/build-info.mjs";
+import { appChangelog, appCommit, appVersion, basisPfad, feedbackDienst, kurzcodeDienst, umzugAdresse } from "./scripts/build-info.mjs";
 
 // Unterordner der Installation aus BASE_PATH (GitHub Pages: `/lagekit`), sonst leer.
 const basis = basisPfad();
@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_APP_CHANGELOG: JSON.stringify(appChangelog()),
     // Vermittlungsdienst für den Kurzcode; leer = aus. Siehe src/core/sync/dienst-adresse.ts.
     NEXT_PUBLIC_KURZCODE_DIENST: kurzcodeDienst(),
+    // Feedback-Dienst für das Formular unter Hinweise; leer = aus. Siehe src/core/feedback/adresse.ts.
+    NEXT_PUBLIC_FEEDBACK_URL: feedbackDienst(),
     // Neue Adresse nach einem Umzug der Installation; leer = kein Hinweis.
     NEXT_PUBLIC_UMZUG_URL: umzugAdresse(),
   },

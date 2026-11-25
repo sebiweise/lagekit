@@ -31,6 +31,10 @@ Ohne weitere Einstellung nutzt eine Vercel-Installation den Kurzcode-Dienst des 
 
 Die Variable wirkt beim Build, nach einer Änderung also neu deployen. Mehr unter [Kurzcode-Dienst](kurzcode.md).
 
+## Feedback-Formular
+
+Eine eigene Vercel-Installation zeigt unter **Hinweise → Feedback** nur den Link zu GitHub. Der Feedback-Dienst nimmt nur Anfragen von `lagekit.vercel.app` und der GitHub-Pages-Seite des Projekts an; ohne `LAGEKIT_FEEDBACK_URL` schaltet deshalb nur deren Produktions-Build das Formular ein, Vorschau-Deployments nicht. Mehr unter [Feedback-Formular](selbst-betreiben.md#feedback-formular).
+
 ## Umzug
 
 Zieht die Installation auf eine andere Adresse um (etwa nach [GitHub Pages](github-pages.md)), unter **Settings → Environment Variables** `LAGEKIT_UMZUG_URL` auf die neue Adresse setzen und neu deployen. Die App zeigt dann einen Hinweis zum Sichern und zur neuen Adresse, siehe [Umzug auf eine neue Adresse](selbst-betreiben.md#umzug-auf-eine-neue-adresse). `vercel.json` und `api/vermittlung.ts` bleiben dabei, damit ältere Installationen ihren Kurzcode-Dienst behalten.

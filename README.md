@@ -42,7 +42,17 @@ Alle Seiten unter `docs/` erscheinen auch in der App-Website unter `/docs/`.
 
 ## Daten und Datenschutz
 
-Alle Eingaben werden nur in IndexedDB im Browser des Geräts gespeichert. Es gibt kein Konto, kein Backend und kein Tracking. Für Exporte und ihre Weitergabe ist die nutzende Einheit verantwortlich. Browser können lokale Daten löschen (etwa beim Leeren des Verlaufs); Lagekit fordert deshalb dauerhaften Speicher an und sollte als App installiert werden. Nur beim Beitritt per Kurzcode laufen Name, Funktion, Fahrzeug und Verbindungsdaten kurz über einen Vermittlungsdienst, siehe [Kurzcode-Dienst](docs/betrieb/kurzcode.md).
+Alle Eingaben werden nur in IndexedDB im Browser des Geräts gespeichert. Es gibt kein Konto, kein Backend und kein Tracking. Für Exporte und ihre Weitergabe ist die nutzende Einheit verantwortlich. Browser können lokale Daten löschen (etwa beim Leeren des Verlaufs); Lagekit fordert deshalb dauerhaften Speicher an und sollte als App installiert werden. Beim Beitritt per Kurzcode laufen Name, Funktion, Fahrzeug und Verbindungsdaten kurz über einen Vermittlungsdienst, siehe [Kurzcode-Dienst](docs/betrieb/kurzcode.md). Wer das Feedback-Formular abschickt, sendet nur den eingegebenen Text (und freiwillig eine E-Mail-Adresse) über Cloudflare an ein privates GitHub-Repository, siehe [Feedback](#feedback).
+
+## Feedback
+
+Unter **Hinweise → Feedback** (`/app/hinweise/#feedback`, auch über die Befehlspalette) lassen sich Fehler, Wünsche und Sonstiges direkt aus der App melden. Gesendet wird nur auf Knopfdruck und nur, was im Formular steht: Art, Text, freiwillig eine E-Mail-Adresse für Rückfragen und, wenn angehakt, App-Version und grobe Plattform. Nie Einsatzdaten, nie der Standort.
+
+- Empfänger: der zentrale Feedback-Dienst `POST https://feedback.goscinski.dev/v1/feedback/lagekit` (Cloudflare Worker, USA, EU-US Data Privacy Framework), der daraus ein Issue in einem privaten GitHub-Repository macht (GitHub, USA, EU-US Data Privacy Framework). Die IP-Adresse wird nur kurz für das Rate Limit gezählt und nicht gespeichert.
+- Der Dienst nimmt nur Anfragen von `https://sebiweise.github.io` und `https://lagekit.vercel.app` an; Docker-Image und Release-ZIP sind ohne Formular gebaut.
+- Ohne Netz ist der Knopf gesperrt, und die App sagt, dass Feedback Internet braucht. Fehlertexte des Diensts (z. B. zu viele Anfragen) zeigt sie so an.
+- `LAGEKIT_FEEDBACK_URL` beim Build: `true` = gehosteter Dienst, nicht gesetzt = aus (außer im Produktions-Build auf `lagekit.vercel.app`; der Pages-Workflow schaltet es nur im Repository `sebiweise/lagekit` ein), `false` = Formular aus, eine Adresse = anderer Dienst. Code unter `src/core/feedback/`, Einzelheiten unter [Selbst betreiben](docs/betrieb/selbst-betreiben.md#feedback-formular).
+- Lagekit setzt selbst keine Content-Security-Policy. Wer eine davorschaltet, braucht `connect-src https://feedback.goscinski.dev`.
 
 ## Entwicklung
 
@@ -70,6 +80,7 @@ src/
     db/                Dexie-Instanz und Migrationen
     einsatz/           Einsatz-Schema (Zod), Datenzugriff, Verwaltung
     export/            JSON-Sicherung, CSV, Datei-Download
+    feedback/          Feedback-Formular und Versand an den Feedback-Dienst
     pwa/               Service Worker, Registrierung, Status-Anzeige
   tools/               Tool-Module; Anmeldung über registry.ts
   components/ui/       Bedienelemente (shadcn/ui)
