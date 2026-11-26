@@ -67,15 +67,13 @@ export default function Startseite() {
       <script dangerouslySetInnerHTML={{ __html: START_SKRIPT }} />
       <SiteKopf aktiv="start" />
       <main className="flex flex-col gap-20 pb-20 sm:gap-24">
-        <section className="border-b bg-gradient-to-b from-red-700/10 to-transparent dark:from-red-500/10">
-          <div className={cn(abschnitt, "flex flex-col gap-6 py-14 sm:py-20 lg:max-w-4xl lg:items-center lg:text-center")}>
-            <p className="text-sm font-semibold tracking-wide text-red-700 uppercase dark:text-red-400">
-              Kostenlos · Open Source · offline
-            </p>
-            <h1 className="text-4xl leading-tight font-bold tracking-tight text-balance sm:text-5xl lg:text-6xl">
+        <section className="border-b">
+          <div className={cn(abschnitt, "flex flex-col items-start gap-6 pt-12 pb-10 sm:pt-20 sm:pb-12")}>
+            <p className="text-sm text-muted-foreground">Kostenlos, Open Source, offline</p>
+            <h1 className="max-w-3xl text-4xl leading-[1.1] font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl">
               Die Offline-Toolbox für den Einsatzleitwagen
             </h1>
-            <p className="max-w-2xl text-lg text-pretty text-muted-foreground sm:text-xl">
+            <p className="max-w-2xl text-lg text-pretty text-muted-foreground">
               Lagekit hilft Einsatzkräften im Katastrophenschutz beim Erfassen, Dokumentieren und Rechnen: Einsatztagebuch,
               Strahlenexposition, Karte und mehr. Im Browser, ohne Installation, ohne Netz.
             </p>
@@ -87,29 +85,34 @@ export default function Startseite() {
                 <BookOpen aria-hidden /> Dokumentation
               </Link>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="font-mono text-xs text-muted-foreground">
               Am PC, Tablet und Handy. Lässt sich als App installieren und startet dann direkt.
             </p>
           </div>
-          <div className={cn(abschnitt, "pb-14 sm:pb-20")}>
-            <figure className="overflow-hidden rounded-xl border bg-card shadow-2xl shadow-red-950/10 dark:shadow-black/40">
-              {/* eslint-disable-next-line @next/next/no-img-element -- statischer Export ohne Bildoptimierung */}
-              <img
-                src={mitBasis("/bilder/app-tagebuch-hell.png")}
-                alt="Lagekit am PC: Einsatztagebuch mit Schnellerfassung und Einträgen zum Einsatz „Gefahrstoffaustritt“"
-                width={1440}
-                height={860}
-                className="block h-auto w-full dark:hidden"
-              />
-              {/* eslint-disable-next-line @next/next/no-img-element -- statischer Export ohne Bildoptimierung */}
-              <img
-                src={mitBasis("/bilder/app-tagebuch-dunkel.png")}
-                alt="Lagekit am PC im dunklen Farbschema: Einsatztagebuch"
-                width={1440}
-                height={860}
-                className="hidden h-auto w-full dark:block"
-                loading="lazy"
-              />
+          <div className={cn(abschnitt, "pb-12 sm:pb-20")}>
+            <figure className="overflow-hidden rounded-xl border bg-card shadow-xl shadow-black/5 dark:shadow-black/40">
+              {/* Am Handy ein Handy-Bild: die PC-Ansicht wäre auf 390 px Breite unlesbar. */}
+              <picture className="block dark:hidden">
+                <source media="(max-width: 639px)" srcSet={mitBasis("/bilder/app-tagebuch-mobil-hell.png")} width={780} height={1688} />
+                <img
+                  src={mitBasis("/bilder/app-tagebuch-hell.png")}
+                  alt="Lagekit: Einsatztagebuch mit Einträgen zum Einsatz „Gefahrstoffaustritt“"
+                  width={1440}
+                  height={860}
+                  className="block h-auto max-h-[560px] w-full object-cover object-top sm:max-h-none"
+                />
+              </picture>
+              <picture className="hidden dark:block">
+                <source media="(max-width: 639px)" srcSet={mitBasis("/bilder/app-tagebuch-mobil-dunkel.png")} width={780} height={1688} />
+                <img
+                  src={mitBasis("/bilder/app-tagebuch-dunkel.png")}
+                  alt="Lagekit im dunklen Farbschema: Einsatztagebuch"
+                  width={1440}
+                  height={860}
+                  className="block h-auto max-h-[560px] w-full object-cover object-top sm:max-h-none"
+                  loading="lazy"
+                />
+              </picture>
             </figure>
           </div>
         </section>
@@ -121,8 +124,8 @@ export default function Startseite() {
           <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {GRUNDSAETZE.map(({ icon: Icon, titel, text }) => (
               <li key={titel} className="flex flex-col gap-2">
-                <Icon className="size-7 text-red-700 dark:text-red-400" aria-hidden />
-                <h3 className="text-lg font-semibold">{titel}</h3>
+                <Icon className="size-5 text-muted-foreground" aria-hidden />
+                <h3 className="text-lg font-medium">{titel}</h3>
                 <p className="text-muted-foreground">{text}</p>
               </li>
             ))}
@@ -131,31 +134,31 @@ export default function Startseite() {
 
         <section id="funktionen" aria-labelledby="funktionen-titel" className={cn(abschnitt, "flex scroll-mt-20 flex-col gap-8")}>
           <div className="flex flex-col gap-2">
-            <h2 id="funktionen-titel" className="text-3xl font-bold tracking-tight">
+            <h2 id="funktionen-titel" className="text-3xl font-semibold">
               Tools für den Einsatz
             </h2>
             <p className="max-w-2xl text-lg text-muted-foreground">
               Jedes Tool arbeitet mit dem aktiven Einsatz und lässt sich drucken oder exportieren.
             </p>
           </div>
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {toolRegistry.map(({ id, icon: Icon, name, beschreibung }) => (
-              <li key={id} className="flex flex-col gap-3 rounded-xl border bg-card p-5">
-                <span className="flex size-11 items-center justify-center rounded-lg bg-red-700/10 text-red-700 dark:bg-red-500/15 dark:text-red-400">
-                  <Icon className="size-6" aria-hidden />
-                </span>
-                <h3 className="text-lg font-semibold">{name}</h3>
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+            {toolRegistry.map(({ id, icon: Icon, name, beschreibung }, i) => (
+              <li key={id} className={cn("flex flex-col gap-2 rounded-xl border bg-card p-6", i < 2 ? "lg:col-span-3" : "lg:col-span-2")}>
+                <h3 className="flex items-center gap-2 text-lg font-medium">
+                  <Icon className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+                  {name}
+                </h3>
                 <p className="text-muted-foreground">{beschreibung}</p>
               </li>
             ))}
           </ul>
-          <h3 className="mt-4 text-2xl font-bold tracking-tight">Rund um den Einsatz</h3>
+          <h3 className="mt-8 text-2xl font-semibold">Rund um den Einsatz</h3>
           <ul className="grid gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
             {KERN.map(({ icon: Icon, titel, text }) => (
               <li key={titel} className="flex gap-4">
-                <Icon className="mt-0.5 size-6 shrink-0 text-muted-foreground" aria-hidden />
+                <Icon className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden />
                 <div className="flex flex-col gap-1">
-                  <h4 className="font-semibold">{titel}</h4>
+                  <h4 className="font-medium">{titel}</h4>
                   <p className="text-muted-foreground">{text}</p>
                 </div>
               </li>
@@ -165,7 +168,7 @@ export default function Startseite() {
 
         <section id="betrieb" aria-labelledby="betrieb-titel" className={cn(abschnitt, "flex scroll-mt-20 flex-col gap-8")}>
           <div className="flex flex-col gap-2">
-            <h2 id="betrieb-titel" className="text-3xl font-bold tracking-tight">
+            <h2 id="betrieb-titel" className="text-3xl font-semibold">
               Nutzen oder selbst betreiben
             </h2>
             <p className="max-w-2xl text-lg text-muted-foreground">
@@ -173,9 +176,9 @@ export default function Startseite() {
               bevorzugt, betreibt sie auf jedem Webserver mit HTTPS.
             </p>
           </div>
-          <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
-            <div className="flex flex-col gap-4 rounded-xl border bg-card p-6">
-              <h3 className="text-xl font-semibold">In einer Minute mit Docker</h3>
+          <div className="grid items-start gap-4 lg:grid-cols-[1.1fr_1fr]">
+            <div className="flex min-w-0 flex-col gap-4 rounded-xl border bg-card p-6">
+              <h3 className="text-xl font-medium">In einer Minute mit Docker</h3>
               <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-sm">
                 <code>{`docker run -d -p 8080:8080 --restart unless-stopped \\\n  ${DOCKER_IMAGE}:latest`}</code>
               </pre>
@@ -183,7 +186,7 @@ export default function Startseite() {
                 Danach läuft Lagekit unter <code className="rounded bg-muted px-1.5 py-0.5 text-sm">http://localhost:8080</code>. Für
                 andere Geräte gehört ein Reverse-Proxy mit HTTPS davor.
               </p>
-              <div className="mt-auto flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-3">
                 <Link href={dokuHref("betrieb/selbst-betreiben")} className={buttonVariants({ variant: "outline" })}>
                   Anleitung zum Betrieb
                 </Link>
@@ -199,8 +202,8 @@ export default function Startseite() {
                     href={href}
                     className="group flex h-full flex-col gap-2 rounded-xl border bg-card p-5 transition-colors hover:border-foreground/30"
                   >
-                    <Icon className="size-6 text-muted-foreground" aria-hidden />
-                    <span className="flex items-center gap-1 font-semibold">
+                    <Icon className="size-5 text-muted-foreground" aria-hidden />
+                    <span className="flex items-center gap-1 font-medium">
                       {titel}
                       <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
                     </span>
@@ -215,7 +218,7 @@ export default function Startseite() {
         <section aria-labelledby="mitmachen-titel" className={abschnitt}>
           <div className="flex flex-col gap-6 rounded-2xl border bg-card p-6 sm:p-10 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex max-w-2xl flex-col gap-2">
-              <h2 id="mitmachen-titel" className="text-2xl font-bold tracking-tight">
+              <h2 id="mitmachen-titel" className="text-2xl font-semibold">
                 Offen entwickelt, mit Einsatzkräften
               </h2>
               <p className="text-muted-foreground">
@@ -232,7 +235,7 @@ export default function Startseite() {
             </div>
           </div>
           <p className="mt-6 text-sm text-muted-foreground">
-            <strong className="font-semibold text-foreground">{t.hinweise.haftungTitel}:</strong> {t.hinweise.haftung}
+            <strong className="font-medium text-foreground">{t.hinweise.haftungTitel}:</strong> {t.hinweise.haftung}
           </p>
         </section>
       </main>
