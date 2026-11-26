@@ -17,6 +17,12 @@ Regeln für diese Datei:
 - Zieht eine Installation auf eine neue Adresse um, kann sie einen Hinweis zeigen: Gespeicherte Daten ziehen nicht von selbst mit, deshalb gibt es dort gleich „Alles sichern“ und den Link zur neuen Adresse. Wie die Sicherung an der neuen Adresse eingelesen wird, steht unter Dokumentation → Selbst betreiben → Umzug auf eine neue Adresse.
 - Feedback direkt aus der App: Unter Hinweise → Feedback (oder „Feedback senden“ in der Befehlspalette) lassen sich Fehler, Wünsche und Sonstiges melden, ohne GitHub-Konto. Gesendet wird nur auf Knopfdruck und nur der eingegebene Text, freiwillig eine E-Mail-Adresse und, wenn angehakt, App-Version und Plattform, nie Einsatzdaten. Der Text geht über einen Cloudflare Worker als Issue in ein privates GitHub-Repository; die Hinweise zum Datenschutz nennen beide Empfänger. Ohne Netz sagt die App, dass Feedback Internet braucht. Docker-Image, Release-ZIP, Forks und eigene Builds zeigen statt des Formulars den Link zu GitHub.
 
+### Geändert
+
+- Wer die App mit der Tastatur bedient, sieht jetzt deutlich, welcher Knopf gerade ausgewählt ist: Der Fokusrahmen ist dunkel (im dunklen Farbschema hell) statt blassgrau.
+- Startseite ruhiger und besser lesbar: Rot nur noch für „App öffnen“, Überschriften weniger fett, Text links ausgerichtet. Am Handy zeigt sie das Einsatztagebuch in der Handy-Ansicht statt einer unlesbar verkleinerten PC-Ansicht.
+- Links in der Fußzeile der Startseite und der Dokumentation lassen sich am Handy leichter antippen.
+
 ## [0.10.0] - 2026-11-16
 
 ### Neu
